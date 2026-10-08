@@ -1,4 +1,5 @@
 export type AgentRole = "buyer" | "merchant" | "system";
+export type NegotiationAction = "PROPOSE" | "COUNTER" | "ACCEPT" | "REJECT";
 
 export interface BuyerConstraints {
   maxBudget: number;
@@ -20,16 +21,17 @@ export interface AgentMessage {
   sender: AgentRole;
   timestamp: string;
   content: string;
-  proposedPrice?: number;
+  proposedPrice: number;
+  deliveryDays: number;
   proposedDeliveryOptionId?: string;
   reasoning?: string;
-  decision?: "PROPOSE" | "COUNTER" | "ACCEPT" | "REJECT";
+  decision: NegotiationAction;
 }
 
-export interface AgentProfile {
-  name: string;
-  role: AgentRole;
-  avatar: string;
-  model: string;
-  temperature: number;
+export interface AgentProposalOutput {
+  action: NegotiationAction;
+  proposedPrice: number;
+  deliveryDays: number;
+  message: string;
+  reasoning: string;
 }

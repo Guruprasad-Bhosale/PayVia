@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { startNegotiationRequestSchema } from "@/lib/validation/negotiation";
 import { getProductById } from "@/data/products";
-import { createNegotiationSession } from "@/lib/ai/negotiation-engine";
+import { runNegotiation } from "@/lib/ai/negotiation-engine";
+import { getNegotiationAgreement, getNegotiationSession } from "@/lib/ai/negotiation-store";
 
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/negotiate
- * Initiates an AI negotiation session between Buyer and Merchant agents.
- *
- * TODO: [AI Hackathon Integration] Connect persistent session store and dynamic multi-round engine.
+ * Initiates an autonomous AI negotiation session between Buyer and Merchant agents.
+ * Validates inputs, executes multi-turn bargaining, and saves the verified agreement.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
     if (!parseResult.success) {
       return NextResponse.json(
         {
-          error: "Invalid negotiation request",
+          success: false,
+          error: "Invalid negotiation parameters",
           details: parseResult.error.format(),
         },
         { status: 400 }
@@ -31,25 +32,58 @@ export async function POST(req: NextRequest) {
 
     if (!product) {
       return NextResponse.json(
-        { error: `Product with ID '${productId}' not found.` },
+        { success: false, error: `Product with ID '${productId}' not found in catalog.` },
         { status: 404 }
       );
     }
 
-    const session = await createNegotiationSession(product, buyerConstraints);
+    const session = await runNegotiation(product, buyerConstraints);
 
     return NextResponse.json({
       success: true,
       session,
+      agreement: session.agreement,
     });
   } catch (error) {
-    console.error("Negotiation API error:", error);
+    console.error("[Negotiation API Error]:", error);
     return NextResponse.json(
       {
-        error: "Failed to process negotiation session",
-        message: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+        error: "Failed to process autonomous negotiation",
+        message: error instanceof Error ? error.message : "Internal error",
       },
       { status: 500 }
     );
   }
+}
+
+/**
+ * GET /api/negotiate?id=<negotiationId>
+ * Retrieves an existing negotiation session or agreement.
+ */
+export async function GET(req: NextRequest) {
+  const id = req.nextUrl.searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json(
+      { success: false, error: "Missing required 'id' query parameter" },
+      { status: 400 }
+    );
+  }
+
+  const session = getNegotiationSession(id);
+  const agreement = getNegotiationAgreement(id);
+
+  if (!session && !agreement) {
+    return NextResponse.json(
+      { success: false, error: `Negotiation '${id}' not found` },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    session: session || null,
+    agreement: agreement || session?.agreement || null,
+  });
 }

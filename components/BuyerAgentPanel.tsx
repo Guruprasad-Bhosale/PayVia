@@ -2,7 +2,8 @@ import React from "react";
 import { BuyerConstraints } from "@/types/agent";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
-import { Bot, Sparkles } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Bot, Shield } from "lucide-react";
 
 interface BuyerAgentPanelProps {
   constraints: BuyerConstraints;
@@ -16,26 +17,30 @@ export function BuyerAgentPanel({
   disabled = false,
 }: BuyerAgentPanelProps) {
   return (
-    <Card className="border-blue-900/40 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/20">
+    <Card className="border-blue-900/40 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/25 shadow-xl">
       <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-            <Bot className="w-5 h-5" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-md">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <CardTitle className="text-base text-white">Buyer AI Agent</CardTitle>
+              <CardDescription className="text-xs text-blue-300/80">
+                Negotiating on your behalf
+              </CardDescription>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-lg">Buyer AI Agent</CardTitle>
-            <CardDescription>
-              Set parameters for your autonomous bargaining representative
-            </CardDescription>
-          </div>
+          <Badge variant="info">Autonomous Buyer</Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            label="Maximum Budget ($)"
+            label="Your Maximum Budget ($)"
             type="number"
+            step="0.01"
             value={constraints.maxBudget || ""}
             onChange={(e) =>
               onChange({
@@ -44,12 +49,13 @@ export function BuyerAgentPanel({
               })
             }
             disabled={disabled}
-            placeholder="e.g. 260.00"
+            placeholder="e.g. 760.00"
           />
 
           <Input
-            label="Target Ideal Price ($)"
+            label="Ideal Target Price ($)"
             type="number"
+            step="0.01"
             value={constraints.targetPrice || ""}
             onChange={(e) =>
               onChange({
@@ -58,14 +64,16 @@ export function BuyerAgentPanel({
               })
             }
             disabled={disabled}
-            placeholder="e.g. 230.00"
+            placeholder="e.g. 735.00"
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            label="Max Desired Delivery Time (Days)"
+            label="Max Delivery Window (Days)"
             type="number"
+            min={1}
+            max={14}
             value={constraints.maxDeliveryDays || ""}
             onChange={(e) =>
               onChange({
@@ -74,11 +82,11 @@ export function BuyerAgentPanel({
               })
             }
             disabled={disabled}
-            placeholder="e.g. 3"
+            placeholder="e.g. 5"
           />
 
           <Input
-            label="Special Constraints / Instructions"
+            label="Special Preferences"
             type="text"
             value={constraints.notes || ""}
             onChange={(e) =>
@@ -88,15 +96,18 @@ export function BuyerAgentPanel({
               })
             }
             disabled={disabled}
-            placeholder="e.g. Prefer expedited shipping if within budget"
+            placeholder="e.g. Free express delivery requested"
           />
         </div>
 
-        <div className="rounded-xl bg-blue-950/30 border border-blue-800/30 p-3 text-xs text-blue-300 flex items-start gap-2">
-          <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-          <span>
-            The Buyer Agent will strictly honor your maximum budget constraint and iteratively negotiate with the merchant agent.
-          </span>
+        <div className="rounded-xl bg-blue-950/40 border border-blue-800/30 p-3 text-xs text-blue-200/90 flex items-start gap-2.5">
+          <Shield className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <span className="font-semibold text-blue-300 block">Strict Budget Boundary Guarantee:</span>
+            <span>
+              The Buyer Agent cannot offer or accept any amount above <strong className="text-white">${constraints.maxBudget || 0} USD</strong>.
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>

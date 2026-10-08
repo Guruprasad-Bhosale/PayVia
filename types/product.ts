@@ -24,4 +24,11 @@ export interface Product {
     allowFreeShippingNegotiation: boolean;
     bundleDiscountsAvailable: boolean;
   };
+  source?: "channel3" | "demo";
+  merchantName?: string;
+  brandName?: string;
+  productUrl?: string;
+  externalId?: string;
+  availability?: string;
 }
+

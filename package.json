@@ -8,11 +8,16 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "npx tsx scripts/test-runner.ts",
     "check:secrets": "node scripts/check-secrets.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.92",
     "@paypal/agent-toolkit": "^1.11.0",
+    "ag-grid-community": "^36.2.0",
+    "ag-grid-react": "^36.2.0",
+    "ag-studio": "^3.0.0",
+    "ag-studio-react": "^3.0.0",
     "ai": "^7.0.133",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",

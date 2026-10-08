@@ -1,9 +1,11 @@
 export type PaymentStatus =
   | "pending"
   | "order_created"
+  | "approved"
   | "authorized"
   | "captured"
   | "failed"
+  | "cancelled"
   | "refunded";
 
 export interface PaymentTransaction {
@@ -16,30 +18,40 @@ export interface PaymentTransaction {
   status: PaymentStatus;
   payerEmail?: string;
   payerName?: string;
+  approvalUrl?: string;
   createdAt: string;
   completedAt?: string;
 }
 
 export interface CreateOrderRequest {
-  agreementId: string;
-  amount: number;
-  currency: string;
-  itemDescription: string;
+  agreementId?: string;
+  amount?: number;
+  currency?: string;
+  itemDescription?: string;
 }
 
 export interface CreateOrderResponse {
-  orderId: string;
-  status: string;
+  success: boolean;
+  message?: string;
+  orderId?: string;
+  status?: string;
+  approvalUrl?: string | null;
+  error?: string;
+  details?: string;
 }
 
 export interface CaptureOrderRequest {
   orderId: string;
-  agreementId: string;
+  agreementId?: string;
 }
 
 export interface CaptureOrderResponse {
-  captureId: string;
-  status: string;
+  success: boolean;
+  message?: string;
+  orderId?: string;
+  captureId?: string;
+  status?: string;
   payerEmail?: string;
-  transactionId?: string;
+  error?: string;
+  details?: string;
 }

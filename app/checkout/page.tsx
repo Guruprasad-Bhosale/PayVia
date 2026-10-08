@@ -1,40 +1,80 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { SAMPLE_PRODUCTS } from "@/data/products";
 import { NegotiationAgreement } from "@/types/negotiation";
 import { PayPalCheckout } from "@/components/PayPalCheckout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, CheckCircle2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, AlertTriangle, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export default function CheckoutPage() {
-  const sampleProduct = SAMPLE_PRODUCTS[0];
+function CheckoutContent() {
+  const searchParams = useSearchParams();
+  const negotiationId = searchParams.get("negotiationId") || searchParams.get("id");
+  const paymentStatus = searchParams.get("payment");
+  const errorMessage = searchParams.get("error");
+  const errorDetails = searchParams.get("details");
 
-  const agreement: NegotiationAgreement = {
-    id: "agree_aurora_9942",
-    productId: sampleProduct.id,
-    productName: sampleProduct.name,
-    originalPrice: sampleProduct.originalPrice,
-    finalAgreedPrice: 245.0,
-    savingsAmount: 54.99,
-    selectedDelivery: sampleProduct.availableDeliveryOptions[1], // Express
-    totalSettlementAmount: 245.0,
-    currency: "USD",
-    roundsCount: 3,
-    createdAt: new Date().toISOString(),
-    userApproved: true,
-    termsSummary:
-      "Buyer Agent agreed to final price of $245.00 USD with complimentary Express Air Delivery (2-day).",
-  };
+  const [agreement, setAgreement] = useState<NegotiationAgreement | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [captureDetails, setCaptureDetails] = useState<{
-    captureId: string;
-    status: string;
-  } | null>(null);
+  useEffect(() => {
+    async function loadAgreement() {
+      if (negotiationId) {
+        try {
+          const res = await fetch(`/api/negotiate?id=${negotiationId}`);
+          const data = await res.json();
+          if (res.ok && data.success && data.agreement) {
+            setAgreement(data.agreement);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error("Failed to load negotiation:", e);
+        }
+      }
+
+      // Default sample fallback
+      const sampleProduct = SAMPLE_PRODUCTS[0];
+      setAgreement({
+        id: "agree_laptop_8821",
+        negotiationId: "sess_sample_default",
+        productId: sampleProduct.id,
+        productName: sampleProduct.name,
+        originalPrice: sampleProduct.originalPrice,
+        finalPrice: 750.0,
+        savings: Number((sampleProduct.originalPrice - 750.0).toFixed(2)),
+        deliveryDays: 5,
+        buyerMaxPrice: 760.0,
+        buyerMaxDeliveryDays: 5,
+        merchantMinPrice: sampleProduct.minAcceptablePrice,
+        currency: "USD",
+        status: "AGREED",
+        roundsCount: 3,
+        createdAt: new Date().toISOString(),
+        userApproved: true,
+        termsSummary:
+          "Buyer Agent agreed to final price of $750.00 USD with 5-day delivery.",
+        finalAgreedPrice: 750.0,
+        savingsAmount: Number((sampleProduct.originalPrice - 750.0).toFixed(2)),
+        totalSettlementAmount: 750.0,
+      });
+      setLoading(false);
+    }
+
+    loadAgreement();
+  }, [negotiationId]);
+
+  if (loading || !agreement) {
+    return (
+      <div className="text-center py-16 space-y-3">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-400" />
+        <p className="text-sm text-slate-400">Loading checkout session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -48,12 +88,12 @@ export default function CheckoutPage() {
             Execute PayPal Sandbox Settlement
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Execute the final payment for your negotiated purchase using PayPal Sandbox.
+            Authorize payment for your negotiated purchase using official PayPal Sandbox.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/agreement">
+          <Link href={`/agreement${negotiationId ? `?id=${negotiationId}` : ""}`}>
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Agreement</span>
@@ -62,39 +102,33 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-6">
-        {paymentCompleted && captureDetails ? (
-          <Card className="border-emerald-500/40 bg-emerald-950/20 p-8 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-            <CardTitle className="text-2xl text-white">Payment Confirmed!</CardTitle>
-            <p className="text-sm text-slate-300">
-              PayPal transaction captured successfully with reference ID:
-            </p>
-            <code className="block bg-slate-900 px-4 py-2 rounded-lg text-emerald-400 font-mono text-sm border border-slate-800">
-              {captureDetails.captureId}
-            </code>
+      {paymentStatus === "cancelled" && (
+        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-amber-950/30 border border-amber-800/40 text-amber-300 text-xs flex items-center gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          <span>Payment was cancelled on PayPal. You can re-attempt whenever ready.</span>
+        </div>
+      )}
 
-            <div className="pt-4 flex justify-center gap-4">
-              <Link href="/negotiate">
-                <Button>
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Start Another Negotiation</span>
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        ) : (
-          <PayPalCheckout
-            agreement={agreement}
-            onPaymentSuccess={(data) => {
-              setCaptureDetails(data);
-              setPaymentCompleted(true);
-            }}
-          />
-        )}
+      {errorMessage && (
+        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-rose-950/30 border border-rose-800/40 text-rose-300 text-xs flex items-center gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+          <span>
+            Payment capture error: {errorDetails ? decodeURIComponent(errorDetails) : errorMessage}
+          </span>
+        </div>
+      )}
+
+      <div className="max-w-2xl mx-auto space-y-6">
+        <PayPalCheckout agreement={agreement} />
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="text-center text-slate-400">Loading checkout...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

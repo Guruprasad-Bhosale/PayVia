@@ -1,109 +1,84 @@
-import { z } from "zod";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
-/**
- * Server-only Environment Configuration Loader.
- * Reads environment variables from process.env or fallback secrets.txt in development.
- * Strictly guarantees that private credentials are NEVER exposed to client components.
- */
+function loadSecretsFile() {
+  const secretsPath = path.join(process.cwd(), "secrets.txt");
 
-const envSchema = z.object({
-  PAYPAL_ENVIRONMENT: z.enum(["sandbox", "production"]).default("sandbox"),
-  PAYPAL_CLIENT_ID: z.string().default(""),
-  PAYPAL_CLIENT_SECRET: z.string().default(""),
-  AI_API_KEY: z.string().default(""),
-  AI_MODEL: z.string().default("gpt-4o-mini"),
-  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
-  NEXT_PUBLIC_PAYPAL_CLIENT_ID: z.string().default(""),
-});
+  if (!fs.existsSync(secretsPath)) {
+    return;
+  }
 
-export type ServerEnv = z.infer<typeof envSchema>;
+  const contents = fs.readFileSync(secretsPath, "utf8");
 
-let cachedEnv: ServerEnv | null = null;
+  for (const line of contents.split(/\r?\n/)) {
+    const trimmed = line.trim();
 
-function loadSecretsFile(): Record<string, string> {
-  const result: Record<string, string> = {};
-  try {
-    const secretsPath = path.join(process.cwd(), "secrets.txt");
-    if (fs.existsSync(secretsPath)) {
-      const content = fs.readFileSync(secretsPath, "utf-8");
-      const lines = content.split("\n");
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith("#")) {
-          const eqIdx = trimmed.indexOf("=");
-          if (eqIdx > 0) {
-            const key = trimmed.slice(0, eqIdx).trim();
-            const val = trimmed.slice(eqIdx + 1).trim();
-            result[key] = val;
-          }
-        }
-      }
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
     }
-  } catch {
-    // Silently ignore if reading secrets.txt fails
+
+    const separatorIndex = trimmed.indexOf("=");
+
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const value = trimmed.slice(separatorIndex + 1).trim();
+
+    if (key && value && !process.env[key]) {
+      process.env[key] = value;
+    }
   }
-  return result;
 }
 
-export function getServerEnv(): ServerEnv {
-  if (typeof window !== "undefined") {
-    throw new Error("CRITICAL SECURITY ERROR: getServerEnv() must only be called in server-side code!");
-  }
+loadSecretsFile();
 
-  if (cachedEnv) {
-    return cachedEnv;
-  }
-
-  const fileSecrets = loadSecretsFile();
-
-  const rawEnv = {
-    PAYPAL_ENVIRONMENT:
-      process.env.PAYPAL_ENVIRONMENT || fileSecrets.PAYPAL_ENVIRONMENT || "sandbox",
-    PAYPAL_CLIENT_ID:
-      process.env.PAYPAL_CLIENT_ID || fileSecrets.PAYPAL_CLIENT_ID || "",
-    PAYPAL_CLIENT_SECRET:
-      process.env.PAYPAL_CLIENT_SECRET || fileSecrets.PAYPAL_CLIENT_SECRET || "",
-    AI_API_KEY:
-      process.env.AI_API_KEY || fileSecrets.AI_API_KEY || "",
-    AI_MODEL:
-      process.env.AI_MODEL || fileSecrets.AI_MODEL || "gpt-4o-mini",
-    NEXT_PUBLIC_APP_URL:
-      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    NEXT_PUBLIC_PAYPAL_CLIENT_ID:
-      process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
-      process.env.PAYPAL_CLIENT_ID ||
-      fileSecrets.PAYPAL_CLIENT_ID ||
-      "",
-  };
-
-  const parsed = envSchema.safeParse(rawEnv);
-
-  if (!parsed.success) {
-    console.warn("⚠️ Warning: Environment configuration schema validation issues:", parsed.error.format());
-    cachedEnv = rawEnv as ServerEnv;
-    return cachedEnv;
-  }
-
-  cachedEnv = parsed.data;
-  return cachedEnv;
-}
+export const env = {
+  paypalClientId: process.env.PAYPAL_CLIENT_ID ?? "",
+  paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET ?? "",
+  paypalMerchantEmail: process.env.PAYPAL_MERCHANT_EMAIL ?? "",
+  paypalEnvironment: process.env.PAYPAL_ENVIRONMENT ?? "sandbox",
+  googleGenerativeAiApiKey:
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? "",
+  channel3ApiKey: process.env.CHANNEL3_API_KEY ?? "",
+  appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+};
 
 export function isPayPalConfigured(): boolean {
-  try {
-    const env = getServerEnv();
-    return Boolean(env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET);
-  } catch {
-    return false;
-  }
+  return Boolean(env.paypalClientId && env.paypalClientSecret);
 }
 
 export function isAIConfigured(): boolean {
-  try {
-    const env = getServerEnv();
-    return Boolean(env.AI_API_KEY);
-  } catch {
-    return false;
+  return Boolean(env.googleGenerativeAiApiKey);
+}
+
+export function isChannel3Configured(): boolean {
+  return Boolean(env.channel3ApiKey);
+}
+
+export function assertServerEnv(options: { requireMerchantEmail?: boolean } = {}) {
+  const missing: string[] = [];
+
+  if (!env.paypalClientId) {
+    missing.push("PAYPAL_CLIENT_ID");
+  }
+
+  if (!env.paypalClientSecret) {
+    missing.push("PAYPAL_CLIENT_SECRET");
+  }
+
+  if (options.requireMerchantEmail && !env.paypalMerchantEmail) {
+    missing.push("PAYPAL_MERCHANT_EMAIL");
+  }
+
+  if (!env.googleGenerativeAiApiKey) {
+    missing.push("GOOGLE_GENERATIVE_AI_API_KEY");
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}`
+    );
   }
 }

@@ -72,6 +72,10 @@ function scanDirectory(dir) {
         console.error(`❌ CRITICAL: NEXT_PUBLIC_AI_API_KEY detected in ${fullPath}!`);
         errorsFound++;
       }
+      if (content.includes("NEXT_PUBLIC_CHANNEL3_API_KEY")) {
+        console.error(`❌ CRITICAL: NEXT_PUBLIC_CHANNEL3_API_KEY detected in ${fullPath}!`);
+        errorsFound++;
+      }
     }
   }
 }

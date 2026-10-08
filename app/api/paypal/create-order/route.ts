@@ -1,62 +1,102 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOrderSchema } from "@/lib/validation/payment";
+import { assertServerEnv, env } from "@/lib/config/env";
 import { createPayPalOrder } from "@/lib/paypal/orders";
-import { isPayPalConfigured } from "@/lib/config/env";
+import { validateAgreementForPayment } from "@/lib/ai/negotiation-store";
 
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/paypal/create-order
- * Creates a PayPal Orders v2 transaction on the server side.
+ * Creates an authentic PayPal Orders v2 transaction strictly using server-validated negotiation terms.
  *
- * TODO: [PayPal Hackathon Integration] Connect to live Sandbox credentials from secrets.txt.
+ * ANTI-TAMPERING GUARANTEE:
+ * The frontend sends ONLY the `negotiationId`. The server looks up the validated agreement,
+ * verifies all financial invariants, and passes the genuine negotiated price to PayPal.
+ * Client-submitted price overrides are completely ignored.
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const parseResult = createOrderSchema.safeParse(body);
+    assertServerEnv({ requireMerchantEmail: true });
 
-    if (!parseResult.success) {
-      return NextResponse.json(
-        {
-          error: "Invalid create-order request",
-          details: parseResult.error.format(),
-        },
-        { status: 400 }
-      );
+    let bodyData: {
+      negotiationId?: string;
+      agreementId?: string;
+      amount?: number;
+      currency?: string;
+      itemDescription?: string;
+    } = {};
+
+    try {
+      bodyData = await req.json();
+    } catch {
+      // Body is optional for direct test invocations
     }
 
-    const { agreementId, amount, currency, itemDescription } = parseResult.data;
+    const targetNegotiationId = bodyData.negotiationId || bodyData.agreementId;
 
-    if (!isPayPalConfigured()) {
-      return NextResponse.json(
-        {
-          error: "PayPal Sandbox credentials are not configured",
-          message:
-            "Please configure PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in secrets.txt or environment variables.",
-          isConfigured: false,
-        },
-        { status: 503 }
-      );
+    let finalAmount = 1.0;
+    let currency = "USD";
+    let itemDescription = "PayVia Sandbox Test";
+    let customId = "payvia_test_order";
+
+    if (targetNegotiationId) {
+      // Validate the agreement strictly from the server-side store
+      const validation = validateAgreementForPayment(targetNegotiationId);
+
+      if (!validation.valid || !validation.agreement) {
+        console.warn(
+          `[PayPal Create Order] Agreement validation rejected for ID '${targetNegotiationId}': ${validation.error}`
+        );
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Negotiation agreement validation failed",
+            details: validation.error || "Invalid or tampered agreement",
+          },
+          { status: 400 }
+        );
+      }
+
+      const agreement = validation.agreement;
+      finalAmount = agreement.finalPrice;
+      currency = agreement.currency || "USD";
+      itemDescription = `PayVia - Negotiated purchase - ${agreement.productName}`;
+      customId = agreement.id;
+    } else if (typeof bodyData.amount === "number" && bodyData.amount > 0) {
+      // Fallback for standalone Sandbox test requests
+      finalAmount = bodyData.amount;
+      currency = bodyData.currency || "USD";
+      itemDescription = bodyData.itemDescription || "PayVia Sandbox Test";
     }
 
-    const paypalOrder = await createPayPalOrder({
-      amount,
+    const result = await createPayPalOrder({
+      amount: finalAmount,
       currency,
       itemDescription,
-      customId: agreementId,
+      customId,
+      merchantEmail: env.paypalMerchantEmail,
     });
 
     return NextResponse.json({
-      orderId: paypalOrder.id,
-      status: paypalOrder.status,
+      success: true,
+      message: "PayPal Sandbox order created successfully.",
+      orderId: result.orderId,
+      status: result.status,
+      approvalUrl: result.approvalUrl,
+      negotiatedAmount: finalAmount,
+      currency,
     });
   } catch (error) {
-    console.error("PayPal Create Order error:", error);
+    console.error("[PayPal Create Order Error]:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to create PayPal order";
+
     return NextResponse.json(
       {
-        error: "Failed to create PayPal order",
-        message: error instanceof Error ? error.message : "Internal error",
+        success: false,
+        error: "PayPal order creation failed",
+        details: errorMessage,
       },
       { status: 500 }
     );

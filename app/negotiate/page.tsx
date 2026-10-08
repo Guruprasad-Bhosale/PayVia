@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { SAMPLE_PRODUCTS } from "@/data/products";
+import React, { useState, useEffect, Suspense } from "react";
+import { SAMPLE_PRODUCTS, getProductById } from "@/data/products";
 import { Product } from "@/types/product";
 import { BuyerConstraints } from "@/types/agent";
+import { NegotiationSession } from "@/types/negotiation";
 import { ProductCard } from "@/components/ProductCard";
 import { BuyerAgentPanel } from "@/components/BuyerAgentPanel";
 import { MerchantAgentPanel } from "@/components/MerchantAgentPanel";
@@ -11,110 +12,257 @@ import { NegotiationTimeline } from "@/components/NegotiationTimeline";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Bot, RefreshCw, Layers } from "lucide-react";
+import { ArrowRight, Bot, RefreshCw, Layers, AlertCircle, Sparkles, Store, ShoppingBag } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
-export default function NegotiatePage() {
+function NegotiateContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const paramProductId = searchParams.get("productId") || searchParams.get("id");
+
+  const [availableProducts, setAvailableProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
   const [selectedProduct, setSelectedProduct] = useState<Product>(SAMPLE_PRODUCTS[0]);
+
+  // Dynamic realistic constraint suggestions per product
   const [buyerConstraints, setBuyerConstraints] = useState<BuyerConstraints>({
-    maxBudget: 260.0,
-    targetPrice: 235.0,
-    maxDeliveryDays: 3,
+    maxBudget: 760.0,
+    targetPrice: 735.0,
+    maxDeliveryDays: 5,
     preferredPaymentMethod: "PayPal",
-    notes: "Requesting free express shipping if available",
+    notes: "Prefer complimentary express shipping if available",
   });
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [negotiationStep, setNegotiationStep] = useState<"idle" | "negotiating" | "agreed">("idle");
 
-  const handleStartNegotiation = async () => {
-    setIsSimulating(true);
-    setNegotiationStep("negotiating");
+  const [isNegotiating, setIsNegotiating] = useState(false);
+  const [statusStepText, setStatusStepText] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [session, setSession] = useState<NegotiationSession | null>(null);
 
-    // Placeholder simulated step for the initial scaffold
-    // TODO: [AI Hackathon Integration] Connect to POST /api/negotiate for real multi-turn LLM reasoning
-    setTimeout(() => {
-      setIsSimulating(false);
-      setNegotiationStep("agreed");
-    }, 1200);
+  // Check if a specific product was requested via URL query param
+  useEffect(() => {
+    if (paramProductId) {
+      const found = getProductById(paramProductId);
+      if (found) {
+        setSelectedProduct(found);
+        // Include in available list if not already present
+        setAvailableProducts((prev) => {
+          if (!prev.some((p) => p.id === found.id)) {
+            return [found, ...prev];
+          }
+          return prev;
+        });
+
+        const suggestedMax = Number((found.originalPrice * 0.95).toFixed(2));
+        const suggestedTarget = Number((found.originalPrice * 0.90).toFixed(2));
+        setBuyerConstraints({
+          maxBudget: suggestedMax,
+          targetPrice: suggestedTarget,
+          maxDeliveryDays: 5,
+          preferredPaymentMethod: "PayPal",
+          notes: "Requesting free priority shipping if within budget",
+        });
+      }
+    }
+  }, [paramProductId]);
+
+  // When product changes, adjust suggested default constraints
+  const handleSelectProduct = (prod: Product) => {
+    setSelectedProduct(prod);
+    setSession(null);
+    setErrorMessage(null);
+
+    // Compute sensible suggested demo budget (around 5% below list price, safely above floor)
+    const suggestedMax = Number((prod.originalPrice * 0.95).toFixed(2));
+    const suggestedTarget = Number((prod.originalPrice * 0.90).toFixed(2));
+
+    setBuyerConstraints({
+      maxBudget: suggestedMax,
+      targetPrice: suggestedTarget,
+      maxDeliveryDays: 5,
+      preferredPaymentMethod: "PayPal",
+      notes: "Requesting free priority shipping if within budget",
+    });
   };
 
+  const handleStartNegotiation = async () => {
+    // 1. Validation before dispatching
+    if (!buyerConstraints.maxBudget || buyerConstraints.maxBudget <= 0) {
+      setErrorMessage("Please enter a valid maximum budget greater than $0.");
+      return;
+    }
+    if (buyerConstraints.maxBudget > selectedProduct.originalPrice) {
+      setErrorMessage(
+        `Budget ($${buyerConstraints.maxBudget}) cannot exceed the original listing price ($${selectedProduct.originalPrice}).`
+      );
+      return;
+    }
+    if (buyerConstraints.maxBudget < selectedProduct.minAcceptablePrice) {
+      setErrorMessage(
+        `Your budget ($${buyerConstraints.maxBudget}) is below the merchant's minimum acceptable floor ($${selectedProduct.minAcceptablePrice}). Please increase your budget.`
+      );
+      return;
+    }
+
+    setIsNegotiating(true);
+    setErrorMessage(null);
+    setSession(null);
+    setStatusStepText("Buyer Agent is formulating opening proposal with Google Gemini...");
+
+    // Simulated step progression for smooth UX
+    const t1 = setTimeout(() => {
+      setStatusStepText("Merchant Agent is evaluating inventory margins & counter-offers...");
+    }, 1500);
+
+    const t2 = setTimeout(() => {
+      setStatusStepText("Agents negotiating multi-turn terms & delivery concessions...");
+    }, 3200);
+
+    try {
+      const response = await fetch("/api/negotiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: selectedProduct.id,
+          buyerConstraints,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || data.message || "Failed to run autonomous negotiation.");
+      }
+
+      setSession(data.session);
+    } catch (err) {
+      console.error("Negotiation failed:", err);
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "Failed to execute agent negotiation. Please try again."
+      );
+    } finally {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      setIsNegotiating(false);
+      setStatusStepText("");
+    }
+  };
+
+  const agreement = session?.agreement;
+  const isChannel3Product = selectedProduct.source === "channel3";
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <Badge variant="purple" className="mb-2">
-            Step 1: Configuration
-          </Badge>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Agent Negotiation Console
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="purple">Step 1: AI Agent Negotiation</Badge>
+            {isChannel3Product && (
+              <Badge variant="info" className="gap-1 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                <span>Discovered via Channel3</span>
+              </Badge>
+            )}
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            Autonomous Negotiation Room
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Configure buyer preferences and initiate autonomous bargaining with the merchant agent.
+            Define your budget ceiling and launch real Gemini-powered bargaining with the Merchant Agent.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href="/agreement">
-            <Button variant="outline" size="sm">
-              <span>View Agreements</span>
-              <ArrowRight className="w-4 h-4" />
+          <Link href="/">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Discover Products</span>
             </Button>
           </Link>
+          {agreement && (
+            <Button
+              onClick={() => router.push(`/agreement?id=${session?.id}`)}
+              size="sm"
+              className="gap-2 shadow-md shadow-emerald-500/20"
+            >
+              <span>View Verified Agreement</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Product Selection */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <Layers className="w-4 h-4 text-blue-400" />
-            <span>Select Product to Negotiate</span>
+            <span>1. Select Product to Negotiate</span>
           </h2>
           <span className="text-xs text-slate-400">
-            Catalog: {SAMPLE_PRODUCTS.length} active merchant listings
+            {availableProducts.length} Items Available
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {SAMPLE_PRODUCTS.map((product) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {availableProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
               selected={selectedProduct.id === product.id}
-              onSelect={() => setSelectedProduct(product)}
+              onSelect={() => handleSelectProduct(product)}
             />
           ))}
         </div>
       </div>
 
       {/* Agents Configuration Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <BuyerAgentPanel
-          constraints={buyerConstraints}
-          onChange={setBuyerConstraints}
-          disabled={isSimulating}
-        />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <Bot className="w-4 h-4 text-blue-400" />
+            <span>2. Configure Agent Parameters</span>
+          </h2>
+          {isChannel3Product && (
+            <div className="flex items-center gap-1.5 text-xs text-blue-300 bg-blue-950/50 px-3 py-1 rounded-full border border-blue-800/50">
+              <Store className="w-3.5 h-3.5" />
+              <span>Merchant: {selectedProduct.merchantName || "Channel3 Verified Partner"}</span>
+            </div>
+          )}
+        </div>
 
-        <MerchantAgentPanel
-          constraints={{
-            originalPrice: selectedProduct.originalPrice,
-            minAcceptablePrice: selectedProduct.minAcceptablePrice,
-            shippingFloorPrice: 0,
-            maxRoundsAllowed: 5,
-          }}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <BuyerAgentPanel
+            constraints={buyerConstraints}
+            onChange={setBuyerConstraints}
+            disabled={isNegotiating}
+          />
+
+          <MerchantAgentPanel
+            constraints={{
+              originalPrice: selectedProduct.originalPrice,
+              minAcceptablePrice: selectedProduct.minAcceptablePrice,
+              shippingFloorPrice: 0,
+              maxRoundsAllowed: 5,
+            }}
+          />
+        </div>
       </div>
 
       {/* Action Bar */}
-      <Card className="border-blue-900/40 bg-slate-900/90 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+      <Card className="border-blue-900/40 bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/40 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
         <div className="space-y-1 text-center sm:text-left">
-          <span className="text-xs font-semibold uppercase tracking-wider text-blue-400">
-            Autonomous Deal Formulation
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5 justify-center sm:justify-start">
+            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+            <span>Autonomous Commercial Protocol</span>
           </span>
-          <p className="text-sm text-slate-300">
-            Clicking below commands the Buyer Agent to start negotiations for{" "}
-            <span className="font-semibold text-white">{selectedProduct.name}</span>.
+          <p className="text-sm text-slate-200">
+            Click to command Buyer Agent to negotiate for{" "}
+            <strong className="text-white">{selectedProduct.name}</strong> ($
+            {selectedProduct.originalPrice.toFixed(2)} list).
           </p>
         </div>
 
@@ -122,10 +270,10 @@ export default function NegotiatePage() {
           <Button
             size="lg"
             onClick={handleStartNegotiation}
-            disabled={isSimulating}
-            className="w-full sm:w-auto shadow-lg shadow-blue-500/20"
+            disabled={isNegotiating}
+            className="w-full sm:w-auto shadow-xl shadow-blue-500/25 px-8 font-bold text-base"
           >
-            {isSimulating ? (
+            {isNegotiating ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
                 <span>Agents Negotiating...</span>
@@ -133,84 +281,70 @@ export default function NegotiatePage() {
             ) : (
               <>
                 <Bot className="w-5 h-5" />
-                <span>Start Negotiation</span>
+                <span>Ask AI to Negotiate</span>
               </>
             )}
           </Button>
         </div>
       </Card>
 
-      {/* Negotiation Feed Placeholder */}
+      {errorMessage && (
+        <div className="p-4 rounded-2xl bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-3 shadow-lg">
+          <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <span className="font-bold block text-rose-200">Constraint Validation Notice:</span>
+            <p>{errorMessage}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Live Negotiation Feed */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-white">Live Negotiation Transcript</h2>
+        <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+          <span>3. Live Agent Negotiation Stream</span>
+        </h2>
         <NegotiationTimeline
-          messages={
-            negotiationStep === "agreed"
-              ? [
-                  {
-                    id: "msg_1",
-                    sender: "buyer",
-                    timestamp: new Date().toISOString(),
-                    content: `Hello! I represent a buyer eager to purchase "${selectedProduct.name}". We propose $${buyerConstraints.targetPrice.toFixed(
-                      2
-                    )} with standard delivery included.`,
-                    proposedPrice: buyerConstraints.targetPrice,
-                    decision: "PROPOSE",
-                    reasoning: "Starting at target price to anchor negotiation favorably.",
-                  },
-                  {
-                    id: "msg_2",
-                    sender: "merchant",
-                    timestamp: new Date().toISOString(),
-                    content: `Thank you for your interest in "${selectedProduct.name}". While $${buyerConstraints.targetPrice.toFixed(
-                      2
-                    )} is below our standard threshold, we can offer $${(
-                      (selectedProduct.originalPrice + buyerConstraints.targetPrice) /
-                      2
-                    ).toFixed(2)} with express shipping complimentary!`,
-                    proposedPrice: Number(
-                      (
-                        (selectedProduct.originalPrice + buyerConstraints.targetPrice) /
-                        2
-                      ).toFixed(2)
-                    ),
-                    decision: "COUNTER",
-                    reasoning:
-                      "Offering midpoint concession bundled with expedited shipping perk.",
-                  },
-                  {
-                    id: "msg_3",
-                    sender: "buyer",
-                    timestamp: new Date().toISOString(),
-                    content: `That is acceptable! The buyer accepts $${(
-                      (selectedProduct.originalPrice + buyerConstraints.targetPrice) /
-                      2
-                    ).toFixed(2)} with express delivery included.`,
-                    proposedPrice: Number(
-                      (
-                        (selectedProduct.originalPrice + buyerConstraints.targetPrice) /
-                        2
-                      ).toFixed(2)
-                    ),
-                    decision: "ACCEPT",
-                    reasoning: "Counter-offer is well within user budget and includes upgraded shipping.",
-                  },
-                ]
-              : []
-          }
+          messages={session?.messages || []}
+          agreement={agreement}
+          isNegotiating={isNegotiating}
+          activeStatusText={statusStepText}
         />
       </div>
 
-      {negotiationStep === "agreed" && (
-        <div className="flex justify-end pt-4">
-          <Link href="/agreement">
-            <Button size="lg" className="gap-2 shadow-lg shadow-emerald-500/20">
-              <span>Review Agreement & Approve</span>
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-          </Link>
+      {agreement && agreement.status === "AGREED" && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-2xl bg-emerald-950/30 border border-emerald-500/40">
+          <div>
+            <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider block">
+              Negotiation Successful
+            </span>
+            <p className="text-sm text-slate-200 mt-0.5">
+              Agreed final price:{" "}
+              <strong className="text-white font-extrabold text-base">
+                {formatCurrency(agreement.finalPrice, agreement.currency)}
+              </strong>{" "}
+              (Saved {formatCurrency(agreement.savings, agreement.currency)})
+            </p>
+          </div>
+
+          <Button
+            size="lg"
+            onClick={() => router.push(`/agreement?id=${session?.id}`)}
+            className="w-full sm:w-auto gap-2 shadow-xl shadow-emerald-500/25 px-8 font-bold text-base"
+          >
+            <span>Review Agreement & Authorize Payment</span>
+            <ArrowRight className="w-5 h-5" />
+          </Button>
         </div>
       )}
     </div>
   );
 }
+
+export default function NegotiatePage() {
+  return (
+    <Suspense fallback={<div className="text-center py-16 text-slate-400">Loading negotiation room...</div>}>
+      <NegotiateContent />
+    </Suspense>
+  );
+}
+
