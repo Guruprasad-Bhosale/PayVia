@@ -9,10 +9,14 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "npx tsx scripts/test-runner.ts",
+    "test:elastic": "node scripts/test-elastic.mjs",
     "check:secrets": "node scripts/check-secrets.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.92",
+    "@bryntum/scheduler": "npm:@bryntum/scheduler-trial@^7.3.7",
+    "@bryntum/scheduler-trial": "^7.3.7",
+    "@elastic/elasticsearch": "^9.5.1",
     "@paypal/agent-toolkit": "^1.11.0",
     "ag-grid-community": "^36.2.0",
     "ag-grid-react": "^36.2.0",

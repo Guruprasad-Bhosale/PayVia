@@ -53,6 +53,18 @@ export default function RootLayout({
               >
                 <span>Merchant Center</span>
               </Link>
+              <Link
+                href="/fulfillment"
+                className="hover:text-cyan-400 text-cyan-300/90 font-medium transition-colors flex items-center gap-1"
+              >
+                <span>Fulfillment</span>
+              </Link>
+              <Link
+                href="/memory"
+                className="hover:text-pink-400 text-pink-300/90 font-medium transition-colors flex items-center gap-1"
+              >
+                <span>AI Memory</span>
+              </Link>
               <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>PayPal Sandbox</span>

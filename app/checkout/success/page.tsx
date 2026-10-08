@@ -153,6 +153,35 @@ function SuccessContent() {
           </div>
         </div>
 
+        {/* Fulfillment Scheduled Banner */}
+        <div className="p-4 rounded-xl bg-gradient-to-r from-blue-950/60 via-indigo-950/50 to-slate-950/80 border border-blue-500/40 text-left space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-blue-300 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <span>AI FULFILLMENT SCHEDULED</span>
+            </span>
+            <Badge variant="info" className="text-[10px] py-0.5 px-2">
+              ● ON TRACK ({deliveryDays}d commitment)
+            </Badge>
+          </div>
+          <p className="text-xs text-slate-300">
+            Fulfillment Agent has generated an operational schedule respecting your negotiated <strong>{deliveryDays}-day delivery commitment</strong> using Bryntum Scheduler.
+          </p>
+          <Link
+            href={`/fulfillment?negotiationId=${encodeURIComponent(
+              agreement?.negotiationId || agreement?.id || agreementId || ""
+            )}`}
+            className="block"
+          >
+            <Button
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white gap-2 font-semibold shadow-md shadow-blue-500/25"
+            >
+              <span>View Fulfillment Plan in Bryntum Command Center</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
+
         <div className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 text-xs text-slate-400 flex items-start gap-2.5 text-left">
           <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
           <span>
@@ -162,13 +191,13 @@ function SuccessContent() {
 
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/negotiate" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto gap-2 shadow-lg shadow-blue-500/20">
+            <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2">
               <ShoppingBag className="w-4 h-4" />
               <span>Start New Negotiation</span>
             </Button>
           </Link>
           <Link href="/" className="w-full sm:w-auto">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto gap-2">
+            <Button variant="ghost" size="lg" className="w-full sm:w-auto gap-2 text-slate-400 hover:text-white">
               <span>Return Home</span>
               <ArrowRight className="w-4 h-4" />
             </Button>

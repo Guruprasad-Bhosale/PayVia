@@ -42,6 +42,8 @@ export const env = {
   googleGenerativeAiApiKey:
     process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? "",
   channel3ApiKey: process.env.CHANNEL3_API_KEY ?? "",
+  elasticsearchUrl: process.env.ELASTICSEARCH_URL ?? "",
+  elasticsearchApiKey: process.env.ELASTICSEARCH_API_KEY ?? "",
   appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
 };
 
@@ -55,6 +57,10 @@ export function isAIConfigured(): boolean {
 
 export function isChannel3Configured(): boolean {
   return Boolean(env.channel3ApiKey);
+}
+
+export function isElasticConfigured(): boolean {
+  return Boolean(env.elasticsearchUrl && env.elasticsearchApiKey);
 }
 
 export function assertServerEnv(options: { requireMerchantEmail?: boolean } = {}) {

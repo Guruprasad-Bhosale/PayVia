@@ -161,6 +161,13 @@ export async function runNegotiation(
   // Persist session and agreement to server store for anti-tampering verification
   saveNegotiationSession(session);
 
+  // Asynchronously index negotiation memory into Elasticsearch Serverless
+  import("@/lib/elastic/indexer")
+    .then(({ indexNegotiationSession }) => {
+      indexNegotiationSession(session).catch(() => {});
+    })
+    .catch(() => {});
+
   return session;
 }
 

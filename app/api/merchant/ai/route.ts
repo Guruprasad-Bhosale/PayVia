@@ -79,6 +79,19 @@ export async function POST(req: NextRequest) {
       2
     );
 
+    // Retrieve relevant merchant historical memories from Elasticsearch Serverless
+    let merchantMemoryBlock = "";
+    try {
+      const { getMerchantHistoricalInsights } = await import("@/lib/memory/merchant-memory");
+      const { buildPromptMemoryBlock } = await import("@/lib/memory/memory-context");
+      const merchantMem = await getMerchantHistoricalInsights(trimmedQuery, 4);
+      if (merchantMem.memories.length > 0) {
+        merchantMemoryBlock = buildPromptMemoryBlock(merchantMem.memories, "ELASTICSEARCH HISTORICAL MERCHANT PATTERNS");
+      }
+    } catch {
+      // Non-critical fallback
+    }
+
     const systemPrompt = `You are "PayVia Merchant Intelligence Analyst", an AI commerce analyst embedded in the PayVia Merchant Command Center (powered by AG Grid and AG Studio).
 
 Your job is to analyze real negotiation, transaction, and savings data from PayVia.
@@ -90,7 +103,9 @@ CRITICAL RULES:
 5. If the user asks for a chart or visualization, suggest the most appropriate chart type (e.g. 'bar', 'pie', 'line', 'kpi', or 'table') and provide a clean chart title.
 
 CURRENT MERCHANT ANALYTICS CONTEXT:
-${contextSummary}`;
+${contextSummary}
+
+${merchantMemoryBlock}`;
 
     let answer = "";
     let suggestedChartType: "bar" | "pie" | "line" | "kpi" | "table" = "table";

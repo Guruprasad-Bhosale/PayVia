@@ -5,6 +5,8 @@ import { Product } from "@/types/product";
 import { BUYER_AGENT_SYSTEM_PROMPT } from "./prompts";
 import { generateId } from "@/lib/utils";
 import { env } from "@/lib/config/env";
+import { getBuyerContextForNegotiation } from "@/lib/memory/buyer-memory";
+import { buildPromptMemoryBlock } from "@/lib/memory/memory-context";
 
 export async function evaluateBuyerTurn(params: {
   product: Product;
@@ -19,6 +21,12 @@ export async function evaluateBuyerTurn(params: {
 
   if (env.googleGenerativeAiApiKey) {
     try {
+      // 1. Query Elasticsearch Serverless Memory Layer
+      const buyerMemory = await getBuyerContextForNegotiation(product, constraints);
+      const memoryBlock = buyerMemory.hasMemory
+        ? buildPromptMemoryBlock(buyerMemory.memories, "BUYER HISTORICAL MEMORY")
+        : "";
+
       const historyContext = history
         .map(
           (m) =>
@@ -37,6 +45,8 @@ Buyer Constraints:
 - Ideal Target Price: $${constraints.targetPrice.toFixed(2)}
 - Maximum Acceptable Delivery Time: ${constraints.maxDeliveryDays} days
 ${constraints.notes ? `- Special Instructions: ${constraints.notes}` : ""}
+
+${memoryBlock}
 
 Negotiation State:
 - Current Round: ${round} of 5

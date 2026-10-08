@@ -88,31 +88,90 @@ PayPal Sandbox Payment
 
 ---
 
-## 🧠 AI Architecture
+## 🧠 Multi-Sponsor Agentic Architecture
 
-PayVia uses Google Gemini models to power the negotiation agents.
+PayVia brings together state-of-the-art AI, vector retrieval, real product discovery, merchant analytics, and project scheduling:
 
 ```text
-                  Gemini
-                    │
-          ┌─────────┴─────────┐
-          │                   │
-     Buyer Agent         Merchant Agent
-          │                   │
-          └─────────┬─────────┘
-                    │
-             Negotiation Engine
-                    │
-             Final Agreement
+                  Elasticsearch Serverless
+                  (Vector & Hybrid Memory)
+                             │
+                             ▼
+                    PayVia Memory Layer
+                    /                 \
+             Buyer Memory         Merchant Memory
+                    \                 /
+                     Semantic Retrieval
+                             │
+                             ▼
+User ➔ Product Discovery (Channel3)
+  │
+  ▼
+Buyer AI Agent (Gemini 3.8 Flash + Elastic Memory)
+  │
+  │ Multi-turn Consensus
+  ▼
+Negotiation Engine ↔ Merchant AI Agent (Gemini 3.8 Flash + Historical Memory)
+  │
+  ▼
+Final Agreement (Server-side Verified)
+  │
+  ▼
+Explicit User Approval
+  │
+  ▼
+PayPal Orders v2 Sandbox Settlement ➔ Verified Capture Receipt
+  │
+  ▼
+Fulfillment Scheduling Engine (Bryntum Gantt + Fulfillment Memory Logs)
+  │
+  ▼
+Merchant Command Center (AG Grid Community + AG Studio)
 ```
 
-The AI is responsible for reasoning about offers and producing structured negotiation decisions.
-The application backend remains responsible for enforcing hard constraints:
-- `finalPrice <= buyerMaximum`
-- `finalPrice >= merchantMinimum`
-- `deliveryDays <= buyerMaximumDeliveryDays`
+---
 
-The AI cannot override these application-level constraints.
+## ⚡ Elasticsearch Serverless AI Memory Layer
+
+PayVia utilizes **Elasticsearch Serverless Vector Database** as an intelligent semantic memory and historical recall layer for autonomous commerce agents.
+
+```text
+PayVia Transaction / Settlement
+              │
+              ▼
+    Memory Indexer (Idempotent)
+              │
+              ▼
+ Elasticsearch Serverless (payvia-memory)
+              │
+              ▼
+ Semantic / Hybrid Search & Retrieval
+              │
+              ▼
+ Gemini Buyer / Merchant / Fulfillment Agents
+```
+
+### Key Principles & Invariants:
+1. **Elasticsearch is NOT the financial source of truth**:
+   - **PayPal Orders v2** remains the authoritative payment settlement authority.
+   - **PayVia Server-Side Store** remains authoritative for binding agreement terms and merchant floor prices.
+2. **Untrusted Data Boundary & Prompt Injection Defense**:
+   - Memories are treated strictly as reference data and are fenced inside explicit untrusted data envelopes.
+   - Memory documents cannot override system rules, modify pricing floors, or initiate payments.
+3. **Non-Blocking Graceful Fallback**:
+   - Indexing operations are asynchronous and non-blocking.
+   - If Elasticsearch is unavailable or unconfigured, PayVia continues functioning seamlessly with in-memory fallback.
+4. **Idempotent Document Storage**:
+   - Deterministic document keys (`mem_neg_<id>`, `mem_purchase_<orderId>`, `mem_ful_<id>`) prevent duplicate memory creation across re-renders.
+5. **Zero Credentials in Browser**:
+   - Elasticsearch credentials are server-only and never exposed via public APIs or client bundles.
+
+### Memory Types:
+- `negotiation`: Historical buyer counter-offers, concessions, and savings.
+- `purchase`: Verified PayPal sandbox settlement transactions.
+- `merchant_pattern`: Category-level discount frequencies and margin insights.
+- `fulfillment`: Handover durations, carrier linehaul records, and slack buffers.
+- `product`: Channel3 normalized semantic product discovery embeddings.
 
 ---
 
@@ -160,77 +219,17 @@ Payment Confirmation & Verified Receipt
 
 *Note: PayVia uses USD for sandbox demonstration transactions. No real funds are moved.*
 
-
 ---
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: Next.js (App Router), React, TypeScript, Tailwind CSS, Lucide React
-- **Backend**: Next.js API Routes (Server Components / Handlers), TypeScript, Zod
 - **AI Engine**: Google Gemini (`@ai-sdk/google`, Vercel AI SDK)
+- **Vector AI Memory**: Elasticsearch Serverless Vector Database (`@elastic/elasticsearch`)
+- **Product Discovery**: Channel3 Product Data API
 - **Payments**: PayPal REST API (Orders v2), PayPal Sandbox
-
----
-
-## 📁 Project Structure
-
-```text
-PayVia/
-├── app/
-│   ├── page.tsx                    # Landing Page & overview
-│   ├── layout.tsx                  # Root layout & navbar
-│   ├── globals.css                 # Styling & design system
-│   ├── negotiate/page.tsx          # Agent negotiation interface
-│   ├── agreement/page.tsx          # Terms review & approval screen
-│   ├── checkout/
-│   │   ├── page.tsx                # PayPal checkout screen
-│   │   └── success/page.tsx        # Verified payment confirmation receipt
-│   └── api/
-│       ├── ai/test/route.ts        # Gemini connection test route
-│       ├── health/route.ts         # Service & environment health
-│       ├── negotiate/route.ts      # Agent negotiation endpoint
-│       └── paypal/
-│           ├── test/route.ts       # PayPal OAuth2 connection test route
-│           ├── create-order/route.ts # Server-side PayPal order creation
-│           ├── capture-order/route.ts# Server-side PayPal capture & return handler
-│           └── cancel/route.ts     # PayPal checkout cancellation handler
-├── components/
-│   ├── ui/                         # Reusable UI primitives (Button, Card, Badge, Input)
-│   ├── ProductCard.tsx             # Product display
-│   ├── BuyerAgentPanel.tsx         # Buyer Agent configuration
-│   ├── MerchantAgentPanel.tsx      # Merchant Agent floor policy
-│   ├── NegotiationTimeline.tsx     # Turn-by-turn dialogue stream
-│   ├── AgreementCard.tsx           # Finalized terms card
-│   └── PayPalCheckout.tsx          # PayPal Sandbox payment launcher
-├── lib/
-│   ├── ai/
-│   │   ├── buyer-agent.ts          # Buyer Agent logic
-│   │   ├── merchant-agent.ts       # Merchant Agent policy
-│   │   ├── negotiation-engine.ts   # Multi-turn negotiation orchestrator
-│   │   ├── prompts.ts              # Agent system instructions
-│   │   └── gemini-test.ts          # Gemini verification helper
-│   ├── paypal/
-│   │   ├── auth.ts                 # Server-side OAuth2 token manager
-│   │   ├── client.ts               # Authenticated PayPal REST client
-│   │   ├── orders.ts               # PayPal Orders v2 integration
-│   │   └── types.ts                # TypeScript definitions for PayPal API
-│   ├── config/
-│   │   └── env.ts                  # Server environment loader & secret assertions
-│   ├── validation/
-│   │   ├── negotiation.ts          # Zod negotiation schemas
-│   │   └── payment.ts              # Zod payment schemas
-│   └── utils/
-│       └── index.ts                # Utilities & formatters
-├── types/                          # Shared TypeScript definitions
-├── data/                           # Mock product catalog & store policies
-├── docs/                           # Architecture & Security documentation
-├── scripts/
-│   └── check-secrets.mjs           # Automated secret safety check
-├── secrets.txt                     # Local-only development secrets (GITIGNORED)
-├── secrets.example.txt             # Safe template for version control
-├── .env.example                    # Safe environment template
-└── .gitignore                      # Git ignore rules
-```
+- **Merchant Analytics**: AG Grid Community (`ag-grid-react`) & AG Studio (`ag-studio-react`)
+- **Fulfillment Planning**: Bryntum Scheduler / Gantt (`@bryntum/scheduler-trial`)
 
 ---
 
@@ -250,20 +249,27 @@ PAYPAL_CLIENT_SECRET=your_paypal_client_secret
 GOOGLE_GENERATIVE_AI_API_KEY=your_google_generative_ai_api_key
 PAYPAL_MERCHANT_EMAIL=your_paypal_business_sandbox_email
 CHANNEL3_API_KEY=your_channel3_api_key_here
+ELASTICSEARCH_URL=https://your-serverless-endpoint.es.io:443
+ELASTICSEARCH_API_KEY=your_elasticsearch_api_key
 ```
 
 ### Important Security Rules:
 1. **Never commit `secrets.txt`**: It is strictly ignored in `.gitignore`.
-2. **Never expose PayPal Client Secret**: Kept exclusively within server-side API routes.
+2. **Never expose PayPal Client Secret or Elasticsearch API keys**: Kept exclusively within server-side API routes.
 3. **Never expose Gemini API keys to client JavaScript**.
 4. **Never use `NEXT_PUBLIC_` for private credentials**.
 5. **Keep payment operations server-side**: Order creation and capture are performed server-side with zero trust.
 6. **Explicit user authorization**: The user must explicitly approve negotiated terms before any payment is initiated.
-7. **Rotate exposed credentials**: If sandbox credentials or API keys were previously visible in logs or screenshots, rotate them immediately in the PayPal Developer Dashboard and Google AI Studio.
+7. **Rotate exposed credentials**: If sandbox credentials or API keys were previously visible in logs or screenshots, rotate them immediately in the PayPal Developer Dashboard, Google AI Studio, and Elastic Cloud.
 
 Run the security safety scanner at any time:
 ```bash
 npm run check:secrets
+```
+
+Run the Elasticsearch live vector probe:
+```bash
+npm run test:elastic
 ```
 
 ---

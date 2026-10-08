@@ -76,6 +76,10 @@ function scanDirectory(dir) {
         console.error(`❌ CRITICAL: NEXT_PUBLIC_CHANNEL3_API_KEY detected in ${fullPath}!`);
         errorsFound++;
       }
+      if (content.includes("NEXT_PUBLIC_ELASTICSEARCH_API_KEY") || content.includes("NEXT_PUBLIC_ELASTIC_API_KEY")) {
+        console.error(`❌ CRITICAL: Client-exposed Elasticsearch API Key detected in ${fullPath}!`);
+        errorsFound++;
+      }
     }
   }
 }

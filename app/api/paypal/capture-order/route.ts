@@ -46,6 +46,18 @@ export async function GET(req: NextRequest) {
       captureResult.id;
 
     if (captureResult.status === "COMPLETED") {
+      // Asynchronously index purchase memory into Elasticsearch Serverless
+      if (agreementId) {
+        import("@/lib/ai/negotiation-store").then(({ getNegotiationAgreement }) => {
+          const ag = getNegotiationAgreement(agreementId);
+          if (ag) {
+            import("@/lib/elastic/indexer").then(({ indexPaymentSettlement }) => {
+              indexPaymentSettlement(ag, token, captureId).catch(() => {});
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+      }
+
       return NextResponse.redirect(
         `${baseUrl}/checkout/success?orderId=${token}&captureId=${captureId}&status=COMPLETED${agreementQuery}`
       );
