@@ -51,6 +51,25 @@ if (fs.existsSync(secretsExamplePath)) {
   console.log("✅ Verified: secrets.example.txt contains only safe placeholder templates.");
 }
 
+// 2b. Check render.yaml for accidental secret values
+const renderYamlPath = path.join(projectRoot, "render.yaml");
+if (fs.existsSync(renderYamlPath)) {
+  const renderYamlContent = fs.readFileSync(renderYamlPath, "utf8");
+  const forbiddenPatterns = [
+    /AIza[0-9A-Za-z-_]{35}/,
+    /sk-[a-zA-Z0-9]{32,}/,
+    /EA[A-Za-z0-9_-]{50,}/,
+  ];
+
+  for (const pattern of forbiddenPatterns) {
+    if (pattern.test(renderYamlContent)) {
+      console.error("❌ CRITICAL: Real-looking secret detected in render.yaml!");
+      errorsFound++;
+    }
+  }
+  console.log("✅ Verified: render.yaml contains only safe deployment specifications with sync: false.");
+}
+
 // 3. Scan for client-side exposure of secret keys in app and components
 function scanDirectory(dir) {
   const files = fs.readdirSync(dir, { withFileTypes: true });

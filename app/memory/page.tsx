@@ -118,10 +118,10 @@ export default function MemoryExplorerPage() {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                <span>PAYVIA AI MEMORY EXPLORER</span>
+                <span>PAYVIA MEMORY</span>
               </h1>
-              <p className="text-xs text-slate-400">
-                Persistent Cross-Session Commerce Recall & Semantic Vector Intelligence
+              <p className="text-xs text-slate-300">
+                Product Intelligence for Autonomous Commerce · Preferences, Negotiation Patterns &amp; Outcome History
               </p>
             </div>
           </div>
@@ -132,12 +132,12 @@ export default function MemoryExplorerPage() {
           {status?.connected ? (
             <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Elasticsearch Serverless Connected</span>
+              <span>Vector Memory Active</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-xs text-blue-300 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/30">
               <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-              <span>Resilient Local Memory Active</span>
+              <span>Memory Engine Ready</span>
             </div>
           )}
 

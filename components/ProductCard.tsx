@@ -4,7 +4,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { ShieldCheck, Truck, Zap, Check, ArrowRight, ExternalLink } from "lucide-react";
+import { ShieldCheck, Truck, Zap, Check, ArrowRight, ExternalLink, Sparkles } from "lucide-react";
 
 interface ProductCardProps {
   product: Product;
@@ -19,9 +19,9 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
   return (
     <Card
       onClick={onSelect}
-      className={`transition-all duration-300 cursor-pointer border flex flex-col justify-between overflow-hidden ${
+      className={`transition-all duration-300 cursor-pointer border flex flex-col justify-between overflow-hidden group ${
         selected
-          ? "border-blue-500 bg-slate-900 shadow-2xl shadow-blue-500/15 ring-2 ring-blue-500/40"
+          ? "border-blue-500 bg-slate-900 shadow-2xl shadow-blue-500/20 ring-2 ring-blue-500/40"
           : "hover:border-slate-700 bg-slate-900/60"
       }`}
     >
@@ -33,24 +33,24 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
+              className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
             />
-            <div className="absolute top-2 left-2">
-              {isChannel3 ? (
+            <div className="absolute top-2 left-2 flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/60 backdrop-blur-sm shadow-sm">
+                <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+                <span>AI Negotiable</span>
+              </span>
+              {isChannel3 && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-950/90 text-blue-300 border border-blue-700/60 backdrop-blur-sm shadow-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                  <span>Channel3 Live</span>
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-900/90 text-slate-300 border border-slate-700/80 backdrop-blur-sm">
-                  <span>Demo Catalog</span>
+                  <span>Channel3</span>
                 </span>
               )}
             </div>
             {product.availability && (
               <div className="absolute top-2 right-2">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-950/90 text-emerald-300 border border-emerald-800/60 backdrop-blur-sm">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-900/90 text-slate-300 border border-slate-700/60 backdrop-blur-sm">
                   {product.availability}
                 </span>
               </div>
@@ -63,8 +63,12 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             <div className="space-y-1.5">
               {!product.imageUrl && (
                 <div className="flex items-center gap-1.5 mb-1">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/60 shadow-sm">
+                    <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+                    <span>AI Negotiable</span>
+                  </span>
                   <Badge variant={isChannel3 ? "info" : "purple"}>
-                    {isChannel3 ? "● Channel3 Discovery" : product.category}
+                    {isChannel3 ? "Channel3 Discovery" : product.category}
                   </Badge>
                 </div>
               )}
@@ -72,7 +76,7 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
                 {product.name}
               </CardTitle>
               <CardDescription className="text-xs text-slate-400 line-clamp-1">
-                {product.tagline || product.merchantName || "Verified Listing"}
+                {product.tagline || product.merchantName || "Verified Commerce Listing"}
               </CardDescription>
             </div>
 
@@ -131,7 +135,7 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             </>
           ) : (
             <>
-              <span>Negotiate this deal</span>
+              <span>Negotiate with merchant</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </>
           )}
@@ -153,3 +157,4 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
     </Card>
   );
 }
+

@@ -1,0 +1,439 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlatformStatus {
+  ACTIVE
+  SUSPENDED
+  DEVELOPMENT
+}
+
+enum MerchantStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_VERIFICATION
+}
+
+enum BuyerStatus {
+  ACTIVE
+  BLOCKED
+}
+
+enum AgentType {
+  BUYER
+  MERCHANT
+  PLATFORM
+}
+
+enum AgentProvider {
+  GEMINI_3_8_FLASH
+  DETERMINISTIC_RULES
+  CUSTOM
+}
+
+enum PaymentTiming {
+  IMMEDIATE
+  NET_15
+  NET_30
+  ESCROW_DELIVERY
+}
+
+enum TransactionStatus {
+  INTENT_CREATED
+  NEGOTIATING
+  AGREED
+  SETTLED
+  FULFILLMENT_SCHEDULED
+  FULFILLED
+  CANCELLED
+  FAILED
+}
+
+enum NegotiationStatus {
+  DRAFT
+  OPEN
+  BUYER_PROPOSED
+  MERCHANT_PROPOSED
+  COUNTERED
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  SUPERSEDED
+}
+
+enum AgreementStatus {
+  DRAFT
+  ACCEPTED
+  USER_APPROVED
+  SETTLED
+  CANCELLED
+}
+
+enum SettlementStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum SettlementProviderType {
+  PAYPAL_ORDERS_V2
+  MOCK_SANDBOX
+}
+
+enum AuditActorType {
+  BUYER
+  MERCHANT
+  SYSTEM
+  AGENT
+  PLATFORM
+}
+
+enum AuditEventType {
+  TRANSACTION_CREATED
+  NEGOTIATION_STARTED
+  PROPOSAL_SUBMITTED
+  PROPOSAL_COUNTERED
+  PROPOSAL_ACCEPTED
+  PROPOSAL_REJECTED
+  POLICY_VIOLATION_BLOCKED
+  AGREEMENT_CREATED
+  AGREEMENT_ACCEPTED
+  AGREEMENT_LOCKED
+  SETTLEMENT_REQUESTED
+  SETTLEMENT_CAPTURED
+  SETTLEMENT_FAILED
+  FULFILLMENT_SCHEDULED
+  FULFILLMENT_UPDATED
+}
+
+model Platform {
+  id           String         @id
+  name         String
+  status       PlatformStatus @default(ACTIVE)
+  apiKeyHash   String?
+  webhookUrl   String?
+  metadata     Json?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  merchants    Merchant[]
+  buyers       Buyer[]
+  agents       Agent[]
+  catalogItems CatalogItem[]
+  transactions Transaction[]
+  auditEvents  AuditEvent[]
+
+  @@map("platforms")
+}
+
+model Merchant {
+  id              String         @id
+  platformId      String
+  name            String
+  email           String
+  settlementEmail String?
+  status          MerchantStatus @default(ACTIVE)
+  metadata        Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  platform        Platform       @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  catalogItems    CatalogItem[]
+  transactions    Transaction[]
+  policies        MerchantPolicy[]
+
+  @@index([platformId])
+  @@map("merchants")
+}
+
+model Buyer {
+  id         String      @id
+  platformId String
+  name       String
+  email      String
+  status     BuyerStatus @default(ACTIVE)
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  platform   Platform    @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  policies   BuyerPolicy[]
+
+  @@index([platformId])
+  @@map("buyers")
+}
+
+model Agent {
+  id            String        @id
+  platformId    String
+  type          AgentType
+  ownerType     String
+  ownerId       String
+  name          String
+  status        String        @default("ACTIVE")
+  capabilities  String[]
+  policyVersion Int           @default(1)
+  provider      AgentProvider @default(GEMINI_3_8_FLASH)
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  platform      Platform      @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  @@index([platformId, ownerId])
+  @@map("agents")
+}
+
+model CatalogItem {
+  id          String   @id
+  platformId  String
+  merchantId  String
+  sku         String?
+  title       String
+  description String?
+  category    String?
+  listPrice   Float
+  currency    String   @default("USD")
+  stockStatus String   @default("IN_STOCK")
+  source      String   @default("internal")
+  imageUrl    String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  platform    Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([platformId, merchantId])
+  @@map("catalog_items")
+}
+
+model Transaction {
+  id                   String            @id
+  platformId           String
+  merchantId           String
+  buyerId              String
+  status               TransactionStatus @default(INTENT_CREATED)
+  currency             String            @default("USD")
+  originalTotal        Float
+  finalTotal           Float?
+  savingsTotal         Float?
+  intent               Json
+  activeNegotiationId  String?
+  activeAgreementId    String?
+  activeSettlementId   String?
+  metadata             Json?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  platform             Platform          @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  merchant             Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  buyer                Buyer             @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  negotiations         NegotiationSession[]
+  agreements           Agreement[]
+  settlements          Settlement[]
+  auditEvents          AuditEvent[]
+
+  @@index([platformId, merchantId, buyerId])
+  @@map("transactions")
+}
+
+model MerchantPolicy {
+  id                       String        @id
+  platformId               String
+  merchantId               String
+  catalogItemId            String?
+  enabled                  Boolean       @default(true)
+  currency                 String        @default("USD")
+  listPrice                Float
+  minimumPrice             Float         // Private floor
+  minimumDeliveryDays      Int           @default(1)
+  maximumDeliveryDays      Int           @default(14)
+  immediateDiscountPercent Float?
+  allowedPaymentTiming     String[]      @default(["IMMEDIATE"])
+  strategy                 String        @default("BALANCED_ECONOMIC")
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  merchant                 Merchant      @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId, catalogItemId])
+  @@map("merchant_policies")
+}
+
+model BuyerPolicy {
+  id                    String        @id
+  platformId            String
+  buyerId               String
+  currency              String        @default("USD")
+  maxBudget             Float         // Private ceiling
+  maxDeliveryDays       Int           @default(7)
+  targetDiscountPercent Float?
+  preferredPaymentTiming PaymentTiming?
+  priority              String        @default("BALANCED")
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  buyer                 Buyer         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+
+  @@index([buyerId])
+  @@map("buyer_policies")
+}
+
+model NegotiationSession {
+  id            String            @id
+  transactionId String
+  platformId    String
+  merchantId    String
+  buyerId       String
+  status        NegotiationStatus @default(DRAFT)
+  currency      String            @default("USD")
+  roundsCount   Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  expiresAt     DateTime?
+
+  transaction   Transaction       @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  proposals     Proposal[]
+  agreements    Agreement[]
+
+  @@index([transactionId])
+  @@map("negotiation_sessions")
+}
+
+model Proposal {
+  id            String         @id
+  negotiationId String
+  turnNumber    Int
+  senderType    String
+  senderAgentId String?
+  price         Float
+  currency      String         @default("USD")
+  deliveryDays  Int
+  paymentTiming PaymentTiming  @default(IMMEDIATE)
+  savings       Float          @default(0)
+  status        ProposalStatus @default(PENDING)
+  reasoningText String?
+  createdAt     DateTime       @default(now())
+
+  negotiation   NegotiationSession @relation(fields: [negotiationId], references: [id], onDelete: Cascade)
+
+  @@index([negotiationId])
+  @@map("proposals")
+}
+
+model Agreement {
+  id             String          @id
+  transactionId  String
+  negotiationId  String
+  platformId     String
+  merchantId     String
+  buyerId        String
+  currency       String          @default("USD")
+  items          Json
+  originalPrice  Float
+  finalPrice     Float
+  savings        Float
+  deliveryDays   Int
+  paymentTiming  PaymentTiming   @default(IMMEDIATE)
+  status         AgreementStatus @default(DRAFT)
+  agreementHash  String          // Cryptographic SHA-256 seal
+  createdAt      DateTime        @default(now())
+  acceptedAt     DateTime?
+  userApprovedAt DateTime?
+  settledAt      DateTime?
+  expiresAt      DateTime?
+
+  transaction    Transaction     @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  negotiation    NegotiationSession @relation(fields: [negotiationId], references: [id], onDelete: Cascade)
+  settlements    Settlement[]
+
+  @@index([transactionId, negotiationId])
+  @@map("agreements")
+}
+
+model Settlement {
+  id               String                 @id
+  agreementId      String
+  transactionId    String
+  platformId       String
+  provider         SettlementProviderType @default(PAYPAL_ORDERS_V2)
+  status           SettlementStatus       @default(PENDING)
+  amount           Float
+  currency         String                 @default("USD")
+  externalOrderId  String?
+  externalCaptureId String?
+  payerEmail       String?
+  payeeEmail       String?
+  receiptUrl       String?
+  metadata         Json?
+  createdAt        DateTime               @default(now())
+  capturedAt       DateTime?
+
+  agreement        Agreement              @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  transaction      Transaction            @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([agreementId, transactionId])
+  @@map("settlements")
+}
+
+model AuditEvent {
+  id            String         @id
+  platformId    String
+  transactionId String
+  actorType     AuditActorType
+  actorId       String
+  eventType     AuditEventType
+  metadata      Json?
+  timestamp     DateTime       @default(now())
+
+  platform      Platform       @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  transaction   Transaction    @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@index([platformId, transactionId])
+  @@map("audit_events")
+}
+
+model IdempotencyRecord {
+  key          String   @id
+  scope        String
+  requestHash  String
+  statusCode   Int
+  responseBody String
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@index([scope, requestHash])
+  @@map("idempotency_records")
+}
+
+model WebhookEvent {
+  id              String    @id
+  provider        String
+  eventId         String
+  eventType       String
+  payload         Json
+  signatureStatus String    @default("VERIFIED")
+  processedAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@unique([provider, eventId])
+  @@map("webhook_events")
+}

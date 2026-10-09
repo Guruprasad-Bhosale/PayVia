@@ -1,81 +1,93 @@
-# Payvia Architecture Documentation
+# PayVia Architecture ⚡
 
-## 1. System Vision
-
-Payvia is an autonomous agent-to-agent negotiation and settlement layer built atop the PayPal REST API. It bridges buyer preferences with merchant sales policies via structured multi-turn agent conversations, culminating in an explicitly authorized, verifiable PayPal payment order.
+> **The Reusable AI Negotiation & Settlement Infrastructure Layer for Digital Commerce**
 
 ---
 
-## 2. Core Entities & Roles
+## 1. Executive Summary
 
+PayVia is not an ecommerce storefront. It is an **AI-driven negotiation and settlement protocol** designed to be embedded into any digital commerce platform, marketplace, procurement workflow, or AI shopping agent.
+
+### Core Premise:
+- **AI Negotiates**: Autonomous buyer and merchant agents dynamically negotiate economic terms (price, delivery window, payment timing).
+- **PayVia Validates**: Server-side deterministic policies enforce non-negotiable pricing floors, buyer budget ceilings, and immutability seals.
+- **PayPal Settles**: Once terms are approved, payment providers (PayPal Sandbox/Live) execute verified settlement matching the exact sealed agreement amount.
+
+```text
+External Commerce App / Marketplace
+                 │
+                 ▼
+     POST /api/v1/transactions
+                 │
+                 ▼
+       Transaction Intent
+                 │
+      ┌──────────┴──────────┐
+      ▼                     ▼
+Buyer AI Agent        Merchant AI Agent
+(Gemini 3.8 Flash)    (Gemini 3.8 Flash)
+      │                     │
+      └──────────┬──────────┘
+                 │ Multi-turn Structured Proposals
+                 ▼
+     Negotiation Engine & Policy Validator
+                 │
+                 ▼
+     Cryptographically Sealed Agreement
+                 │ (SHA-256 Hash Locked)
+                 ▼
+      Explicit Human Approval
+                 │
+                 ▼
+    Payment Provider (PayPal Orders v2)
+                 │
+                 ▼
+   Verified Settlement & Receipt
+                 │
+                 ▼
+   Fulfillment Engine (Bryntum Gantt)
 ```
-┌────────────────────────────────────────────────────────┐
-│                       End User                         │
-│   (Defines budget, items, timeline, payment bounds)    │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│                  Buyer AI Agent                        │
-│ - Evaluates buyer utility                              │
-│ - Crafts initial offer & counter-proposals             │
-│ - Adheres strictly to ceiling budget & constraints     │
-└──────────────────────────┬─────────────────────────────┘
-                           │ (Bargaining Protocol)
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│                 Merchant AI Agent                      │
-│ - Defends merchant floor margin                        │
-│ - Evaluates bundle value, shipping, delivery tier      │
-│ - Formulates concessions or rejects non-viable bids    │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼ (Agreed Terms)
-┌────────────────────────────────────────────────────────┐
-│               Human-in-the-Loop Gate                   │
-│ - User explicitly reviews & approves final agreement   │
-└──────────────────────────┬─────────────────────────────┘
-                           │
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│               PayPal Settlement Engine                 │
-│ - Server-side Orders v2 Creation                       │
-│ - Client-side PayPal SDK Interaction                   │
-│ - Server-side Payment Capture & Audit Confirmation     │
-└────────────────────────────────────────────────────────┘
+
+---
+
+## 2. Multi-Tenant Domain Hierarchy
+
+```text
+Platform (plat_xxx)
+  ├── Merchants (merchant_xxx)
+  │     ├── Policies (pol_xxx) [Private Floors]
+  │     └── Catalog Items (prod_xxx)
+  ├── Buyers (buyer_xxx)
+  │     └── Policies (bpol_xxx) [Private Ceilings]
+  └── Transactions (txn_xxx)
+        ├── Negotiation Sessions (neg_xxx)
+        │     └── Proposals (prop_xxx)
+        ├── Agreements (agr_xxx) [SHA-256 Seal]
+        ├── Settlements (set_xxx) [PayPal Orders]
+        └── Audit Trail (audit_xxx) [Append-Only]
 ```
 
 ---
 
-## 3. Negotiation Protocol Specification
+## 3. Core Entities & Roles
 
-1. **Initiation**: The buyer provides a target item, budget range ($B_{min} \dots B_{max}$), delivery constraints, and priority weights.
-2. **Turn-Taking Protocol**:
-   - Round $t$: Buyer Agent generates structured proposal $P_t = (\text{price}, \text{delivery\_tier}, \text{addons})$.
-   - Merchant Agent evaluates $P_t$ against inventory floor $M_{min}$, margin goals, and acceptable perks.
-   - Merchant Agent responds with: `ACCEPT`, `REJECT`, or `COUNTER_OFFER(P'_{t})`.
-3. **Termination**:
-   - `AGREEMENT_REACHED`: Both parties converge on price $P^* \le B_{max}$ and $P^* \ge M_{min}$.
-   - `DEADLOCK`: Maximum rounds exceeded or bottom line breach; negotiation safely halts without charges.
-
----
-
-## 4. Payment Execution Pipeline
-
-- **Server-Side Order Creation (`/api/paypal/create-order`)**:
-  - Validates signed agreement token / payload.
-  - Contacts PayPal Orders v2 endpoint with negotiated amount and merchant breakdown.
-  - Returns `orderID` to frontend.
-- **Client-Side Authorisation (`components/PayPalCheckout.tsx`)**:
-  - Renders official PayPal Buttons targeting Sandbox environment.
-  - Captures approval from customer.
-- **Server-Side Capture (`/api/paypal/capture-order`)**:
-  - Securely calls `POST /v2/checkout/orders/{id}/capture` with server-side bearer token.
-  - Stores transaction record and issues completion receipt.
+| Entity | ID Prefix | Description | Authority |
+|---|---|---|---|
+| **Platform** | `plat_` | External commerce tenant integrating PayVia | Tenant Isolation |
+| **Merchant** | `merchant_` | Commercial seller holding private pricing floors | Merchant Policy |
+| **Buyer** | `buyer_` | Purchasing party holding private budget limits | Buyer Budget |
+| **Transaction** | `txn_` | Root commercial transaction holding initial intent | Transaction State |
+| **NegotiationSession**| `neg_` | Multi-turn proposal state machine | Policy Boundaries |
+| **Proposal** | `prop_` | Structured offer (`price`, `deliveryDays`, `paymentTiming`) | Candidate Term |
+| **Agreement** | `agr_` | Cryptographically sealed immutable contract | Financial Authority |
+| **Settlement** | `set_` | Payment transaction bound 1:1 to agreement | Payment Authority |
+| **AuditEvent** | `audit_` | Immutable append-only log of all operations | Compliance & Audit |
 
 ---
 
-## 5. Security & Boundary Enforcement
+## 4. Provider Boundaries & Pluggability
 
-- **Secrets Isolation**: No secret keys (`PAYPAL_CLIENT_SECRET`, `AI_API_KEY`) reside in client code or bundle.
-- **Zod Schema Verification**: All inbound negotiation and payment payloads are strictly validated before processing.
+PayVia utilizes clean provider abstractions:
+- **Settlement Providers** (`lib/providers/settlement`): `PayPalSettlementProvider`, `MockSettlementProvider`.
+- **Catalog Providers** (`lib/providers/catalog`): `Channel3CatalogProvider`, `DemoCatalogProvider`.
+- **Memory Providers** (`lib/providers/memory`): `ElasticMemoryProvider`, `InMemoryMemoryProvider`.

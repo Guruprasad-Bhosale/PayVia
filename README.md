@@ -312,11 +312,41 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Production Build
+## 🚀 Deploy to Render (Production Web Service)
 
-```bash
-npm run build
-```
+PayVia is configured for zero-friction deployment on **Render** as a persistent Node.js Web Service.
+
+### Quick Deploy via Render Dashboard:
+1. Push your repository to **GitHub**.
+2. Log in to [Render Dashboard](https://dashboard.render.com).
+3. Click **New +** → **Web Service**.
+4. Connect your `PayVia` GitHub repository.
+5. Configure the service settings:
+   - **Environment / Runtime**: `Node`
+   - **Node Version**: `20` (or `22`)
+   - **Build Command**: `npm ci && npm run build`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/api/health`
+6. Add the required Environment Variables in the Render Dashboard (**Environment** tab):
+
+| Variable | Required | Purpose / Context |
+|---|---|---|
+| `NODE_ENV` | Yes | Set to `production` |
+| `APP_URL` | Optional | Custom production domain or let Render auto-detect `RENDER_EXTERNAL_URL` |
+| `PAYPAL_CLIENT_ID` | Yes | PayPal Sandbox REST API Client ID |
+| `PAYPAL_CLIENT_SECRET` | Yes | PayPal Sandbox REST API Client Secret (Server-Only) |
+| `PAYPAL_MERCHANT_EMAIL` | Yes | PayPal Sandbox Business/Merchant Payee Email |
+| `PAYPAL_ENVIRONMENT` | Yes | `sandbox` |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes | Google Gemini API Key for Buyer/Merchant/Fulfillment Agents |
+| `CHANNEL3_API_KEY` | Optional | Channel3 live product discovery API key (falls back to catalog if absent) |
+| `ELASTICSEARCH_URL` | Optional | Elasticsearch Serverless endpoint (falls back gracefully if absent) |
+| `ELASTICSEARCH_API_KEY` | Optional | Elasticsearch Serverless API Key (Server-Only) |
+
+7. Click **Create Web Service** to launch.
+8. Once deployed, verify:
+   - `GET https://<your-service>.onrender.com/api/health` returns `200 OK`
+   - `GET https://<your-service>.onrender.com/api/memory/status` returns memory connectivity state
+   - Perform an end-to-end negotiation and PayPal Sandbox settlement from your live Render URL.
 
 ---
 

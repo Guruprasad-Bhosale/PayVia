@@ -34,6 +34,20 @@ function loadSecretsFile() {
 
 loadSecretsFile();
 
+function resolveAppUrl(): string {
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/$/, "");
+  }
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  }
+  if (process.env.RENDER_EXTERNAL_URL) {
+    const url = process.env.RENDER_EXTERNAL_URL.trim();
+    return url.startsWith("http") ? url.replace(/\/$/, "") : `https://${url.replace(/\/$/, "")}`;
+  }
+  return "http://localhost:3000";
+}
+
 export const env = {
   paypalClientId: process.env.PAYPAL_CLIENT_ID ?? "",
   paypalClientSecret: process.env.PAYPAL_CLIENT_SECRET ?? "",
@@ -44,7 +58,8 @@ export const env = {
   channel3ApiKey: process.env.CHANNEL3_API_KEY ?? "",
   elasticsearchUrl: process.env.ELASTICSEARCH_URL ?? "",
   elasticsearchApiKey: process.env.ELASTICSEARCH_API_KEY ?? "",
-  appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  databaseUrl: process.env.DATABASE_URL ?? "",
+  appUrl: resolveAppUrl(),
 };
 
 export function isPayPalConfigured(): boolean {
@@ -61,6 +76,10 @@ export function isChannel3Configured(): boolean {
 
 export function isElasticConfigured(): boolean {
   return Boolean(env.elasticsearchUrl && env.elasticsearchApiKey);
+}
+
+export function isDatabaseConfigured(): boolean {
+  return Boolean(env.databaseUrl);
 }
 
 export function assertServerEnv(options: { requireMerchantEmail?: boolean } = {}) {

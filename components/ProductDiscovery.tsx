@@ -15,7 +15,9 @@ import {
   AlertCircle,
   ShoppingBag,
   Layers,
+  Network,
 } from "lucide-react";
+import { ShoppingIntentExperience } from "./buyer/ShoppingIntentExperience";
 
 interface ProductDiscoveryProps {
   initialProducts?: Product[];
@@ -35,6 +37,7 @@ export function ProductDiscovery({
   onSelectProduct,
 }: ProductDiscoveryProps) {
   const router = useRouter();
+  const [mode, setMode] = useState<"network" | "browse">("network");
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchStep, setSearchStep] = useState<string>("");
@@ -103,155 +106,198 @@ export function ProductDiscovery({
 
   return (
     <div className="space-y-6">
-      {/* Search Input Bar */}
-      <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl backdrop-blur-md space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-white">AI Product Discovery</h2>
-              <p className="text-xs text-slate-400">
-                Powered by Channel3 Live Product Data API
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {source === "channel3" && (
-              <Badge variant="info" className="text-[11px] gap-1 py-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                <span>Channel3 Live</span>
-              </Badge>
-            )}
-            {source === "demo_fallback" && (
-              <Badge variant="default" className="text-[11px] text-slate-400">
-                PayVia Demo Catalog
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Input & Action Button */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSearch(query);
-          }}
-          className="flex flex-col sm:flex-row gap-3"
-        >
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <Input
-              type="text"
-              placeholder="What are you looking for? e.g. Laptop for software development under $800"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="pl-10 h-11 text-sm bg-slate-950/80 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
-              disabled={isSearching}
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isSearching || !query.trim()}
-            className="h-11 px-6 font-semibold gap-2 shadow-lg shadow-blue-500/20 text-sm"
+      {/* Mode Navigation Tabs */}
+      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMode("network")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              mode === "network"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
+                : "bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800"
+            }`}
           >
-            {isSearching ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Searching...</span>
-              </>
-            ) : (
-              <>
-                <Bot className="w-4 h-4" />
-                <span>Find Products</span>
-              </>
+            <Network className="w-3.5 h-3.5" />
+            <span>Multi-Merchant Buyer Network</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMode("browse")}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              mode === "browse"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
+                : "bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800"
+            }`}
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+            <span>Direct Catalog Browse</span>
+          </button>
+        </div>
+
+        <Badge variant="info" className="hidden sm:inline-flex text-[10px] gap-1">
+          <Sparkles className="w-3 h-3 text-blue-400" />
+          <span>AI Negotiates · PayPal Settles</span>
+        </Badge>
+      </div>
+
+      {mode === "network" ? (
+        <ShoppingIntentExperience />
+      ) : (
+        <div className="space-y-6">
+          {/* Search Input Bar */}
+          <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl backdrop-blur-md space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">Live Product Search</h2>
+                  <p className="text-xs text-slate-400">
+                    Powered by Channel3 Live Product Data API
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {source === "channel3" && (
+                  <Badge variant="info" className="text-[11px] gap-1 py-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                    <span>Channel3 Live</span>
+                  </Badge>
+                )}
+                {source === "demo_fallback" && (
+                  <Badge variant="default" className="text-[11px] text-slate-400">
+                    PayVia Demo Catalog
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Input & Action Button */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSearch(query);
+              }}
+              className="flex flex-col sm:flex-row gap-3"
+            >
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Input
+                  type="text"
+                  placeholder="What are you looking for? e.g. Laptop for software development under $800"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="pl-10 h-11 text-sm bg-slate-950/80 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
+                  disabled={isSearching}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSearching || !query.trim()}
+                className="h-11 px-6 font-semibold gap-2 shadow-lg shadow-blue-500/20 text-sm"
+              >
+                {isSearching ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Searching...</span>
+                  </>
+                ) : (
+                  <>
+                    <Bot className="w-4 h-4" />
+                    <span>Find Products</span>
+                  </>
+                )}
+              </Button>
+            </form>
+
+            {/* Quick Query Pill Suggestions */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-xs text-slate-500 font-medium">Try searching:</span>
+              {SAMPLE_QUERIES.map((item, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSearch(item)}
+                  disabled={isSearching}
+                  className="text-xs px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all disabled:opacity-50"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+
+            {/* Dynamic AI Shopping Agent Progress State */}
+            {isSearching && (
+              <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-800/50 flex items-center gap-2.5 text-xs text-blue-300 animate-pulse">
+                <Loader2 className="w-4 h-4 animate-spin flex-shrink-0 text-blue-400" />
+                <span className="font-mono">{searchStep}</span>
+              </div>
             )}
-          </Button>
-        </form>
 
-        {/* Quick Query Pill Suggestions */}
-        <div className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-xs text-slate-500 font-medium">Try searching:</span>
-          {SAMPLE_QUERIES.map((item, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => handleSearch(item)}
-              disabled={isSearching}
-              className="text-xs px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all disabled:opacity-50"
-            >
-              {item}
-            </button>
-          ))}
+            {infoMessage && !isSearching && (
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                <span>{infoMessage}</span>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Results Grid */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-blue-400" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                  {source === "channel3"
+                    ? `Live Channel3 Results (${products.length})`
+                    : `Available Products (${products.length})`}
+                </h3>
+              </div>
+              <span className="text-xs text-slate-400">
+                Select an item to initiate AI price negotiation
+              </span>
+            </div>
+
+            {products.length === 0 ? (
+              <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800 space-y-3">
+                <ShoppingBag className="w-8 h-8 text-slate-600 mx-auto" />
+                <p className="text-sm text-slate-400">No products found for your query.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSearch("laptop for software development")}
+                >
+                  <span>Try &quot;laptop for software development&quot;</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    selected={selectedProductId === product.id}
+                    onSelect={() => handleProductSelect(product)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-
-        {/* Dynamic AI Shopping Agent Progress State */}
-        {isSearching && (
-          <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-800/50 flex items-center gap-2.5 text-xs text-blue-300 animate-pulse">
-            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0 text-blue-400" />
-            <span className="font-mono">{searchStep}</span>
-          </div>
-        )}
-
-        {infoMessage && !isSearching && (
-          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-blue-400 flex-shrink-0" />
-            <span>{infoMessage}</span>
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Results Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-blue-400" />
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              {source === "channel3"
-                ? `Live Channel3 Results (${products.length})`
-                : `Available Products (${products.length})`}
-            </h3>
-          </div>
-          <span className="text-xs text-slate-400">
-            Select an item to initiate AI price negotiation
-          </span>
-        </div>
-
-        {products.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800 space-y-3">
-            <ShoppingBag className="w-8 h-8 text-slate-600 mx-auto" />
-            <p className="text-sm text-slate-400">No products found for your query.</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSearch("laptop for software development")}
-            >
-              <span>Try &quot;laptop for software development&quot;</span>
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                selected={selectedProductId === product.id}
-                onSelect={() => handleProductSelect(product)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
+
