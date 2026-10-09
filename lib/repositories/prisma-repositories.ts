@@ -545,6 +545,244 @@ export class PrismaCatalogRepository implements CatalogRepository {
       updatedAt: c.updatedAt.toISOString(),
     };
   }
+
+  async getAvailableStock(catalogItemId: string): Promise<number> {
+    const item = await prisma.catalogItem.findUnique({ where: { id: catalogItemId } });
+    if (!item) return 0;
+    const meta = (item.metadata as Record<string, any>) || {};
+    const total = typeof meta.inventoryCount === "number" ? meta.inventoryCount : 10;
+    const reservations: any[] = Array.isArray(meta.reservations) ? meta.reservations : [];
+    const now = Date.now();
+    let reserved = 0;
+    for (const r of reservations) {
+      if (r.status === "RESERVED" && new Date(r.expiresAt).getTime() > now) {
+        reserved += r.quantity;
+      }
+    }
+    return Math.max(0, total - reserved);
+  }
+
+  async setStock(catalogItemId: string, count: number): Promise<void> {
+    const safeCount = Math.max(0, Math.floor(count));
+    const item = await prisma.catalogItem.findUnique({ where: { id: catalogItemId } });
+    const meta = (item?.metadata as Record<string, any>) || {};
+    meta.inventoryCount = safeCount;
+    await prisma.catalogItem.update({
+      where: { id: catalogItemId },
+      data: {
+        stockStatus: safeCount === 0 ? "OUT_OF_STOCK" : safeCount < 3 ? "LOW_STOCK" : "IN_STOCK",
+        metadata: meta,
+      },
+    });
+  }
+
+  async reserveStock(params: {
+    catalogItemId: string;
+    merchantId: string;
+    transactionId: string;
+    agreementId?: string;
+    quantity: number;
+    ttlSeconds?: number;
+  }): Promise<{ success: boolean; reservation?: any; availableStock?: number; error?: string }> {
+    const qty = Math.max(1, Math.floor(params.quantity || 1));
+    const ttl = params.ttlSeconds || 900;
+
+    return prisma.$transaction(async (tx) => {
+      const item = await tx.catalogItem.findUnique({ where: { id: params.catalogItemId } });
+      if (!item) {
+        return { success: false, error: "Catalog item not found" };
+      }
+
+      const meta = (item.metadata as Record<string, any>) || {};
+      const total = typeof meta.inventoryCount === "number" ? meta.inventoryCount : 10;
+      const reservations: any[] = Array.isArray(meta.reservations) ? meta.reservations : [];
+      const now = Date.now();
+
+      // Idempotency check
+      const existing = reservations.find(
+        (r) =>
+          ((params.agreementId && r.agreementId === params.agreementId) ||
+            r.transactionId === params.transactionId) &&
+          r.status === "RESERVED" &&
+          new Date(r.expiresAt).getTime() > now
+      );
+      if (existing) {
+        let activeReserved = 0;
+        for (const r of reservations) {
+          if (r.status === "RESERVED" && new Date(r.expiresAt).getTime() > now) {
+            activeReserved += r.quantity;
+          }
+        }
+        return {
+          success: true,
+          reservation: existing,
+          availableStock: Math.max(0, total - activeReserved),
+        };
+      }
+
+      let activeReserved = 0;
+      for (const r of reservations) {
+        if (r.status === "RESERVED" && new Date(r.expiresAt).getTime() > now) {
+          activeReserved += r.quantity;
+        }
+      }
+
+      const available = Math.max(0, total - activeReserved);
+      if (available < qty) {
+        return {
+          success: false,
+          availableStock: available,
+          error: `INSUFFICIENT_INVENTORY: Requested ${qty} unit(s), but only ${available} available.`,
+        };
+      }
+
+      const reservationId = `res_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      const expiresAt = new Date(Date.now() + ttl * 1000).toISOString();
+      const newReservation = {
+        id: reservationId,
+        catalogItemId: params.catalogItemId,
+        merchantId: params.merchantId,
+        transactionId: params.transactionId,
+        agreementId: params.agreementId,
+        quantity: qty,
+        status: "RESERVED",
+        expiresAt,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      reservations.push(newReservation);
+      meta.reservations = reservations;
+
+      const remaining = available - qty;
+      await tx.catalogItem.update({
+        where: { id: params.catalogItemId },
+        data: {
+          stockStatus: remaining === 0 ? "OUT_OF_STOCK" : remaining < 3 ? "LOW_STOCK" : "IN_STOCK",
+          metadata: meta,
+        },
+      });
+
+      return {
+        success: true,
+        reservation: newReservation,
+        availableStock: remaining,
+      };
+    });
+  }
+
+  async consumeReservation(reservationIdOrAgreementId: string): Promise<{ success: boolean; error?: string }> {
+    return prisma.$transaction(async (tx) => {
+      // Find item containing this reservation
+      const items = await tx.catalogItem.findMany();
+      let targetItem: any = null;
+      let targetReservation: any = null;
+
+      for (const item of items) {
+        const meta = (item.metadata as Record<string, any>) || {};
+        const reservations: any[] = Array.isArray(meta.reservations) ? meta.reservations : [];
+        const res = reservations.find(
+          (r) =>
+            r.id === reservationIdOrAgreementId ||
+            r.agreementId === reservationIdOrAgreementId ||
+            r.transactionId === reservationIdOrAgreementId
+        );
+        if (res) {
+          targetItem = item;
+          targetReservation = res;
+          break;
+        }
+      }
+
+      if (!targetItem || !targetReservation) {
+        return { success: false, error: "Reservation not found" };
+      }
+
+      if (targetReservation.status === "CONSUMED") {
+        return { success: true };
+      }
+
+      if (targetReservation.status === "RELEASED") {
+        return { success: false, error: "Cannot consume an already released reservation." };
+      }
+
+      targetReservation.status = "CONSUMED";
+      targetReservation.updatedAt = new Date().toISOString();
+
+      const meta = (targetItem.metadata as Record<string, any>) || {};
+      const currentTotal = typeof meta.inventoryCount === "number" ? meta.inventoryCount : 10;
+      const newTotal = Math.max(0, currentTotal - targetReservation.quantity);
+      meta.inventoryCount = newTotal;
+
+      await tx.catalogItem.update({
+        where: { id: targetItem.id },
+        data: {
+          stockStatus: newTotal === 0 ? "OUT_OF_STOCK" : newTotal < 3 ? "LOW_STOCK" : "IN_STOCK",
+          metadata: meta,
+        },
+      });
+
+      return { success: true };
+    });
+  }
+
+  async releaseReservation(reservationIdOrAgreementId: string): Promise<{ success: boolean; error?: string }> {
+    return prisma.$transaction(async (tx) => {
+      const items = await tx.catalogItem.findMany();
+      let targetItem: any = null;
+      let targetReservation: any = null;
+
+      for (const item of items) {
+        const meta = (item.metadata as Record<string, any>) || {};
+        const reservations: any[] = Array.isArray(meta.reservations) ? meta.reservations : [];
+        const res = reservations.find(
+          (r) =>
+            r.id === reservationIdOrAgreementId ||
+            r.agreementId === reservationIdOrAgreementId ||
+            r.transactionId === reservationIdOrAgreementId
+        );
+        if (res) {
+          targetItem = item;
+          targetReservation = res;
+          break;
+        }
+      }
+
+      if (!targetItem || !targetReservation || targetReservation.status === "RELEASED") {
+        return { success: true };
+      }
+
+      if (targetReservation.status === "CONSUMED") {
+        return { success: false, error: "Cannot release already consumed stock." };
+      }
+
+      targetReservation.status = "RELEASED";
+      targetReservation.updatedAt = new Date().toISOString();
+
+      await tx.catalogItem.update({
+        where: { id: targetItem.id },
+        data: { metadata: targetItem.metadata },
+      });
+
+      return { success: true };
+    });
+  }
+
+  async getReservation(reservationIdOrAgreementId: string): Promise<any | null> {
+    const items = await prisma.catalogItem.findMany();
+    for (const item of items) {
+      const meta = (item.metadata as Record<string, any>) || {};
+      const reservations: any[] = Array.isArray(meta.reservations) ? meta.reservations : [];
+      const res = reservations.find(
+        (r) =>
+          r.id === reservationIdOrAgreementId ||
+          r.agreementId === reservationIdOrAgreementId ||
+          r.transactionId === reservationIdOrAgreementId
+      );
+      if (res) return res;
+    }
+    return null;
+  }
 }
 
 export class PrismaTransactionRepository implements TransactionRepository {

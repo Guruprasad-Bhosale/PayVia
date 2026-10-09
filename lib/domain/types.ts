@@ -144,12 +144,36 @@ export interface CatalogItem {
   listPrice: number;
   currency: string;
   stockStatus: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+  inventoryCount?: number;
   source: "internal" | "channel3" | "demo";
   imageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
   metadata?: Record<string, unknown>;
 }
+
+export type InventoryReservationStatus = "RESERVED" | "CONSUMED" | "RELEASED" | "EXPIRED";
+
+export interface InventoryReservation {
+  id: string; // res_xxx
+  catalogItemId: string;
+  merchantId: string;
+  transactionId: string;
+  agreementId?: string;
+  quantity: number;
+  status: InventoryReservationStatus;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StockReservationResult {
+  success: boolean;
+  reservation?: InventoryReservation;
+  availableStock?: number;
+  error?: string;
+}
+
 
 /**
  * 6. Transaction Intent

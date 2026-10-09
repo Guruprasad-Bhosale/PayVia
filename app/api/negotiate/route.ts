@@ -72,7 +72,42 @@ export async function GET(req: NextRequest) {
   }
 
   const session = getNegotiationSession(id);
-  const agreement = getNegotiationAgreement(id);
+  let agreement = getNegotiationAgreement(id);
+
+  if (!session && !agreement) {
+    // Check domain repository for agreements created via shopping service
+    try {
+      const { agreementRepo } = await import("@/lib/repositories");
+      const domainAg = await agreementRepo.findById(id);
+      if (domainAg) {
+        agreement = {
+          id: domainAg.id,
+          negotiationId: domainAg.negotiationId,
+          productId: domainAg.items[0]?.catalogItemId || "item_1",
+          productName: domainAg.items[0]?.title || "Negotiated Item",
+          originalPrice: domainAg.originalPrice,
+          finalPrice: domainAg.finalPrice,
+          savings: domainAg.savings,
+          deliveryDays: domainAg.deliveryDays,
+          buyerMaxPrice: domainAg.finalPrice,
+          buyerMaxDeliveryDays: domainAg.deliveryDays,
+          merchantMinPrice: domainAg.finalPrice,
+          currency: domainAg.currency,
+          status: domainAg.status === "SETTLED" || domainAg.status === "ACCEPTED" ? "AGREED" : "FAILED",
+          roundsCount: 1,
+          createdAt: domainAg.createdAt,
+          userApproved: domainAg.userApproved ?? false,
+          userApprovedAt: domainAg.userApprovedAt,
+          termsSummary: `Negotiated price of $${domainAg.finalPrice} USD with ${domainAg.deliveryDays}-day delivery.`,
+          finalAgreedPrice: domainAg.finalPrice,
+          savingsAmount: domainAg.savings,
+          totalSettlementAmount: domainAg.finalPrice,
+        };
+      }
+    } catch {
+      // Fallback
+    }
+  }
 
   if (!session && !agreement) {
     return NextResponse.json(

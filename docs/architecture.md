@@ -1,93 +1,105 @@
-# PayVia Architecture ⚡
+# PayVia Architecture & Security Specification
 
-> **The Reusable AI Negotiation & Settlement Infrastructure Layer for Digital Commerce**
+**Platform:** PayVia — AI Agent-to-Agent Commerce & PayPal Settlement Platform  
+**Environment:** PayPal AI Hackathon 2026  
+**Core Thesis:** *"AI negotiates. PayPal settles."*
 
 ---
 
-## 1. Executive Summary
+## 1. High-Level Architecture
 
-PayVia is not an ecommerce storefront. It is an **AI-driven negotiation and settlement protocol** designed to be embedded into any digital commerce platform, marketplace, procurement workflow, or AI shopping agent.
+PayVia provides a zero-trust, multi-agent protocol bridging buyer purchasing intent, merchant margin policy enforcement, cryptographic agreement generation, human authorization, and verified PayPal settlement.
 
-### Core Premise:
-- **AI Negotiates**: Autonomous buyer and merchant agents dynamically negotiate economic terms (price, delivery window, payment timing).
-- **PayVia Validates**: Server-side deterministic policies enforce non-negotiable pricing floors, buyer budget ceilings, and immutability seals.
-- **PayPal Settles**: Once terms are approved, payment providers (PayPal Sandbox/Live) execute verified settlement matching the exact sealed agreement amount.
-
-```text
-External Commerce App / Marketplace
-                 │
-                 ▼
-     POST /api/v1/transactions
-                 │
-                 ▼
-       Transaction Intent
-                 │
-      ┌──────────┴──────────┐
-      ▼                     ▼
-Buyer AI Agent        Merchant AI Agent
-(Gemini 3.8 Flash)    (Gemini 3.8 Flash)
-      │                     │
-      └──────────┬──────────┘
-                 │ Multi-turn Structured Proposals
-                 ▼
-     Negotiation Engine & Policy Validator
-                 │
-                 ▼
-     Cryptographically Sealed Agreement
-                 │ (SHA-256 Hash Locked)
-                 ▼
-      Explicit Human Approval
-                 │
-                 ▼
-    Payment Provider (PayPal Orders v2)
-                 │
-                 ▼
-   Verified Settlement & Receipt
-                 │
-                 ▼
-   Fulfillment Engine (Bryntum Gantt)
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                            1. BUYER INTENT & DISCOVERY                           │
+│  - ShoppingIntent (Query, Budget Ceiling, Delivery SLA, Optimization Priority)   │
+│  - Multi-Merchant Discovery (Internal Managed Catalog + Channel3 Live Feed)      │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         │
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                      2. PARALLEL MULTI-AGENT NEGOTIATION                         │
+│  - Buyer Agent (Gemini 3.8 Flash / Deterministic Fallback, Private Ceiling)      │
+│  - Merchant Agent (Deterministic Margin Policy Engine, Private Floor)            │
+│  - Multi-Turn Economic Bargaining (Price, Concessions, Delivery, Payment SLA)    │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         │
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                    3. DETERMINISTIC OFFER RANKING & SELECTION                    │
+│  - Normalized Multi-Dimensional Ranking (PRICE, DELIVERY, BALANCED [0-100 pts])  │
+│  - Buyer Selects Winning Candidate Offer (Unselected Offers Rejected)            │
+│  - Atomic Inventory Reservation (15-min TTL, Non-Negative Stock Guarantee)       │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         │
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                   4. AUTHORITATIVE AGREEMENT & HUMAN APPROVAL                    │
+│  - Cryptographic SHA-256 Agreement Hash Sealing (Anti-Tamper Guarantee)          │
+│  - Server-Enforced Agreement Expiration Boundary (currentTime < expiresAt)       │
+│  - Explicit Human Buyer Approval Gate (POST /api/negotiate/approve)              │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         │
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                   5. PAYPAL SANDBOX ORDERS V2 SETTLEMENT                         │
+│  - Server-Side Order Creation Bound Strictly to Agreement.finalPrice             │
+│  - Buyer Redirected to PayPal Sandbox Handoff URL                                │
+│  - Server-Side Capture (GET/POST /api/paypal/capture-order)                      │
+│  - Official Webhook Signature Verification (POST /v1/notifications/verify)       │
+│  - Webhook Idempotency (Replayed Webhooks Cannot Duplicate Settlement)          │
+│  - Stock Reservation Consumed Exactly Once (RESERVED -> CONSUMED)                │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         │
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│             6. FULFILLMENT ORCHESTRATION & VECTOR MEMORY SYNC                    │
+│  - Bryntum Gantt Multi-Stage Supply Chain & Delivery Task Scheduling             │
+│  - Elasticsearch Serverless Memory Indexing (Purchase Patterns, Context)         │
+│  - AG Grid & AG Studio Merchant Analytics Live Synchronization                   │
+└──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Multi-Tenant Domain Hierarchy
+## 2. Core Security & Integrity Invariants
 
-```text
-Platform (plat_xxx)
-  ├── Merchants (merchant_xxx)
-  │     ├── Policies (pol_xxx) [Private Floors]
-  │     └── Catalog Items (prod_xxx)
-  ├── Buyers (buyer_xxx)
-  │     └── Policies (bpol_xxx) [Private Ceilings]
-  └── Transactions (txn_xxx)
-        ├── Negotiation Sessions (neg_xxx)
-        │     └── Proposals (prop_xxx)
-        ├── Agreements (agr_xxx) [SHA-256 Seal]
-        ├── Settlements (set_xxx) [PayPal Orders]
-        └── Audit Trail (audit_xxx) [Append-Only]
-```
+### 1. Zero-Tamper Agreement Security
+* The client cannot dictate prices or bypass negotiation constraints.
+* Every agreement is sealed with a deterministic SHA-256 cryptographic hash computed across items, original price, negotiated final price, delivery days, and merchant identity:
+  $$\text{Hash} = \text{SHA-256}(\text{id} + \text{items} + \text{finalPrice} + \text{merchantId} + \dots)$$
+* Any client-side parameter tampering invalidates the hash and aborts settlement.
 
----
+### 2. Server-Enforced Expiration (Fail-Closed)
+* Before creating a PayPal order or capturing payment, the service strictly asserts:
+  $$\text{Date.now()} < \text{expiresAt}$$
+* Expired or malformed timestamps immediately reject with code `AGREEMENT_EXPIRED`.
 
-## 3. Core Entities & Roles
+### 3. Atomic Inventory Reservation & Zero-Oversell
+* Stock reservations are established upon offer selection (`AVAILABLE → RESERVED`).
+* Multiple concurrent buyers competing for the last unit yield exactly one reservation success and one `INSUFFICIENT_INVENTORY` graceful rejection.
+* Available stock is strictly non-negative: $\text{Available} \ge 0$.
+* Unconsumed reservations return to the available pool upon timeout or cancellation. Confirmed captures transition the reservation to `CONSUMED` and decrement physical stock permanently.
 
-| Entity | ID Prefix | Description | Authority |
-|---|---|---|---|
-| **Platform** | `plat_` | External commerce tenant integrating PayVia | Tenant Isolation |
-| **Merchant** | `merchant_` | Commercial seller holding private pricing floors | Merchant Policy |
-| **Buyer** | `buyer_` | Purchasing party holding private budget limits | Buyer Budget |
-| **Transaction** | `txn_` | Root commercial transaction holding initial intent | Transaction State |
-| **NegotiationSession**| `neg_` | Multi-turn proposal state machine | Policy Boundaries |
-| **Proposal** | `prop_` | Structured offer (`price`, `deliveryDays`, `paymentTiming`) | Candidate Term |
-| **Agreement** | `agr_` | Cryptographically sealed immutable contract | Financial Authority |
-| **Settlement** | `set_` | Payment transaction bound 1:1 to agreement | Payment Authority |
-| **AuditEvent** | `audit_` | Immutable append-only log of all operations | Compliance & Audit |
+### 4. Official PayPal Webhook Signature Verification
+* Inbound PayPal webhooks are cryptographically verified via PayPal's official endpoint:
+  `POST /v1/notifications/verify-webhook-signature`
+* All five transmission headers (`paypal-auth-algo`, `paypal-cert-url`, `paypal-transmission-id`, `paypal-transmission-sig`, `paypal-transmission-time`) must be verified as `SUCCESS` before any settlement state is updated.
+* Replayed event IDs are handled idempotently (`DUPLICATE_EVENT_PROCESSED`).
+
+### 5. Tenant Isolation & Private Floor Defense
+* Merchant minimum price floors are strictly private business secrets.
+* Buyer APIs sanitize all private margins before returning candidate offers.
+* Multi-tenant authorization prevents Platform A from viewing or modifying Platform B resources (enforcing HTTP 403).
 
 ---
 
-## 4. Provider Boundaries & Pluggability
+## 3. Technology Stack & Sponsor Integrations
 
-PayVia utilizes clean provider abstractions:
-- **Settlement Providers** (`lib/providers/settlement`): `PayPalSettlementProvider`, `MockSettlementProvider`.
-- **Catalog Providers** (`lib/providers/catalog`): `Channel3CatalogProvider`, `DemoCatalogProvider`.
-- **Memory Providers** (`lib/providers/memory`): `ElasticMemoryProvider`, `InMemoryMemoryProvider`.
+1. **PayPal Orders v2 & Webhook Verification:** Real REST Sandbox order creation, redirect approval, server-side capture, and cryptographic webhook verification.
+2. **Google Gemini (Gemini 3.8 Flash):** Autonomous Buyer and Merchant conversational intelligence with bounded multi-turn consensus.
+3. **Channel3:** Live e-commerce product discovery and normalized catalog feed integration.
+4. **Elasticsearch Serverless:** AI vector and hybrid historical memory layer for customer preferences and pattern intelligence.
+5. **AG Grid & AG Studio:** Merchant Command Center enterprise transactions grid, conversion tracking, and real-time revenue analytics.
+6. **Bryntum Gantt:** Post-settlement dynamic fulfillment planning, SLA constraint resolution, and multi-stage dependency tracking.

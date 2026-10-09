@@ -66,12 +66,22 @@ function AgreementContent() {
     loadAgreement();
   }, [negotiationId]);
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!agreement) return;
     setIsApproving(true);
-    setTimeout(() => {
-      router.push(`/checkout?negotiationId=${agreement.negotiationId || agreement.id}`);
-    }, 400);
+    try {
+      await fetch("/api/negotiate/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: agreement.id,
+          negotiationId: agreement.negotiationId,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to record server-side agreement approval:", err);
+    }
+    router.push(`/checkout?negotiationId=${agreement.negotiationId || agreement.id}`);
   };
 
   if (loading || !agreement) {

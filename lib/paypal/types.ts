@@ -136,3 +136,28 @@ export interface PayPalApiError {
   details?: PayPalErrorDetail[];
   links?: PayPalLinkDescription[];
 }
+
+export interface PayPalVerifyWebhookSignaturePayload {
+  auth_algo: string;
+  cert_url: string;
+  transmission_id: string;
+  transmission_sig: string;
+  transmission_time: string;
+  webhook_id: string;
+  webhook_event: Record<string, unknown>;
+}
+
+export interface PayPalVerifyWebhookSignatureResponse {
+  verification_status: "SUCCESS" | "FAILURE";
+}
+
+export interface VerifyWebhookSignatureParams {
+  authAlgo: string | null;
+  certUrl: string | null;
+  transmissionId: string | null;
+  transmissionSig: string | null;
+  transmissionTime: string | null;
+  webhookId?: string;
+  eventBody: Record<string, unknown>;
+}
+

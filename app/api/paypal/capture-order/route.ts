@@ -46,8 +46,20 @@ export async function GET(req: NextRequest) {
       captureResult.id;
 
     if (captureResult.status === "COMPLETED") {
-      // Asynchronously index purchase memory into Elasticsearch Serverless
+      // Consume stock reservation & update agreement status
       if (agreementId) {
+        try {
+          const { catalogRepo, agreementRepo } = await import("@/lib/repositories");
+          await catalogRepo.consumeReservation(agreementId).catch(() => {});
+          await agreementRepo.update(agreementId, {
+            status: "SETTLED",
+            settledAt: new Date().toISOString(),
+          }).catch(() => {});
+        } catch (repoErr) {
+          console.warn("[PayPal Capture Warning: Repo sync]", repoErr);
+        }
+
+        // Asynchronously index purchase memory into Elasticsearch Serverless
         import("@/lib/ai/negotiation-store").then(({ getNegotiationAgreement }) => {
           const ag = getNegotiationAgreement(agreementId);
           if (ag) {

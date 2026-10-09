@@ -303,6 +303,7 @@ export class PayViaClient {
           }
         );
       }
+      await agreementService.approveAgreement(agreementId);
       const result = await settlementService.initiateSettlement(agreementId, options);
       return {
         settlement: result.settlement,

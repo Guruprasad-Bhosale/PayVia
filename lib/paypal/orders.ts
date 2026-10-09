@@ -113,3 +113,71 @@ export async function capturePayPalOrder(
     }
   );
 }
+
+/**
+ * Verifies the cryptographic signature of an incoming PayPal Webhook notification
+ * using PayPal's official verification endpoint (POST /v1/notifications/verify-webhook-signature).
+ */
+export async function verifyPayPalWebhookSignature(params: {
+  authAlgo: string | null;
+  certUrl: string | null;
+  transmissionId: string | null;
+  transmissionSig: string | null;
+  transmissionTime: string | null;
+  webhookId?: string;
+  eventBody: Record<string, unknown>;
+}): Promise<{ verified: boolean; status: string; error?: string }> {
+  const { authAlgo, certUrl, transmissionId, transmissionSig, transmissionTime, eventBody } = params;
+
+  if (!authAlgo || !certUrl || !transmissionId || !transmissionSig || !transmissionTime) {
+    return {
+      verified: false,
+      status: "MISSING_HEADERS",
+      error: "Missing required PayPal webhook verification headers",
+    };
+  }
+
+  const webhookId = params.webhookId || env.paypalWebhookId;
+  if (!webhookId) {
+    return {
+      verified: false,
+      status: "UNCONFIGURED_WEBHOOK_ID",
+      error: "PayPal webhook ID is not configured on the server",
+    };
+  }
+
+  const payload = {
+    auth_algo: authAlgo,
+    cert_url: certUrl,
+    transmission_id: transmissionId,
+    transmission_sig: transmissionSig,
+    transmission_time: transmissionTime,
+    webhook_id: webhookId,
+    webhook_event: eventBody,
+  };
+
+  try {
+    const res = await paypalRequest<{ verification_status: "SUCCESS" | "FAILURE" }>(
+      "/v1/notifications/verify-webhook-signature",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const isSuccess = res.verification_status === "SUCCESS";
+    return {
+      verified: isSuccess,
+      status: res.verification_status,
+      error: isSuccess ? undefined : "PayPal verification endpoint returned FAILURE",
+    };
+  } catch (error) {
+    console.error("[PayPal Webhook Verification Error]:", error);
+    return {
+      verified: false,
+      status: "VERIFICATION_ERROR",
+      error: error instanceof Error ? error.message : "Failed to communicate with PayPal verification endpoint",
+    };
+  }
+}
+

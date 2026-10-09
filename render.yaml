@@ -26,6 +26,10 @@ services:
         sync: false
       - key: CHANNEL3_API_KEY
         sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: DATABASE_URL
+        sync: false
       - key: ELASTICSEARCH_URL
         sync: false
       - key: ELASTICSEARCH_API_KEY

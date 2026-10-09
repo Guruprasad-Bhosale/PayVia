@@ -127,8 +127,14 @@ export class AgreementService {
       throw new Error(`SECURITY BREACH: Agreement ${agreementId} failed cryptographic hash verification! Terms were tampered.`);
     }
 
+    // Reject approving expired agreements
+    if (agreement.expiresAt && Date.now() >= new Date(agreement.expiresAt).getTime()) {
+      throw new Error(`AGREEMENT_EXPIRED: Cannot approve expired agreement ${agreementId} (expired at ${agreement.expiresAt}).`);
+    }
+
     const updated = await agreementRepo.update(agreementId, {
       status: "USER_APPROVED",
+      userApproved: true,
       userApprovedAt: new Date().toISOString(),
     });
 
@@ -148,20 +154,107 @@ export class AgreementService {
   }
 
   /**
-   * Verifies agreement validity for settlement.
+   * Authoritatively verifies agreement validity before settlement initiation or capture.
+   * Enforces:
+   * 1. Cryptographic SHA-256 integrity hash
+   * 2. Server-side expiration timestamp (Date.now() >= expiresAt fails)
+   * 3. Price boundary invariants (0 < finalPrice <= originalPrice)
+   * 4. Explicit human user approval gate (unless already settled or explicitly overridden for capture)
+   * 5. Terminal state guards (CANCELLED/DRAFT agreements cannot settle)
    */
-  verifyAgreementForSettlement(agreement: Agreement): { valid: boolean; error?: string } {
+  verifyAgreementForSettlement(
+    agreement: Agreement,
+    options?: {
+      currentTimeMs?: number;
+      requireApproval?: boolean;
+    }
+  ): { valid: boolean; error?: string; code?: string } {
+    if (!agreement) {
+      return { valid: false, error: "Agreement does not exist.", code: "AGREEMENT_NOT_FOUND" };
+    }
+
+    // 1. Cryptographic SHA-256 seal verification
     if (!verifyAgreementHash(agreement)) {
-      return { valid: false, error: "Cryptographic hash mismatch. Agreement terms modified." };
+      return {
+        valid: false,
+        error: "Cryptographic hash mismatch. Agreement terms were modified or tampered.",
+        code: "HASH_VERIFICATION_FAILED",
+      };
     }
+
+    // 2. Pricing integrity invariants
     if (agreement.finalPrice > agreement.originalPrice) {
-      return { valid: false, error: "Final price exceeds original catalog price." };
+      return {
+        valid: false,
+        error: "Final price exceeds original catalog listing price.",
+        code: "PRICE_CEILING_VIOLATION",
+      };
     }
-    if (agreement.finalPrice <= 0) {
-      return { valid: false, error: "Invalid settlement amount." };
+    if (agreement.finalPrice <= 0 || isNaN(agreement.finalPrice)) {
+      return {
+        valid: false,
+        error: "Invalid settlement amount.",
+        code: "INVALID_AMOUNT",
+      };
     }
+
+    // 3. Expiry timestamp verification
+    if (!agreement.expiresAt) {
+      return {
+        valid: false,
+        error: "Missing agreement expiration timestamp.",
+        code: "MISSING_EXPIRATION",
+      };
+    }
+
+    const expiryTime = new Date(agreement.expiresAt).getTime();
+    if (isNaN(expiryTime)) {
+      return {
+        valid: false,
+        error: "Malformed agreement expiration timestamp.",
+        code: "MALFORMED_EXPIRATION",
+      };
+    }
+
+    const now = options?.currentTimeMs ?? Date.now();
+    if (now >= expiryTime) {
+      return {
+        valid: false,
+        error: `Agreement expired at ${agreement.expiresAt}. Settlement cannot be initiated.`,
+        code: "AGREEMENT_EXPIRED",
+      };
+    }
+
+    // 4. Terminal state checks
+    if (agreement.status === "CANCELLED") {
+      return {
+        valid: false,
+        error: "Agreement has been cancelled and cannot be settled.",
+        code: "AGREEMENT_CANCELLED",
+      };
+    }
+
+    if (agreement.status === "DRAFT") {
+      return {
+        valid: false,
+        error: "Agreement is in draft state and has not been accepted.",
+        code: "AGREEMENT_NOT_ACCEPTED",
+      };
+    }
+
+    // 5. Explicit human approval check
+    const requireApproval = options?.requireApproval ?? true;
+    if (requireApproval && agreement.status !== "USER_APPROVED" && agreement.status !== "SETTLED") {
+      return {
+        valid: false,
+        error: "Agreement requires explicit human user approval before payment settlement.",
+        code: "USER_APPROVAL_REQUIRED",
+      };
+    }
+
     return { valid: true };
   }
 }
 
 export const agreementService = new AgreementService();
+

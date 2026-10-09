@@ -15,6 +15,8 @@ import {
   IdempotencyRecord,
   ShoppingIntent,
   ShoppingSession,
+  InventoryReservation,
+  StockReservationResult,
 } from "@/lib/domain/types";
 import {
   PlatformRepository,
@@ -51,6 +53,8 @@ const globalStore = globalThis as unknown as {
     idempotency: Map<string, IdempotencyRecord>;
     shoppingIntents: Map<string, ShoppingIntent>;
     shoppingSessions: Map<string, ShoppingSession>;
+    inventory: Map<string, number>;
+    reservations: Map<string, InventoryReservation>;
   };
 };
 
@@ -72,6 +76,8 @@ if (!globalStore.__payviaMemoryDb) {
     idempotency: new Map(),
     shoppingIntents: new Map(),
     shoppingSessions: new Map(),
+    inventory: new Map(),
+    reservations: new Map(),
   };
 
   // Seed default demo platform and merchant
@@ -202,7 +208,11 @@ export class InMemoryAgentRepository implements AgentRepository {
 
 export class InMemoryCatalogRepository implements CatalogRepository {
   async findById(id: string): Promise<CatalogItem | null> {
-    return db.catalog.get(id) || null;
+    const item = db.catalog.get(id) || null;
+    if (item && !db.inventory.has(item.id)) {
+      db.inventory.set(item.id, item.inventoryCount ?? 10);
+    }
+    return item;
   }
   async findByMerchantId(merchantId: string): Promise<CatalogItem[]> {
     return Array.from(db.catalog.values()).filter((c) => c.merchantId === merchantId);
@@ -219,6 +229,9 @@ export class InMemoryCatalogRepository implements CatalogRepository {
   }
   async create(item: CatalogItem): Promise<CatalogItem> {
     db.catalog.set(item.id, { ...item });
+    if (!db.inventory.has(item.id)) {
+      db.inventory.set(item.id, item.inventoryCount ?? 10);
+    }
     return item;
   }
   async update(id: string, data: Partial<CatalogItem>): Promise<CatalogItem> {
@@ -226,9 +239,186 @@ export class InMemoryCatalogRepository implements CatalogRepository {
     if (!existing) throw new Error(`Catalog item ${id} not found`);
     const updated = { ...existing, ...data, updatedAt: new Date().toISOString() };
     db.catalog.set(id, updated);
+    if (data.inventoryCount !== undefined) {
+      db.inventory.set(id, data.inventoryCount);
+    }
     return updated;
   }
+
+  _getAvailableStockSync(catalogItemId: string): number {
+    const total = db.inventory.get(catalogItemId) ?? 10;
+    const now = Date.now();
+    let reserved = 0;
+    for (const res of db.reservations.values()) {
+      if (
+        res.catalogItemId === catalogItemId &&
+        res.status === "RESERVED" &&
+        new Date(res.expiresAt).getTime() > now
+      ) {
+        reserved += res.quantity;
+      }
+    }
+    return Math.max(0, total - reserved);
+  }
+
+  async getAvailableStock(catalogItemId: string): Promise<number> {
+    return this._getAvailableStockSync(catalogItemId);
+  }
+
+  async setStock(catalogItemId: string, count: number): Promise<void> {
+    const safeCount = Math.max(0, Math.floor(count));
+    db.inventory.set(catalogItemId, safeCount);
+    const item = db.catalog.get(catalogItemId);
+    if (item) {
+      item.inventoryCount = safeCount;
+      item.stockStatus = safeCount === 0 ? "OUT_OF_STOCK" : safeCount < 3 ? "LOW_STOCK" : "IN_STOCK";
+    }
+  }
+
+  async reserveStock(params: {
+    catalogItemId: string;
+    merchantId: string;
+    transactionId: string;
+    agreementId?: string;
+    quantity: number;
+    ttlSeconds?: number;
+  }): Promise<{ success: boolean; reservation?: any; availableStock?: number; error?: string }> {
+    const qty = Math.max(1, Math.floor(params.quantity || 1));
+    const ttl = params.ttlSeconds || 900; // default 15 minutes TTL
+
+    // Idempotency: check if active reservation already exists for this agreement or transaction
+    for (const res of db.reservations.values()) {
+      if (
+        ((params.agreementId && res.agreementId === params.agreementId) ||
+         res.transactionId === params.transactionId) &&
+        res.status === "RESERVED" &&
+        new Date(res.expiresAt).getTime() > Date.now()
+      ) {
+        const available = this._getAvailableStockSync(params.catalogItemId);
+        return {
+          success: true,
+          reservation: res,
+          availableStock: available,
+        };
+      }
+    }
+
+    // Atomic synchronous calculation and write
+    const available = this._getAvailableStockSync(params.catalogItemId);
+    if (available < qty) {
+      return {
+        success: false,
+        availableStock: available,
+        error: `INSUFFICIENT_INVENTORY: Requested ${qty} unit(s), but only ${available} available.`,
+      };
+    }
+
+    const reservationId = `res_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const expiresAt = new Date(Date.now() + ttl * 1000).toISOString();
+    const reservation = {
+      id: reservationId,
+      catalogItemId: params.catalogItemId,
+      merchantId: params.merchantId,
+      transactionId: params.transactionId,
+      agreementId: params.agreementId,
+      quantity: qty,
+      status: "RESERVED" as const,
+      expiresAt,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    db.reservations.set(reservationId, reservation);
+
+    const remaining = available - qty;
+    const item = db.catalog.get(params.catalogItemId);
+    if (item) {
+      item.stockStatus = remaining === 0 ? "OUT_OF_STOCK" : remaining < 3 ? "LOW_STOCK" : "IN_STOCK";
+    }
+
+    return {
+      success: true,
+      reservation,
+      availableStock: remaining,
+    };
+  }
+
+  async consumeReservation(reservationIdOrAgreementId: string): Promise<{ success: boolean; error?: string }> {
+    let target: any = db.reservations.get(reservationIdOrAgreementId);
+    if (!target) {
+      for (const res of db.reservations.values()) {
+        if (res.agreementId === reservationIdOrAgreementId || res.transactionId === reservationIdOrAgreementId) {
+          target = res;
+          break;
+        }
+      }
+    }
+
+    if (!target) {
+      return { success: false, error: `Reservation ${reservationIdOrAgreementId} not found` };
+    }
+
+    if (target.status === "CONSUMED") {
+      return { success: true }; // Idempotent
+    }
+
+    if (target.status === "RELEASED") {
+      return { success: false, error: "Cannot consume an already released reservation." };
+    }
+
+    target.status = "CONSUMED";
+    target.updatedAt = new Date().toISOString();
+
+    const currentTotal = db.inventory.get(target.catalogItemId) ?? 10;
+    const newTotal = Math.max(0, currentTotal - target.quantity);
+    db.inventory.set(target.catalogItemId, newTotal);
+
+    const item = db.catalog.get(target.catalogItemId);
+    if (item) {
+      item.inventoryCount = newTotal;
+      item.stockStatus = newTotal === 0 ? "OUT_OF_STOCK" : newTotal < 3 ? "LOW_STOCK" : "IN_STOCK";
+    }
+
+    return { success: true };
+  }
+
+  async releaseReservation(reservationIdOrAgreementId: string): Promise<{ success: boolean; error?: string }> {
+    let target: any = db.reservations.get(reservationIdOrAgreementId);
+    if (!target) {
+      for (const res of db.reservations.values()) {
+        if (res.agreementId === reservationIdOrAgreementId || res.transactionId === reservationIdOrAgreementId) {
+          target = res;
+          break;
+        }
+      }
+    }
+
+    if (!target || target.status === "RELEASED") {
+      return { success: true }; // Idempotent
+    }
+
+    if (target.status === "CONSUMED") {
+      return { success: false, error: "Cannot release already consumed stock." };
+    }
+
+    target.status = "RELEASED";
+    target.updatedAt = new Date().toISOString();
+
+    return { success: true };
+  }
+
+  async getReservation(reservationIdOrAgreementId: string): Promise<any | null> {
+    const direct = db.reservations.get(reservationIdOrAgreementId);
+    if (direct) return direct;
+    for (const res of db.reservations.values()) {
+      if (res.agreementId === reservationIdOrAgreementId || res.transactionId === reservationIdOrAgreementId) {
+        return res;
+      }
+    }
+    return null;
+  }
 }
+
 
 export class InMemoryTransactionRepository implements TransactionRepository {
   async findById(id: string): Promise<Transaction | null> {

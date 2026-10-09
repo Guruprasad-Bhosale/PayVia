@@ -15,6 +15,8 @@ import {
   IdempotencyRecord,
   ShoppingIntent,
   ShoppingSession,
+  InventoryReservation,
+  StockReservationResult,
 } from "@/lib/domain/types";
 
 export interface PlatformRepository {
@@ -52,7 +54,23 @@ export interface CatalogRepository {
   search(query: string, platformId?: string): Promise<CatalogItem[]>;
   create(item: CatalogItem): Promise<CatalogItem>;
   update(id: string, data: Partial<CatalogItem>): Promise<CatalogItem>;
+  
+  // Atomic inventory operations
+  getAvailableStock(catalogItemId: string): Promise<number>;
+  setStock(catalogItemId: string, count: number): Promise<void>;
+  reserveStock(params: {
+    catalogItemId: string;
+    merchantId: string;
+    transactionId: string;
+    agreementId?: string;
+    quantity: number;
+    ttlSeconds?: number;
+  }): Promise<StockReservationResult>;
+  consumeReservation(reservationIdOrAgreementId: string): Promise<{ success: boolean; error?: string }>;
+  releaseReservation(reservationIdOrAgreementId: string): Promise<{ success: boolean; error?: string }>;
+  getReservation(reservationIdOrAgreementId: string): Promise<InventoryReservation | null>;
 }
+
 
 export interface TransactionRepository {
   findById(id: string): Promise<Transaction | null>;

@@ -58,6 +58,7 @@ export const env = {
   channel3ApiKey: process.env.CHANNEL3_API_KEY ?? "",
   elasticsearchUrl: process.env.ELASTICSEARCH_URL ?? "",
   elasticsearchApiKey: process.env.ELASTICSEARCH_API_KEY ?? "",
+  paypalWebhookId: process.env.PAYPAL_WEBHOOK_ID ?? "WH-PAYVIA-SANDBOX-DEFAULT",
   databaseUrl: process.env.DATABASE_URL ?? "",
   appUrl: resolveAppUrl(),
 };

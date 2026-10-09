@@ -66,6 +66,33 @@ export function MerchantPolicyEditor({
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    async function loadPolicy() {
+      try {
+        const res = await fetch(`/api/v1/merchants/${merchantId}/policy`);
+        const data = await res.json();
+        if (res.ok && data.success && data.policy) {
+          const p = data.policy;
+          setFormData((prev) => ({
+            ...prev,
+            enabled: p.enabled ?? prev.enabled,
+            currency: p.currency || prev.currency,
+            listPrice: p.listPrice ?? prev.listPrice,
+            minimumPrice: p.minimumPrice ?? prev.minimumPrice,
+            minimumDeliveryDays: p.minimumDeliveryDays ?? prev.minimumDeliveryDays,
+            maximumDeliveryDays: p.maximumDeliveryDays ?? prev.maximumDeliveryDays,
+            immediateDiscountPercent: p.immediateDiscountPercent ?? prev.immediateDiscountPercent,
+            allowedPaymentTiming: p.allowedPaymentTiming || prev.allowedPaymentTiming,
+            strategy: p.strategy || prev.strategy,
+          }));
+        }
+      } catch {
+        // Fallback to initial form data
+      }
+    }
+    loadPolicy();
+  }, [merchantId]);
+
   const handleSave = async () => {
     setSaving(true);
     setSaveStatus("idle");

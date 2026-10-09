@@ -1,5 +1,5 @@
 import { Settlement, SettlementProviderType } from "@/lib/domain/types";
-import { settlementRepo, agreementRepo } from "@/lib/repositories";
+import { settlementRepo, agreementRepo, catalogRepo } from "@/lib/repositories";
 import { agreementService } from "./agreement.service";
 import { transactionService } from "./transaction.service";
 import { auditService } from "./audit.service";
@@ -8,7 +8,9 @@ import { getSettlementProvider } from "@/lib/providers/settlement";
 export class SettlementService {
   /**
    * Initiates payment settlement for an authoritative, cryptographically-sealed Agreement.
-   * Enforces the critical invariant that the settlement amount is derived ONLY from the agreement.
+   * Enforces the critical invariants:
+   * 1. Agreement is unexpired and approved.
+   * 2. Settlement amount is derived ONLY from the agreement.
    */
   async initiateSettlement(
     agreementId: string,
@@ -16,6 +18,8 @@ export class SettlementService {
       provider?: SettlementProviderType;
       returnUrl?: string;
       cancelUrl?: string;
+      currentTimeMs?: number;
+      requireApproval?: boolean;
     }
   ): Promise<{
     settlement: Settlement;
@@ -26,8 +30,11 @@ export class SettlementService {
       throw new Error(`Agreement ${agreementId} not found`);
     }
 
-    // Verify cryptographic seal and invariants
-    const verification = agreementService.verifyAgreementForSettlement(agreement);
+    // Verify cryptographic seal, expiration timestamp, and approval invariants
+    const verification = agreementService.verifyAgreementForSettlement(agreement, {
+      currentTimeMs: options?.currentTimeMs,
+      requireApproval: options?.requireApproval ?? true,
+    });
     if (!verification.valid) {
       throw new Error(`Agreement validation failed: ${verification.error}`);
     }
@@ -125,6 +132,13 @@ export class SettlementService {
       status: "SETTLED",
       settledAt: new Date().toISOString(),
     });
+
+    // Atomically consume inventory reservation upon confirmed settlement
+    try {
+      await catalogRepo.consumeReservation(settlement.agreementId);
+    } catch (invErr) {
+      console.warn("[Settlement Warning: Inventory Consume Notice]:", invErr);
+    }
 
     await auditService.log(
       settlement.platformId,

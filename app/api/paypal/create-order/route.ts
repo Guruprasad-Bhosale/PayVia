@@ -40,28 +40,55 @@ export async function POST(req: NextRequest) {
     let customId = "payvia_test_order";
 
     if (targetNegotiationId) {
-      // Validate the agreement strictly from the server-side store
-      const validation = validateAgreementForPayment(targetNegotiationId);
+      // 1. First check domain repository
+      const { agreementRepo } = await import("@/lib/repositories");
+      const { agreementService } = await import("@/lib/services/agreement.service");
+      const domainAg = await agreementRepo.findById(targetNegotiationId);
 
-      if (!validation.valid || !validation.agreement) {
-        console.warn(
-          `[PayPal Create Order] Agreement validation rejected for ID '${targetNegotiationId}': ${validation.error}`
-        );
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Negotiation agreement validation failed",
-            details: validation.error || "Invalid or tampered agreement",
-          },
-          { status: 400 }
-        );
+      if (domainAg) {
+        const domainVerification = agreementService.verifyAgreementForSettlement(domainAg);
+        if (!domainVerification.valid) {
+          console.warn(
+            `[PayPal Create Order] Domain agreement verification rejected for ID '${targetNegotiationId}': ${domainVerification.error}`
+          );
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Negotiation agreement validation failed",
+              details: domainVerification.error || "Invalid or unverified agreement",
+            },
+            { status: 400 }
+          );
+        }
+
+        finalAmount = domainAg.finalPrice;
+        currency = domainAg.currency || "USD";
+        itemDescription = `PayVia - Negotiated purchase - ${domainAg.items[0]?.title || "Item"}`;
+        customId = domainAg.id;
+      } else {
+        // 2. Fallback to in-memory store validation
+        const validation = validateAgreementForPayment(targetNegotiationId);
+
+        if (!validation.valid || !validation.agreement) {
+          console.warn(
+            `[PayPal Create Order] Agreement validation rejected for ID '${targetNegotiationId}': ${validation.error}`
+          );
+          return NextResponse.json(
+            {
+              success: false,
+              error: "Negotiation agreement validation failed",
+              details: validation.error || "Invalid or tampered agreement",
+            },
+            { status: 400 }
+          );
+        }
+
+        const agreement = validation.agreement;
+        finalAmount = agreement.finalPrice;
+        currency = agreement.currency || "USD";
+        itemDescription = `PayVia - Negotiated purchase - ${agreement.productName}`;
+        customId = agreement.id;
       }
-
-      const agreement = validation.agreement;
-      finalAmount = agreement.finalPrice;
-      currency = agreement.currency || "USD";
-      itemDescription = `PayVia - Negotiated purchase - ${agreement.productName}`;
-      customId = agreement.id;
     } else if (typeof bodyData.amount === "number" && bodyData.amount > 0) {
       // Fallback for standalone Sandbox test requests
       finalAmount = bodyData.amount;

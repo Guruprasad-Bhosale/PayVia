@@ -438,6 +438,23 @@ export class ShoppingService {
       updatedAt: new Date().toISOString(),
     }));
 
+    // Atomic Inventory Reservation Check for managed PayVia items
+    if (selectedOffer.isNegotiable && selectedOffer.source !== "channel3") {
+      const reservationCheck = await catalogRepo.reserveStock({
+        catalogItemId: selectedOffer.catalogItemId,
+        merchantId: selectedOffer.merchantId,
+        transactionId: `txn_intent_${session.id}_${offerId}`,
+        quantity: 1,
+        ttlSeconds: 900,
+      });
+
+      if (!reservationCheck.success) {
+        throw new Error(
+          `INSUFFICIENT_INVENTORY: Cannot select offer ${offerId}. ${reservationCheck.error || "Item is out of stock."}`
+        );
+      }
+    }
+
     // 1. Create Authoritative Transaction
     const transaction = await transactionService.createTransaction({
       platformId: session.platformId,
