@@ -15,12 +15,14 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Bot, RefreshCw, Layers, AlertCircle, Sparkles, Store, ShoppingBag } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import { useToast } from "@/components/ui/ToastProvider";
 import Link from "next/link";
 
 function NegotiateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paramProductId = searchParams.get("productId") || searchParams.get("id");
+  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
 
   const [availableProducts, setAvailableProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
   const [selectedProduct, setSelectedProduct] = useState<Product>(SAMPLE_PRODUCTS[0]);
@@ -45,7 +47,6 @@ function NegotiateContent() {
       const found = getProductById(paramProductId);
       if (found) {
         setSelectedProduct(found);
-        // Include in available list if not already present
         setAvailableProducts((prev) => {
           if (!prev.some((p) => p.id === found.id)) {
             return [found, ...prev];
@@ -66,13 +67,11 @@ function NegotiateContent() {
     }
   }, [paramProductId]);
 
-  // When product changes, adjust suggested default constraints
   const handleSelectProduct = (prod: Product) => {
     setSelectedProduct(prod);
     setSession(null);
     setErrorMessage(null);
 
-    // Compute sensible suggested demo budget (around 5% below list price, safely above floor)
     const suggestedMax = Number((prod.originalPrice * 0.95).toFixed(2));
     const suggestedTarget = Number((prod.originalPrice * 0.90).toFixed(2));
 
@@ -86,7 +85,6 @@ function NegotiateContent() {
   };
 
   const handleStartNegotiation = async () => {
-    // 1. Validation before dispatching
     if (!buyerConstraints.maxBudget || buyerConstraints.maxBudget <= 0) {
       setErrorMessage("Please enter a valid maximum budget greater than $0.");
       return;
@@ -107,11 +105,11 @@ function NegotiateContent() {
     setIsNegotiating(true);
     setErrorMessage(null);
     setSession(null);
-    setStatusStepText("Buyer Agent is formulating opening proposal with Google Gemini...");
+    setStatusStepText("Buyer Agent formulating opening proposal with Google Gemini...");
+    toastInfo("Negotiation Started", `Negotiating for ${selectedProduct.name}`);
 
-    // Simulated step progression for smooth UX
     const t1 = setTimeout(() => {
-      setStatusStepText("Merchant Agent is evaluating inventory margins & counter-offers...");
+      setStatusStepText("Merchant Agent evaluating inventory margins & counter-offers...");
     }, 1500);
 
     const t2 = setTimeout(() => {
@@ -135,13 +133,12 @@ function NegotiateContent() {
       }
 
       setSession(data.session);
+      toastSuccess("Agreement Formulated", `Agreed at $${data.session?.agreement?.finalPrice} USD`);
     } catch (err) {
       console.error("Negotiation failed:", err);
-      setErrorMessage(
-        err instanceof Error
-          ? err.message
-          : "Failed to execute agent negotiation. Please try again."
-      );
+      const msg = err instanceof Error ? err.message : "Failed to execute agent negotiation. Please try again.";
+      setErrorMessage(msg);
+      toastError("Negotiation Error", msg);
     } finally {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -154,41 +151,41 @@ function NegotiateContent() {
   const isChannel3Product = selectedProduct.source === "channel3";
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="purple">Step 1: AI Agent Negotiation</Badge>
+            <Badge variant="info">Step 1: Autonomous Agent Negotiation</Badge>
             {isChannel3Product && (
-              <Badge variant="info" className="gap-1 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              <Badge variant="default" className="gap-1 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0070E0] animate-pulse" />
                 <span>Discovered via Channel3</span>
               </Badge>
             )}
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#111827] tracking-tight">
             Autonomous Negotiation Room
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-[#5B6472] mt-1">
             Define your budget ceiling and launch real Gemini-powered bargaining with the Merchant Agent.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link href="/">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Button variant="secondary" size="sm" className="gap-1.5 text-xs">
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Discover Products</span>
+              <span>Catalog Discovery</span>
             </Button>
           </Link>
           {agreement && (
             <Button
               onClick={() => router.push(`/agreement?id=${session?.id}`)}
               size="sm"
-              className="gap-2 shadow-md shadow-emerald-500/20"
+              className="gap-2"
             >
-              <span>View Verified Agreement</span>
+              <span>View Agreement</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           )}
@@ -196,18 +193,18 @@ function NegotiateContent() {
       </div>
 
       {/* Product Selection */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <Layers className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#0070E0]" />
             <span>1. Select Product to Negotiate</span>
           </h2>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-[#5B6472]">
             {availableProducts.length} Items Available
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {availableProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -220,21 +217,21 @@ function NegotiateContent() {
       </div>
 
       {/* Agents Configuration Section */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-            <Bot className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
+            <Bot className="w-4 h-4 text-[#003087]" />
             <span>2. Configure Agent Parameters</span>
           </h2>
           {isChannel3Product && (
-            <div className="flex items-center gap-1.5 text-xs text-blue-300 bg-blue-950/50 px-3 py-1 rounded-full border border-blue-800/50">
-              <Store className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 text-xs text-[#003087] bg-[#EFF8FF] px-3 py-1 rounded-full border border-[#0070E0]/20">
+              <Store className="w-3.5 h-3.5 text-[#0070E0]" />
               <span>Merchant: {selectedProduct.merchantName || "Channel3 Verified Partner"}</span>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <BuyerAgentPanel
             constraints={buyerConstraints}
             onChange={setBuyerConstraints}
@@ -253,15 +250,14 @@ function NegotiateContent() {
       </div>
 
       {/* Action Bar */}
-      <Card className="border-blue-900/40 bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/40 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+      <Card className="border-[#E2E8F0] bg-white p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
         <div className="space-y-1 text-center sm:text-left">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5 justify-center sm:justify-start">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <span className="text-xs font-bold uppercase tracking-wider text-[#0070E0] flex items-center gap-1.5 justify-center sm:justify-start">
+            <Sparkles className="w-3.5 h-3.5 text-[#0070E0]" />
             <span>Autonomous Commercial Protocol</span>
           </span>
-          <p className="text-sm text-slate-200">
-            Click to command Buyer Agent to negotiate for{" "}
-            <strong className="text-white">{selectedProduct.name}</strong> ($
+          <p className="text-sm text-[#111827]">
+            Negotiate for <strong className="text-[#003087]">{selectedProduct.name}</strong> ($
             {selectedProduct.originalPrice.toFixed(2)} list).
           </p>
         </div>
@@ -271,7 +267,7 @@ function NegotiateContent() {
             size="lg"
             onClick={handleStartNegotiation}
             disabled={isNegotiating}
-            className="w-full sm:w-auto shadow-xl shadow-blue-500/25 px-8 font-bold text-base"
+            className="w-full sm:w-auto px-8 font-bold text-sm sm:text-base gap-2"
           >
             {isNegotiating ? (
               <>
@@ -280,7 +276,7 @@ function NegotiateContent() {
               </>
             ) : (
               <>
-                <Bot className="w-5 h-5" />
+                <Bot className="w-4 h-4" />
                 <span>Ask AI to Negotiate</span>
               </>
             )}
@@ -289,18 +285,18 @@ function NegotiateContent() {
       </Card>
 
       {errorMessage && (
-        <div className="p-4 rounded-2xl bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs flex items-start gap-3 shadow-lg">
-          <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-[#FEF3F2] border border-[#D92D20]/30 text-[#D92D20] text-xs flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 text-[#D92D20] flex-shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-bold block text-rose-200">Constraint Validation Notice:</span>
+            <span className="font-bold block text-[#D92D20]">Constraint Notice:</span>
             <p>{errorMessage}</p>
           </div>
         </div>
       )}
 
       {/* Live Negotiation Feed */}
-      <div className="space-y-4">
-        <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+      <div className="space-y-3">
+        <h2 className="text-base font-bold text-[#111827] flex items-center gap-2">
           <span>3. Live Agent Negotiation Stream</span>
         </h2>
         <NegotiationTimeline
@@ -312,14 +308,14 @@ function NegotiateContent() {
       </div>
 
       {agreement && agreement.status === "AGREED" && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-2xl bg-emerald-950/30 border border-emerald-500/40">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-xl bg-[#ECFDF5] border border-[#16845B]/30 shadow-sm">
           <div>
-            <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider block">
+            <span className="text-xs text-[#16845B] font-bold uppercase tracking-wider block">
               Negotiation Successful
             </span>
-            <p className="text-sm text-slate-200 mt-0.5">
+            <p className="text-sm text-[#111827] mt-0.5">
               Agreed final price:{" "}
-              <strong className="text-white font-extrabold text-base">
+              <strong className="text-[#16845B] font-bold text-base font-mono">
                 {formatCurrency(agreement.finalPrice, agreement.currency)}
               </strong>{" "}
               (Saved {formatCurrency(agreement.savings, agreement.currency)})
@@ -329,10 +325,10 @@ function NegotiateContent() {
           <Button
             size="lg"
             onClick={() => router.push(`/agreement?id=${session?.id}`)}
-            className="w-full sm:w-auto gap-2 shadow-xl shadow-emerald-500/25 px-8 font-bold text-base"
+            className="w-full sm:w-auto gap-2 bg-[#16845B] hover:bg-[#136C4A] text-white font-bold text-sm px-6"
           >
-            <span>Review Agreement & Authorize Payment</span>
-            <ArrowRight className="w-5 h-5" />
+            <span>Review Agreement &amp; Authorize</span>
+            <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
       )}
@@ -342,9 +338,8 @@ function NegotiateContent() {
 
 export default function NegotiatePage() {
   return (
-    <Suspense fallback={<div className="text-center py-16 text-slate-400">Loading negotiation room...</div>}>
+    <Suspense fallback={<div className="text-center py-16 text-[#5B6472]">Loading negotiation room...</div>}>
       <NegotiateContent />
     </Suspense>
   );
 }
-

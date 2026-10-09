@@ -3,32 +3,36 @@ import { cn } from "@/lib/utils";
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "paypal";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "paypal" | "destructive" | "default";
   size?: "sm" | "md" | "lg";
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", children, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-all duration-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
+      "inline-flex items-center justify-center font-semibold transition-all duration-150 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99]";
 
     const sizeStyles = {
       sm: "px-3 py-1.5 text-xs gap-1.5",
-      md: "px-4 py-2.5 text-sm gap-2",
-      lg: "px-6 py-3.5 text-base gap-2.5 font-semibold",
+      md: "px-4 py-2 text-sm gap-2",
+      lg: "px-6 py-3 text-sm sm:text-base gap-2.5",
     };
 
     const variantStyles = {
+      default:
+        "bg-[#003087] text-white hover:bg-[#002266] focus:ring-[#0070E0] shadow-sm",
       primary:
-        "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-500 hover:to-indigo-500 focus:ring-blue-500",
+        "bg-[#003087] text-white hover:bg-[#002266] focus:ring-[#0070E0] shadow-sm",
       secondary:
-        "bg-slate-800 text-slate-100 hover:bg-slate-700 focus:ring-slate-500 border border-slate-700",
+        "bg-[#F5F7FA] text-[#111827] hover:bg-[#E2E8F0] border border-[#E2E8F0] focus:ring-[#0070E0]",
       outline:
-        "border border-slate-700 text-slate-200 hover:bg-slate-800/80 hover:text-white focus:ring-slate-600",
+        "border border-[#CBD5E1] text-[#003087] bg-white hover:bg-[#F5F7FA] focus:ring-[#0070E0]",
       ghost:
-        "text-slate-300 hover:bg-slate-800/60 hover:text-white focus:ring-slate-600",
+        "text-[#5B6472] hover:bg-[#F5F7FA] hover:text-[#111827] focus:ring-[#CBD5E1]",
+      destructive:
+        "bg-[#D92D20] text-white hover:bg-[#B42318] focus:ring-[#D92D20] shadow-sm",
       paypal:
-        "bg-[#FFC439] hover:bg-[#F2B930] text-[#003087] font-bold shadow-md hover:shadow-lg focus:ring-[#FFC439]",
+        "bg-[#FFC439] hover:bg-[#F2B930] text-[#003087] font-bold shadow-sm hover:shadow focus:ring-[#FFC439]",
     };
 
     return (

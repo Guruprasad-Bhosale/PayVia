@@ -7,6 +7,7 @@ import { NegotiationAgreement } from "@/types/negotiation";
 import { AgreementCard } from "@/components/AgreementCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/ToastProvider";
 import { ArrowLeft, ShieldCheck, Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -14,6 +15,7 @@ function AgreementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const negotiationId = searchParams.get("id");
+  const { toast } = useToast();
 
   const [agreement, setAgreement] = useState<NegotiationAgreement | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,6 +80,11 @@ function AgreementContent() {
           negotiationId: agreement.negotiationId,
         }),
       });
+      toast({
+        title: "Agreement Approved",
+        description: "Redirecting to PayPal Sandbox checkout...",
+        variant: "success",
+      });
     } catch (err) {
       console.error("Failed to record server-side agreement approval:", err);
     }
@@ -86,9 +93,9 @@ function AgreementContent() {
 
   if (loading || !agreement) {
     return (
-      <div className="text-center py-16 space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-400" />
-        <p className="text-sm text-slate-400">Loading verified agreement terms...</p>
+      <div className="text-center py-20 space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-payvia-blue" />
+        <p className="text-sm text-muted-foreground font-medium">Verifying immutable agreement terms...</p>
       </div>
     );
   }
@@ -96,23 +103,28 @@ function AgreementContent() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
-          <Badge variant="success" className="mb-2">
-            Step 2: Human Verification & Approval
-          </Badge>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-6 h-6 rounded-full bg-payvia-blue text-white text-xs font-bold flex items-center justify-center">
+              2
+            </span>
+            <Badge variant="secondary" className="font-semibold text-payvia-navy">
+              Human Review & Approval
+            </Badge>
+          </div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
             Transaction Agreement Review
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Review the negotiated terms formulated by your Buyer Agent and Merchant Agent.
+          <p className="text-sm text-muted-foreground mt-1">
+            Review the final commercial terms agreed by the Buyer and Merchant autonomous agents.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link href="/negotiate">
             <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 mr-1.5" />
               <span>Back to Negotiator</span>
             </Button>
           </Link>
@@ -129,13 +141,14 @@ function AgreementContent() {
         />
       </div>
 
-      <div className="max-w-3xl mx-auto rounded-2xl bg-slate-900/60 border border-slate-800 p-6 space-y-3 text-xs text-slate-400">
-        <div className="flex items-center gap-2 text-slate-200 font-semibold text-sm">
-          <ShieldCheck className="w-4 h-4 text-blue-400" />
+      {/* Security & Protocol Verification Note */}
+      <div className="max-w-3xl mx-auto rounded-2xl bg-white border border-border p-6 shadow-sm space-y-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-payvia-navy font-bold text-sm">
+          <ShieldCheck className="w-4 h-4 text-payvia-blue" />
           <span>PayVia Zero-Trust Hard Constraint Enforcement</span>
         </div>
         <p className="leading-relaxed">
-          No funds are transferred automatically by autonomous agents. Payment settlement occurs strictly after explicit human authorization using the PayPal Sandbox REST API with server-verified amounts.
+          No funds can be transferred autonomously. Settlement occurs strictly through official PayPal Orders v2 Sandbox endpoints with cryptographic checksum verification and server-side price validation.
         </p>
       </div>
     </div>
@@ -144,7 +157,7 @@ function AgreementContent() {
 
 export default function AgreementPage() {
   return (
-    <Suspense fallback={<div className="text-center text-slate-400">Loading agreement...</div>}>
+    <Suspense fallback={<div className="text-center text-muted-foreground py-16">Loading agreement...</div>}>
       <AgreementContent />
     </Suspense>
   );

@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { OfferComparisonTable } from "./OfferComparisonTable";
 import { CandidateOffer, ShoppingSession } from "@/lib/domain/types";
+import LatticeLoader from "@/components/react-bits/LatticeLoader";
+import { useToast } from "@/components/ui/ToastProvider";
 import {
   Search,
   Bot,
-  Sparkles,
-  RefreshCw,
   AlertCircle,
   ShieldCheck,
   DollarSign,
@@ -22,6 +22,7 @@ import {
 
 export function ShoppingIntentExperience() {
   const router = useRouter();
+  const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
 
   // Intent Form State
   const [query, setQuery] = useState("Developer Laptop under $760");
@@ -42,7 +43,8 @@ export function ShoppingIntentExperience() {
     if (!query.trim()) return;
     setErrorMessage(null);
     setStep("DISCOVERING");
-    setStepMessage("Initializing Buyer Shopping Intent & discovering commerce network...");
+    setStepMessage("Scanning PayVia commerce network and merchant policies...");
+    toastInfo("Buyer Agent Started", `Exploring deals for "${query}" within $${maxBudget}`);
 
     try {
       // 1. Create Shopping Intent
@@ -71,7 +73,6 @@ export function ShoppingIntentExperience() {
       const activeSessionId = intentData.session.id;
 
       // 2. Discover Candidates
-      setStepMessage("Scanning PayVia-enabled merchants and commerce catalog...");
       const discoverRes = await fetch(`/api/v1/shopping-intents/${intentData.intent.id}/discover`, {
         method: "POST",
       });
@@ -82,7 +83,7 @@ export function ShoppingIntentExperience() {
 
       // 3. Parallel Multi-Merchant AI Negotiation
       setStep("NEGOTIATING");
-      setStepMessage("Buyer Agent negotiating in parallel with merchant agents under private margin policies...");
+      setStepMessage("Negotiating in parallel with merchant agents under private margin policies...");
       await new Promise((r) => setTimeout(r, 600));
 
       const negotiateRes = await fetch(`/api/v1/shopping-sessions/${activeSessionId}/negotiate`, {
@@ -93,13 +94,17 @@ export function ShoppingIntentExperience() {
         throw new Error(negotiateData.error?.message || "Failed to negotiate offers");
       }
 
+      const candidateOffers = negotiateData.offers || negotiateData.session?.candidateOffers || [];
       setSession(negotiateData.session);
-      setOffers(negotiateData.offers || negotiateData.session?.candidateOffers || []);
+      setOffers(candidateOffers);
       setStep("OFFERS");
+      toastSuccess("Negotiations Complete", `${candidateOffers.length} competitive merchant offers ready for review`);
     } catch (err: any) {
       console.error("Shopping flow error:", err);
-      setErrorMessage(err instanceof Error ? err.message : "Failed to complete shopping orchestration");
+      const msg = err instanceof Error ? err.message : "Failed to complete shopping orchestration";
+      setErrorMessage(msg);
       setStep("INTENT");
+      toastError("Negotiation Error", msg);
     }
   };
 
@@ -117,31 +122,34 @@ export function ShoppingIntentExperience() {
         throw new Error(data.error?.message || "Failed to select offer");
       }
 
+      const lockedAgreementId = data.agreement?.id || data.transaction?.activeAgreementId || null;
       setSession(data.session);
-      setAgreementId(data.agreement?.id || data.transaction?.activeAgreementId || null);
+      setAgreementId(lockedAgreementId);
       setStep("SELECTED");
+      toastSuccess("Offer Selected & Agreement Locked", "Cryptographic terms generated. Ready for explicit human approval.");
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to finalize offer selection");
+      const msg = err.message || "Failed to finalize offer selection";
+      setErrorMessage(msg);
+      toastError("Selection Error", msg);
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Search & Constraints Header */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/40 to-slate-900 border border-blue-500/20 shadow-2xl space-y-5">
+      <div className="p-6 rounded-xl bg-white border border-[#E2E8F0] shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Badge variant="purple" className="text-xs gap-1">
-                <Sparkles className="w-3 h-3 text-purple-400" />
-                <span>PayVia Autonomous Buyer Network</span>
+              <Badge variant="info" className="text-xs">
+                PayVia Buyer Network
               </Badge>
-              <span className="text-xs text-slate-400">Parallel Multi-Merchant Negotiation</span>
+              <span className="text-xs text-[#5B6472]">Parallel Multi-Merchant Negotiation</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white">
-              What are you looking to buy?
+            <h2 className="text-xl sm:text-2xl font-bold text-[#111827]">
+              What are you looking to purchase?
             </h2>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs sm:text-sm text-[#5B6472]">
               Express your intent and budget bounds. Your Buyer Agent negotiates directly with PayVia-enabled merchants to formulate competitive offers.
             </p>
           </div>
@@ -150,13 +158,13 @@ export function ShoppingIntentExperience() {
         {/* Search Query Input */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <Input
               type="text"
               placeholder="e.g. Developer Laptop under $760"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-10 h-11 text-sm bg-slate-950/80 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
+              className="pl-10 h-10 text-sm"
               disabled={step === "DISCOVERING" || step === "NEGOTIATING"}
             />
           </div>
@@ -164,28 +172,19 @@ export function ShoppingIntentExperience() {
           <Button
             onClick={handleStartShopping}
             disabled={step === "DISCOVERING" || step === "NEGOTIATING" || !query.trim()}
-            className="h-11 px-6 font-bold gap-2 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20 text-sm"
+            className="h-10 px-6 font-bold gap-2 text-sm"
           >
-            {step === "DISCOVERING" || step === "NEGOTIATING" ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Orchestrating...</span>
-              </>
-            ) : (
-              <>
-                <Bot className="w-4 h-4" />
-                <span>Launch Buyer Agent</span>
-              </>
-            )}
+            <Bot className="w-4 h-4" />
+            <span>Launch Buyer Agent</span>
           </Button>
         </div>
 
         {/* Economic Constraints & Optimization Preferences */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#E2E8F0]">
           <div className="space-y-1">
-            <label className="text-xs text-slate-400 font-medium flex items-center gap-1">
-              <DollarSign className="w-3 h-3 text-emerald-400" />
-              <span>Budget Ceiling:</span>
+            <label className="text-xs text-[#5B6472] font-semibold flex items-center gap-1">
+              <DollarSign className="w-3.5 h-3.5 text-[#16845B]" />
+              <span>Budget Ceiling (USD):</span>
             </label>
             <Input
               type="number"
@@ -193,13 +192,13 @@ export function ShoppingIntentExperience() {
               value={maxBudget}
               onChange={(e) => setMaxBudget(Number(e.target.value))}
               disabled={step === "DISCOVERING" || step === "NEGOTIATING"}
-              className="h-9 text-xs bg-slate-950 border-slate-700 font-mono"
+              className="h-9 text-xs font-mono"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs text-slate-400 font-medium flex items-center gap-1">
-              <Clock className="w-3 h-3 text-blue-400" />
+            <label className="text-xs text-[#5B6472] font-semibold flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#0070E0]" />
               <span>Max Delivery (Days):</span>
             </label>
             <Input
@@ -209,13 +208,13 @@ export function ShoppingIntentExperience() {
               value={maxDeliveryDays}
               onChange={(e) => setMaxDeliveryDays(Number(e.target.value))}
               disabled={step === "DISCOVERING" || step === "NEGOTIATING"}
-              className="h-9 text-xs bg-slate-950 border-slate-700 font-mono"
+              className="h-9 text-xs font-mono"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs text-slate-400 font-medium flex items-center gap-1">
-              <Layers className="w-3 h-3 text-purple-400" />
+            <label className="text-xs text-[#5B6472] font-semibold flex items-center gap-1">
+              <Layers className="w-3.5 h-3.5 text-[#003087]" />
               <span>Optimization Priority:</span>
             </label>
             <div className="grid grid-cols-3 gap-1">
@@ -225,10 +224,10 @@ export function ShoppingIntentExperience() {
                   type="button"
                   onClick={() => setPriority(p)}
                   disabled={step === "DISCOVERING" || step === "NEGOTIATING"}
-                  className={`h-9 rounded-lg text-[10px] font-bold border transition-colors ${
+                  className={`h-9 rounded-lg text-xs font-bold border transition-all ${
                     priority === p
-                      ? "bg-blue-600/30 border-blue-500 text-blue-300"
-                      : "bg-slate-950/80 border-slate-800 text-slate-400 hover:text-white"
+                      ? "bg-[#EFF8FF] border-[#0070E0] text-[#003087] shadow-2xs"
+                      : "bg-[#F5F7FA] border-[#E2E8F0] text-[#5B6472] hover:text-[#111827]"
                   }`}
                 >
                   {p}
@@ -238,87 +237,31 @@ export function ShoppingIntentExperience() {
           </div>
         </div>
 
-        {/* Parallel Multi-Merchant AI Negotiation Live Animation */}
-        {step === "NEGOTIATING" && (
-          <div className="p-6 rounded-2xl bg-slate-950 border border-blue-500/30 space-y-4 animate-in fade-in duration-300">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-[11px] font-mono text-indigo-400 font-semibold uppercase tracking-wider">
-                  Live Autonomous Negotiation Mesh
-                </span>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <span>Buyer Agent Negotiating Concurrently with 3 Merchants</span>
-                </h3>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-indigo-300 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 animate-pulse">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Economic Terms Converging</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
-              <div className="p-4 rounded-xl bg-slate-900 border border-blue-500/40 space-y-2 relative overflow-hidden">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-white">Alpha Compute Direct</span>
-                  <Badge variant="success" className="text-[10px] animate-pulse">Counter Offer</Badge>
-                </div>
-                <div className="text-xs text-slate-400">ThinkPad Workstation Pro</div>
-                <div className="flex justify-between items-baseline pt-1">
-                  <span className="text-xs text-slate-400 line-through">$800.00</span>
-                  <span className="text-lg font-extrabold text-emerald-400 font-mono">$755.00</span>
-                </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-blue-400" />
-                  <span>4 days delivery agreed</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-900 border border-indigo-500/40 space-y-2 relative overflow-hidden">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-white">Beta Tech Systems</span>
-                  <Badge variant="purple" className="text-[10px] animate-pulse">Counter Offer</Badge>
-                </div>
-                <div className="text-xs text-slate-400">Dell XPS Developer Edition</div>
-                <div className="flex justify-between items-baseline pt-1">
-                  <span className="text-xs text-slate-400 line-through">$790.00</span>
-                  <span className="text-lg font-extrabold text-indigo-300 font-mono">$760.00</span>
-                </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-indigo-400" />
-                  <span>4 days delivery agreed</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-900 border border-purple-500/40 space-y-2 relative overflow-hidden">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-white">Gamma Rapid Express</span>
-                  <Badge variant="info" className="text-[10px] animate-pulse">Fastest SLA</Badge>
-                </div>
-                <div className="text-xs text-slate-400">MacBook Pro Refurb M-Series</div>
-                <div className="flex justify-between items-baseline pt-1">
-                  <span className="text-xs text-slate-400 line-through">$820.00</span>
-                  <span className="text-lg font-extrabold text-purple-300 font-mono">$765.00</span>
-                </div>
-                <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-purple-400" />
-                  <span>3 days express transit</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Progress State Banner */}
+        {/* Real Agent Processing with React Bits LatticeLoader */}
         {(step === "DISCOVERING" || step === "NEGOTIATING") && (
-          <div className="p-3.5 rounded-xl bg-blue-950/40 border border-blue-800/50 flex items-center gap-2.5 text-xs text-blue-300 animate-pulse">
-            <RefreshCw className="w-4 h-4 animate-spin text-blue-400 flex-shrink-0" />
-            <span className="font-mono">{stepMessage}</span>
+          <div className="p-4 rounded-lg bg-[#EFF8FF] border border-[#0070E0]/30 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <LatticeLoader
+                  status="working"
+                  label={step === "DISCOVERING" ? "Discovering merchant candidates" : "Negotiating terms under merchant policies"}
+                  pattern="orbit"
+                  color="#003087"
+                  doneColor="#16845B"
+                  fontSize={13}
+                  cellSize={6}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-[#5B6472]">
+              {stepMessage}
+            </p>
           </div>
         )}
 
         {errorMessage && (
-          <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800/60 text-xs text-rose-300 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400" />
+          <div className="p-3.5 rounded-lg bg-[#FEF3F2] border border-[#D92D20]/30 text-xs text-[#D92D20] flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
@@ -334,24 +277,24 @@ export function ShoppingIntentExperience() {
           />
 
           {step === "SELECTED" && agreementId && (
-            <div className="p-6 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl animate-in fade-in duration-300">
+            <div className="p-6 rounded-xl bg-[#ECFDF5] border border-[#16845B]/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                  <span className="text-sm font-bold text-white uppercase tracking-wider">
+                  <ShieldCheck className="w-5 h-5 text-[#16845B]" />
+                  <span className="text-sm font-bold text-[#111827]">
                     Authoritative Agreement Locked (SHA-256 Verified)
                   </span>
                 </div>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-[#5B6472]">
                   Both agents converged on agreed economic terms. Proceed through the human approval gate to settle via PayPal.
                 </p>
               </div>
 
               <Button
                 onClick={() => router.push(`/agreement?id=${agreementId}`)}
-                className="w-full sm:w-auto px-8 gap-2 bg-emerald-600 hover:bg-emerald-500 font-bold shadow-lg shadow-emerald-500/25 text-sm"
+                className="w-full sm:w-auto px-6 gap-2 bg-[#16845B] hover:bg-[#136C4A] font-bold text-sm text-white"
               >
-                <span>Approve &amp; Pay with PayPal</span>
+                <span>Review Terms &amp; Consent</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

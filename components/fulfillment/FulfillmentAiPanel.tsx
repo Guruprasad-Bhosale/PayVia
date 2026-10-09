@@ -77,37 +77,37 @@ export const FulfillmentAiPanel: React.FC<FulfillmentAiPanelProps> = ({ plan }) 
   };
 
   return (
-    <Card className="border-slate-800 bg-slate-900/90 shadow-xl overflow-hidden">
-      <CardHeader className="p-4 border-b border-slate-800 bg-slate-950/60 flex flex-row items-center justify-between">
+    <Card className="border-border bg-white shadow-sm overflow-hidden">
+      <CardHeader className="p-4 border-b border-border bg-slate-50/70 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-payvia-navy">
             <Bot className="w-4 h-4" />
           </div>
           <div>
-            <CardTitle className="text-base font-bold text-white flex items-center gap-2">
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
               <span>Fulfillment AI Assistant</span>
-              <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-500/30">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-payvia-navy border border-blue-200">
                 Gemini 3.8 Flash
               </span>
             </CardTitle>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-muted-foreground">
               Autonomous schedule reasoning, critical path analysis & risk verification
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+        <div className="flex items-center gap-1.5 text-[11px] text-payvia-success bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 font-medium">
           <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Read-Only Invariant Guard</span>
+          <span>Read-Only Guard</span>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-5 space-y-4">
         {/* Preset Quick Actions */}
         <div className="space-y-1.5">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-            <HelpCircle className="w-3 h-3 text-indigo-400" />
-            <span>Suggested Operational Inquiries</span>
+          <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+            <HelpCircle className="w-3 h-3 text-payvia-blue" />
+            <span>Operational Inquiries</span>
           </span>
           <div className="flex flex-wrap gap-1.5">
             {PRESET_QUESTIONS.map((q, idx) => (
@@ -119,9 +119,9 @@ export const FulfillmentAiPanel: React.FC<FulfillmentAiPanelProps> = ({ plan }) 
                   handleAsk(q);
                 }}
                 disabled={loading}
-                className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-950/70 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-colors text-left flex items-center gap-1.5 disabled:opacity-50"
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-foreground border border-border transition-colors text-left flex items-center gap-1.5 disabled:opacity-50"
               >
-                <Sparkles className="w-3 h-3 text-indigo-400 flex-shrink-0" />
+                <Sparkles className="w-3 h-3 text-payvia-blue flex-shrink-0" />
                 <span>{q}</span>
               </button>
             ))}
@@ -142,14 +142,14 @@ export const FulfillmentAiPanel: React.FC<FulfillmentAiPanelProps> = ({ plan }) 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Ask Fulfillment AI about this schedule (e.g. 'Can this meet the 5-day deadline?')..."
-              className="w-full h-10 px-3.5 rounded-xl bg-slate-950/90 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/30"
+              className="w-full h-10 px-3.5 rounded-xl bg-slate-50 border border-border text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:border-payvia-blue focus:ring-1 focus:ring-payvia-blue/20"
               disabled={loading}
             />
           </div>
           <Button
             type="submit"
             disabled={!query.trim() || loading}
-            className="h-10 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl gap-2 font-medium"
+            className="h-10 px-4 bg-payvia-navy hover:bg-payvia-navy-dark text-white rounded-xl gap-2 font-bold"
           >
             {loading ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
@@ -162,19 +162,19 @@ export const FulfillmentAiPanel: React.FC<FulfillmentAiPanelProps> = ({ plan }) 
 
         {/* AI Answer Card */}
         {response && (
-          <div className="p-4 rounded-xl bg-slate-950/90 border border-indigo-500/30 space-y-2.5">
+          <div className="p-4 rounded-xl bg-slate-50 border border-border space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
-                <Bot className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-xs font-bold text-payvia-navy flex items-center gap-1.5">
+                <Bot className="w-3.5 h-3.5 text-payvia-blue" />
                 <span>Fulfillment Intelligence Report</span>
               </span>
               {response.status === "AT_RISK" ? (
-                <span className="text-[10px] font-bold text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+                <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
                   <span>AT RISK</span>
                 </span>
               ) : (
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                <span className="text-[10px] font-bold text-payvia-success bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
                   <span>ON TRACK</span>
                 </span>
@@ -182,25 +182,25 @@ export const FulfillmentAiPanel: React.FC<FulfillmentAiPanelProps> = ({ plan }) 
             </div>
 
             {lastQuery && (
-              <p className="text-xs text-slate-400 italic">
+              <p className="text-xs text-muted-foreground italic">
                 &ldquo;{lastQuery}&rdquo;
               </p>
             )}
 
-            <div className="text-sm text-slate-200 leading-relaxed font-sans whitespace-pre-wrap">
+            <div className="text-sm text-foreground leading-relaxed font-sans whitespace-pre-wrap">
               {response.answer}
             </div>
 
-            <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+            <div className="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
               <div>
                 Promised Milestone:{" "}
-                <strong className="text-slate-300">
+                <strong className="text-foreground">
                   {new Date(response.promisedDeliveryDate).toLocaleDateString()}
                 </strong>
               </div>
               <div>
                 Buffer Slack:{" "}
-                <strong className={response.slackHours < 0 ? "text-amber-400" : "text-emerald-400"}>
+                <strong className={response.slackHours < 0 ? "text-payvia-error" : "text-payvia-success"}>
                   {response.slackHours > 0 ? `+${response.slackHours}h` : `${response.slackHours}h`}
                 </strong>
               </div>

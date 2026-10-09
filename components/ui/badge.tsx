@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "default" | "success" | "warning" | "info" | "purple";
+  variant?: "default" | "success" | "warning" | "info" | "purple" | "error" | "secondary" | "outline" | "destructive";
 }
 
 export function Badge({
@@ -12,17 +12,21 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variants = {
-    default: "bg-slate-800 text-slate-300 border-slate-700",
-    success: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-    warning: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    info: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-    purple: "bg-purple-500/10 text-purple-400 border-purple-500/30",
+    default: "bg-[#F5F7FA] text-[#5B6472] border-[#E2E8F0]",
+    secondary: "bg-[#EFF8FF] text-[#003087] border-[#0070E0]/20",
+    outline: "bg-transparent text-[#5B6472] border-[#CBD5E1]",
+    success: "bg-[#ECFDF5] text-[#16845B] border-[#16845B]/25",
+    warning: "bg-[#FFFBEB] text-[#B45309] border-[#F59E0B]/30",
+    info: "bg-[#EFF8FF] text-[#0070E0] border-[#0070E0]/25",
+    purple: "bg-[#F5F3FF] text-[#6D28D9] border-[#8B5CF6]/25",
+    error: "bg-[#FEF3F2] text-[#D92D20] border-[#D92D20]/25",
+    destructive: "bg-[#FEF3F2] text-[#D92D20] border-[#D92D20]/25",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border",
+        "inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-semibold rounded-full border",
         variants[variant],
         className
       )}

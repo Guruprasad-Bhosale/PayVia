@@ -19,38 +19,38 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
   return (
     <Card
       onClick={onSelect}
-      className={`transition-all duration-300 cursor-pointer border flex flex-col justify-between overflow-hidden group ${
+      className={`transition-all duration-150 cursor-pointer border flex flex-col justify-between overflow-hidden group bg-white ${
         selected
-          ? "border-blue-500 bg-slate-900 shadow-2xl shadow-blue-500/20 ring-2 ring-blue-500/40"
-          : "hover:border-slate-700 bg-slate-900/60"
+          ? "border-[#0070E0] shadow-md ring-2 ring-[#0070E0]/20"
+          : "border-[#E2E8F0] hover:border-[#CBD5E1] shadow-2xs hover:shadow-xs"
       }`}
     >
       <div>
         {/* Product Image Thumbnail if provided */}
         {product.imageUrl && (
-          <div className="relative w-full h-40 bg-slate-950/80 border-b border-slate-800 flex items-center justify-center p-3 overflow-hidden">
+          <div className="relative w-full h-40 bg-[#F5F7FA] border-b border-[#E2E8F0] flex items-center justify-center p-3 overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+              className="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105"
               loading="lazy"
             />
             <div className="absolute top-2 left-2 flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/60 backdrop-blur-sm shadow-sm">
-                <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ECFDF5] text-[#16845B] border border-[#16845B]/25 shadow-2xs">
+                <Sparkles className="w-2.5 h-2.5 text-[#16845B]" />
                 <span>AI Negotiable</span>
               </span>
               {isChannel3 && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-950/90 text-blue-300 border border-blue-700/60 backdrop-blur-sm shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EFF8FF] text-[#0070E0] border border-[#0070E0]/25 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0070E0] animate-pulse" />
                   <span>Channel3</span>
                 </span>
               )}
             </div>
             {product.availability && (
               <div className="absolute top-2 right-2">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-900/90 text-slate-300 border border-slate-700/60 backdrop-blur-sm">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white text-[#5B6472] border border-[#E2E8F0] shadow-2xs">
                   {product.availability}
                 </span>
               </div>
@@ -63,26 +63,26 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             <div className="space-y-1.5">
               {!product.imageUrl && (
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/60 shadow-sm">
-                    <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ECFDF5] text-[#16845B] border border-[#16845B]/25 shadow-2xs">
+                    <Sparkles className="w-2.5 h-2.5 text-[#16845B]" />
                     <span>AI Negotiable</span>
                   </span>
-                  <Badge variant={isChannel3 ? "info" : "purple"}>
+                  <Badge variant={isChannel3 ? "info" : "default"}>
                     {isChannel3 ? "Channel3 Discovery" : product.category}
                   </Badge>
                 </div>
               )}
-              <CardTitle className="text-base sm:text-lg text-white group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+              <CardTitle className="text-base sm:text-lg text-[#111827] group-hover:text-[#003087] transition-colors line-clamp-2 leading-snug">
                 {product.name}
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400 line-clamp-1">
+              <CardDescription className="text-xs text-[#5B6472] line-clamp-1">
                 {product.tagline || product.merchantName || "Verified Commerce Listing"}
               </CardDescription>
             </div>
 
             <div className="text-right flex-shrink-0">
-              <span className="text-[10px] text-slate-400 block uppercase font-medium">List Price</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-white">
+              <span className="text-[10px] text-[#5B6472] block uppercase font-semibold">List Price</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-[#111827] font-mono">
                 {formatCurrency(product.originalPrice, product.currency)}
               </span>
             </div>
@@ -90,28 +90,28 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
+          <p className="text-xs text-[#5B6472] leading-relaxed line-clamp-2">
             {product.description}
           </p>
 
-          <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
+          <div className="grid grid-cols-2 gap-2 text-xs text-[#5B6472]">
             {product.features.slice(0, 4).map((feature, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 text-slate-300 text-[11px]">
-                <Zap className="w-3 h-3 text-amber-400 flex-shrink-0" />
+              <div key={idx} className="flex items-center gap-1.5 text-[#5B6472] text-[11px]">
+                <Zap className="w-3 h-3 text-[#0070E0] flex-shrink-0" />
                 <span className="truncate">{feature}</span>
               </div>
             ))}
           </div>
 
-          <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-            <div className="flex items-center gap-1.5 text-emerald-400 truncate max-w-[50%]">
+          <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-[11px] text-[#5B6472]">
+            <div className="flex items-center gap-1.5 text-[#16845B] truncate max-w-[50%] font-medium">
               <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">{product.merchantName || "Verified Merchant"}</span>
             </div>
             {standardDelivery && (
-              <div className="flex items-center gap-1.5 text-slate-400 flex-shrink-0">
-                <Truck className="w-3.5 h-3.5 text-blue-400" />
-                <span>Est. {standardDelivery.estimatedDays}d</span>
+              <div className="flex items-center gap-1.5 text-[#5B6472] flex-shrink-0">
+                <Truck className="w-3.5 h-3.5 text-[#0070E0]" />
+                <span>Est. {standardDelivery.estimatedDays}d SLA</span>
               </div>
             )}
           </div>
@@ -120,7 +120,7 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
 
       <div className="p-4 sm:p-6 pt-0 space-y-2">
         <Button
-          variant={selected ? "primary" : "outline"}
+          variant={selected ? "primary" : "secondary"}
           size="sm"
           className="w-full text-xs font-semibold gap-1.5"
           onClick={(e: React.MouseEvent) => {
@@ -135,7 +135,7 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             </>
           ) : (
             <>
-              <span>Negotiate with merchant</span>
+              <span>Configure Negotiation</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </>
           )}
@@ -147,9 +147,9 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            className="flex items-center justify-center gap-1 text-[10px] text-slate-500 hover:text-blue-400 transition-colors pt-0.5"
+            className="flex items-center justify-center gap-1 text-[10px] text-[#5B6472] hover:text-[#0070E0] transition-colors pt-0.5"
           >
-            <span>View source listing</span>
+            <span>View catalog source</span>
             <ExternalLink className="w-2.5 h-2.5" />
           </a>
         )}
@@ -157,4 +157,3 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
     </Card>
   );
 }
-

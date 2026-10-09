@@ -30,7 +30,7 @@ export function OfferComparisonTable({
 }: OfferComparisonTableProps) {
   if (!offers || offers.length === 0) {
     return (
-      <div className="p-8 text-center rounded-2xl bg-slate-900/60 border border-slate-800 text-slate-400 text-sm">
+      <div className="p-8 text-center rounded-xl bg-white border border-[#E2E8F0] text-[#5B6472] text-sm shadow-2xs">
         No candidate merchant offers available.
       </div>
     );
@@ -40,11 +40,11 @@ export function OfferComparisonTable({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-400" />
+          <h3 className="text-base font-bold text-[#111827] flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#0070E0]" />
             <span>Structured Multi-Merchant Offer Comparison</span>
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-[#5B6472]">
             Compare negotiated economic terms across verified commerce merchants. Select your preferred offer to proceed to settlement.
           </p>
         </div>
@@ -62,10 +62,10 @@ export function OfferComparisonTable({
           return (
             <div
               key={offer.id}
-              className={`rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden ${
+              className={`rounded-xl border transition-all duration-150 flex flex-col justify-between overflow-hidden bg-white ${
                 isSelected
-                  ? "border-emerald-500 bg-slate-900 shadow-xl shadow-emerald-500/10 ring-2 ring-emerald-500/40"
-                  : "border-slate-800 bg-slate-900/80 hover:border-slate-700"
+                  ? "border-[#0070E0] shadow-md ring-2 ring-[#0070E0]/20"
+                  : "border-[#E2E8F0] hover:border-[#CBD5E1] shadow-2xs hover:shadow-xs"
               }`}
             >
               <div className="p-5 space-y-4">
@@ -75,7 +75,7 @@ export function OfferComparisonTable({
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {offer.isNegotiable ? (
                         <Badge variant="success" className="text-[10px] gap-1 py-0.5">
-                          <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+                          <Sparkles className="w-2.5 h-2.5 text-[#16845B]" />
                           <span>AI Negotiated</span>
                         </Badge>
                       ) : (
@@ -84,68 +84,68 @@ export function OfferComparisonTable({
                         </Badge>
                       )}
                       {isBestPrice && (
-                        <Badge variant="purple" className="text-[10px] py-0.5 font-bold">
+                        <Badge variant="info" className="text-[10px] py-0.5 font-bold">
                           ★ Best Value
                         </Badge>
                       )}
                     </div>
-                    <h4 className="text-sm font-bold text-white line-clamp-1">{offer.productTitle}</h4>
-                    <span className="text-xs text-slate-400 block font-medium">
+                    <h4 className="text-sm font-bold text-[#111827] line-clamp-1">{offer.productTitle}</h4>
+                    <span className="text-xs text-[#5B6472] block font-medium">
                       {offer.merchantName}
                     </span>
                   </div>
 
                   <div className="text-right flex-shrink-0">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">
-                      Negotiated
+                    <span className="text-[10px] text-[#5B6472] uppercase font-semibold block">
+                      Agreed Price
                     </span>
-                    <span className="text-xl font-extrabold text-emerald-400 font-mono">
+                    <span className="text-xl font-extrabold text-[#16845B] font-mono">
                       {formatCurrency(offer.price, offer.currency)}
                     </span>
                   </div>
                 </div>
 
                 {/* Economic Breakdown Table */}
-                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-2 text-xs">
-                  <div className="flex justify-between items-center text-slate-400">
+                <div className="p-3 rounded-lg bg-[#F5F7FA] border border-[#E2E8F0] space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-[#5B6472]">
                     <span className="flex items-center gap-1.5">
-                      <Tag className="w-3 h-3 text-slate-500" />
+                      <Tag className="w-3.5 h-3.5 text-[#94A3B8]" />
                       <span>Original List Price:</span>
                     </span>
-                    <span className="line-through text-slate-400">
+                    <span className="line-through text-[#94A3B8]">
                       {formatCurrency(offer.listPrice, offer.currency)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center text-slate-200">
-                    <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                      <span>Your AI Savings:</span>
+                  <div className="flex justify-between items-center text-[#111827]">
+                    <span className="flex items-center gap-1.5 text-[#16845B] font-semibold">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#16845B]" />
+                      <span>Negotiated Savings:</span>
                     </span>
-                    <span className="font-bold text-emerald-400 font-mono">
+                    <span className="font-bold text-[#16845B] font-mono">
                       +{formatCurrency(offer.savings, offer.currency)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center text-slate-300 pt-1 border-t border-slate-800">
-                    <span className="flex items-center gap-1.5">
-                      <Truck className="w-3 h-3 text-blue-400" />
-                      <span>Delivery Window:</span>
+                  <div className="flex justify-between items-center text-[#111827] pt-1.5 border-t border-[#E2E8F0]">
+                    <span className="flex items-center gap-1.5 text-[#5B6472]">
+                      <Truck className="w-3.5 h-3.5 text-[#0070E0]" />
+                      <span>Delivery SLA:</span>
                     </span>
-                    <span className="font-semibold text-white">{offer.deliveryDays} Days SLA</span>
+                    <span className="font-semibold text-[#111827]">{offer.deliveryDays} Days Transit</span>
                   </div>
 
-                  <div className="flex justify-between items-center text-slate-400">
-                    <span>Payment Timing:</span>
-                    <span className="text-slate-200 font-mono uppercase text-[11px]">
-                      {offer.paymentTiming}
+                  <div className="flex justify-between items-center text-[#5B6472]">
+                    <span>Payment Method:</span>
+                    <span className="text-[#003087] font-semibold text-[11px]">
+                      PayPal Orders v2
                     </span>
                   </div>
                 </div>
 
                 {/* Agent Reasoning Snippet */}
                 {offer.reasoningText && (
-                  <p className="text-[11px] text-slate-400 italic bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/60 leading-relaxed">
+                  <p className="text-[11px] text-[#5B6472] italic bg-[#F8FAFC] p-2.5 rounded-md border border-[#E2E8F0] leading-relaxed">
                     &ldquo;{offer.reasoningText}&rdquo;
                   </p>
                 )}
@@ -159,7 +159,7 @@ export function OfferComparisonTable({
                   variant={isSelected ? "primary" : "outline"}
                   className={`w-full text-xs font-bold gap-2 ${
                     isSelected
-                      ? "bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20 text-white"
+                      ? "bg-[#16845B] hover:bg-[#136C4A] text-white shadow-sm"
                       : ""
                   }`}
                 >
@@ -183,7 +183,7 @@ export function OfferComparisonTable({
                     href={offer.productUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1 text-[10px] text-slate-500 hover:text-blue-400 transition-colors pt-2"
+                    className="flex items-center justify-center gap-1 text-[10px] text-[#5B6472] hover:text-[#0070E0] transition-colors pt-2"
                   >
                     <span>View catalog listing</span>
                     <ExternalLink className="w-2.5 h-2.5" />

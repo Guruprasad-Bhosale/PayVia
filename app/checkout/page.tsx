@@ -69,9 +69,9 @@ function CheckoutContent() {
 
   if (loading || !agreement) {
     return (
-      <div className="text-center py-16 space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-400" />
-        <p className="text-sm text-slate-400">Loading checkout session...</p>
+      <div className="text-center py-20 space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-payvia-blue" />
+        <p className="text-sm text-muted-foreground font-medium">Initializing secure checkout session...</p>
       </div>
     );
   }
@@ -79,23 +79,28 @@ function CheckoutContent() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
-          <Badge variant="info" className="mb-2">
-            Step 3: Settlement
-          </Badge>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Execute PayPal Sandbox Settlement
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-6 h-6 rounded-full bg-payvia-blue text-white text-xs font-bold flex items-center justify-center">
+              3
+            </span>
+            <Badge variant="secondary" className="font-semibold text-payvia-navy">
+              PayPal Settlement
+            </Badge>
+          </div>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
+            Authorize PayPal Sandbox Settlement
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Authorize payment for your negotiated purchase using official PayPal Sandbox.
+          <p className="text-sm text-muted-foreground mt-1">
+            Complete payment for your approved terms through PayPal&apos;s secure authorization portal.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link href={`/agreement${negotiationId ? `?id=${negotiationId}` : ""}`}>
             <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 mr-1.5" />
               <span>Back to Agreement</span>
             </Button>
           </Link>
@@ -103,17 +108,17 @@ function CheckoutContent() {
       </div>
 
       {paymentStatus === "cancelled" && (
-        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-amber-950/30 border border-amber-800/40 text-amber-300 text-xs flex items-center gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
-          <span>Payment was cancelled on PayPal. You can re-attempt whenever ready.</span>
+        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <span>Payment authorization was cancelled on PayPal. You can re-attempt whenever ready.</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-rose-950/30 border border-rose-800/40 text-rose-300 text-xs flex items-center gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-red-50 border border-red-200 text-payvia-error text-xs flex items-center gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-payvia-error flex-shrink-0" />
           <span>
-            Payment capture error: {errorDetails ? decodeURIComponent(errorDetails) : errorMessage}
+            Payment capture issue: {errorDetails ? decodeURIComponent(errorDetails) : errorMessage}
           </span>
         </div>
       )}
@@ -127,7 +132,7 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="text-center text-slate-400">Loading checkout...</div>}>
+    <Suspense fallback={<div className="text-center text-muted-foreground py-16">Loading checkout session...</div>}>
       <CheckoutContent />
     </Suspense>
   );

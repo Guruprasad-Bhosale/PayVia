@@ -3,7 +3,7 @@ import { BuyerConstraints } from "@/types/agent";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
-import { Bot, Shield, DollarSign, Clock, Zap } from "lucide-react";
+import { Bot } from "lucide-react";
 
 interface BuyerAgentPanelProps {
   constraints: BuyerConstraints;
@@ -39,17 +39,17 @@ export function BuyerAgentPanel({
   };
 
   return (
-    <Card className="border-blue-900/40 bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/25 shadow-xl">
+    <Card className="border-[#E2E8F0] bg-white shadow-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-md">
+            <div className="w-10 h-10 rounded-lg bg-[#EFF8FF] border border-[#0070E0]/20 flex items-center justify-center text-[#0070E0]">
               <Bot className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-base text-white">Your Buyer Agent</CardTitle>
-              <CardDescription className="text-xs text-blue-300/80">
-                Commands negotiation within your constraints
+              <CardTitle className="text-base text-[#111827]">Your Buyer Agent</CardTitle>
+              <CardDescription className="text-xs text-[#5B6472]">
+                Negotiates within your private constraints
               </CardDescription>
             </div>
           </div>
@@ -60,7 +60,7 @@ export function BuyerAgentPanel({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            label="Target Budget Ceiling ($)"
+            label="Target Budget Ceiling (USD)"
             type="number"
             step="0.01"
             value={constraints.maxBudget || ""}
@@ -75,7 +75,7 @@ export function BuyerAgentPanel({
           />
 
           <Input
-            label="Opening Target Offer ($)"
+            label="Opening Target Offer (USD)"
             type="number"
             step="0.01"
             value={constraints.targetPrice || ""}
@@ -92,7 +92,7 @@ export function BuyerAgentPanel({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            label="Latest Acceptable Delivery (Days)"
+            label="Max Delivery SLA (Days)"
             type="number"
             min={1}
             max={14}
@@ -100,7 +100,7 @@ export function BuyerAgentPanel({
             onChange={(e) =>
               onChange({
                 ...constraints,
-                maxDeliveryDays: parseInt(e.target.value, 10) || 1,
+                maxDeliveryDays: parseInt(e.target.value, 10) || 5,
               })
             }
             disabled={disabled}
@@ -108,62 +108,60 @@ export function BuyerAgentPanel({
           />
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 block">Payment Preference</label>
-            <div className="h-10 px-3 rounded-lg bg-slate-950/80 border border-slate-700/80 flex items-center justify-between text-xs text-slate-200">
-              <span className="flex items-center gap-1.5 font-medium text-emerald-400">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Immediate PayPal Settlement</span>
-              </span>
-              <span className="text-[10px] text-slate-400">Eligible for seller discount</span>
+            <label className="block text-xs font-semibold text-[#5B6472]">
+              Settlement Rail
+            </label>
+            <div className="w-full rounded-lg border border-[#E2E8F0] bg-[#F5F7FA] px-3.5 py-2 text-sm text-[#003087] font-semibold">
+              PayPal Orders v2
             </div>
           </div>
         </div>
 
-        {/* Strategy Preferences */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-slate-300 block">Agent Strategy Preference</label>
-          <div className="grid grid-cols-2 gap-2">
+        {/* Priority Selector */}
+        <div className="space-y-1.5 pt-1">
+          <label className="block text-xs font-semibold text-[#5B6472]">
+            Negotiation Priority
+          </label>
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               disabled={disabled}
-              onClick={() => setPriority(isPrioritizePrice ? "balanced" : "price")}
-              className={`p-2 rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-all ${
+              onClick={() => setPriority("price")}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
                 isPrioritizePrice
-                  ? "bg-blue-600/30 border-blue-500 text-blue-200"
-                  : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200"
+                  ? "bg-[#EFF8FF] border-[#0070E0] text-[#003087]"
+                  : "bg-[#F5F7FA] border-[#E2E8F0] text-[#5B6472] hover:text-[#111827]"
               }`}
             >
-              <DollarSign className="w-3.5 h-3.5" />
-              <span>Prioritize Price</span>
+              Lowest Price
             </button>
-
             <button
               type="button"
               disabled={disabled}
-              onClick={() => setPriority(isPrioritizeDelivery ? "balanced" : "delivery")}
-              className={`p-2 rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-all ${
+              onClick={() => setPriority("delivery")}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
                 isPrioritizeDelivery
-                  ? "bg-blue-600/30 border-blue-500 text-blue-200"
-                  : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200"
+                  ? "bg-[#EFF8FF] border-[#0070E0] text-[#003087]"
+                  : "bg-[#F5F7FA] border-[#E2E8F0] text-[#5B6472] hover:text-[#111827]"
               }`}
             >
-              <Clock className="w-3.5 h-3.5" />
-              <span>Prioritize Delivery</span>
+              Fastest Shipping
             </button>
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-blue-950/40 border border-blue-800/30 p-3 text-xs text-blue-200/90 flex items-start gap-2.5">
-          <Shield className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-          <div className="space-y-0.5">
-            <span className="font-semibold text-blue-300 block">Strict Budget Boundary Guarantee:</span>
-            <span>
-              Your Buyer Agent will never exceed <strong className="text-white">${constraints.maxBudget || 0} USD</strong> or accept delivery past <strong className="text-white">{constraints.maxDeliveryDays || 5} days</strong>.
-            </span>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setPriority("balanced")}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
+                !isPrioritizePrice && !isPrioritizeDelivery
+                  ? "bg-[#EFF8FF] border-[#0070E0] text-[#003087]"
+                  : "bg-[#F5F7FA] border-[#E2E8F0] text-[#5B6472] hover:text-[#111827]"
+              }`}
+            >
+              Balanced
+            </button>
           </div>
         </div>
       </CardContent>
     </Card>
   );
 }
-
