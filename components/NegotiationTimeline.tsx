@@ -42,10 +42,10 @@ export function NegotiationTimeline({
 
   if (messages.length === 0 && !isNegotiating) {
     return (
-      <Card className="text-center py-12 text-[#5B6472] border-dashed border-[#CBD5E1] bg-white shadow-2xs">
-        <Bot className="w-9 h-9 mx-auto mb-2 text-[#94A3B8]" />
-        <p className="text-sm font-semibold text-[#111827]">Negotiation Room Ready</p>
-        <p className="text-xs text-[#5B6472] mt-1 max-w-sm mx-auto">
+      <Card className="text-center py-12 text-[#475569] border-dashed border-[#CBD5E1] bg-white shadow-xs">
+        <Bot className="w-9 h-9 mx-auto mb-2 text-[#64748B]" />
+        <p className="text-sm font-semibold text-[#0A192F]">Negotiation Room Ready</p>
+        <p className="text-xs text-[#475569] mt-1 max-w-sm mx-auto">
           Configure your budget ceiling and click &quot;Ask AI to Negotiate&quot; to begin autonomous multi-turn bargaining.
         </p>
       </Card>
@@ -58,27 +58,27 @@ export function NegotiationTimeline({
   const percentage = originalPrice > 0 ? ((savings / originalPrice) * 100).toFixed(1) : "0";
 
   return (
-    <Card className="border-[#E2E8F0] bg-white shadow-sm">
+    <Card className="border-[#E2E8F0] bg-white shadow-xs">
       <CardHeader className="border-b border-[#E2E8F0] pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-[#0A192F]">
               <span>Agent-to-Agent Negotiation Stream</span>
               {isNegotiating ? (
                 <span className="flex h-2.5 w-2.5 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0070E0] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0070E0]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0052CC] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0052CC]"></span>
                 </span>
               ) : agreement?.status === "AGREED" ? (
                 <span className="flex h-2.5 w-2.5 relative">
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#16845B]"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#0E6245]"></span>
                 </span>
               ) : null}
             </CardTitle>
           </div>
 
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-[#5B6472] font-medium">
+            <span className="text-[#475569] font-medium">
               {messages.length} {messages.length === 1 ? "Exchange" : "Exchanges"}
             </span>
             {agreement?.status === "AGREED" && (
@@ -99,16 +99,16 @@ export function NegotiationTimeline({
                 key={msg.id || index}
                 className={`flex gap-3.5 p-4 sm:p-5 rounded-xl border transition-all ${
                   isBuyer
-                    ? "bg-[#EFF8FF]/60 border-[#0070E0]/30 text-[#111827] mr-4 sm:mr-10 shadow-2xs"
-                    : "bg-[#F8FAFC] border-[#E2E8F0] text-[#111827] ml-4 sm:ml-10 shadow-2xs"
+                    ? "bg-[#EBF3FF]/70 border-[#0052CC]/30 text-[#0A192F] mr-4 sm:mr-10 shadow-xs"
+                    : "bg-[#F8FAFC] border-[#E2E8F0] text-[#0A192F] ml-4 sm:ml-10 shadow-xs"
                 }`}
               >
                 {/* Agent Avatar */}
                 <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-2xs ${
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-xs ${
                     isBuyer
-                      ? "bg-[#003087] text-white"
-                      : "bg-[#F5F3FF] text-[#6D28D9] border border-[#8B5CF6]/20"
+                      ? "bg-[#0A192F] text-white"
+                      : "bg-[#F5F3FF] text-[#581C87] border border-[#DDD6FE]"
                   }`}
                 >
                   {isBuyer ? <Bot className="w-5 h-5" /> : <Store className="w-5 h-5" />}
@@ -118,10 +118,10 @@ export function NegotiationTimeline({
                 <div className="flex-1 space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs tracking-wide uppercase text-[#111827]">
+                      <span className="font-bold text-xs tracking-wide uppercase text-[#0A192F]">
                         {isBuyer ? "Buyer AI Agent" : "Merchant AI Agent"}
                       </span>
-                      <span className="text-[11px] text-[#5B6472]">
+                      <span className="text-[11px] text-[#475569]">
                         {isBuyer ? "(on your behalf)" : "(representing seller)"}
                       </span>
                     </div>
@@ -141,24 +141,24 @@ export function NegotiationTimeline({
                     )}
                   </div>
 
-                  <p className="text-sm leading-relaxed text-[#111827]">
+                  <p className="text-sm leading-relaxed text-[#0A192F] font-medium">
                     {msg.content}
                   </p>
 
                   {/* Proposal Metadata Pills */}
-                  <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#5B6472] border-t border-[#E2E8F0]">
+                  <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#475569] border-t border-[#E2E8F0]">
                     {msg.proposedPrice !== undefined && (
                       <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-[#E2E8F0]">
-                        <span className="text-[#5B6472] text-[11px]">Proposed Price:</span>
-                        <span className="font-bold text-[#111827] text-sm font-mono">
+                        <span className="text-[#475569] text-[11px]">Proposed Price:</span>
+                        <span className="font-bold text-[#0A192F] text-sm font-mono">
                           {formatCurrency(msg.proposedPrice)}
                         </span>
                       </div>
                     )}
                     {msg.deliveryDays !== undefined && (
                       <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-[#E2E8F0]">
-                        <Clock className="w-3.5 h-3.5 text-[#0070E0]" />
-                        <span className="text-[#111827] font-medium">
+                        <Clock className="w-3.5 h-3.5 text-[#0052CC]" />
+                        <span className="text-[#0A192F] font-medium">
                           {msg.deliveryDays} business days
                         </span>
                       </div>
@@ -167,7 +167,7 @@ export function NegotiationTimeline({
                     {msg.reasoning && (
                       <button
                         onClick={() => toggleReasoning(msg.id || index.toString())}
-                        className="ml-auto inline-flex items-center gap-1 text-[11px] text-[#0070E0] hover:text-[#003087] font-semibold transition-colors py-1"
+                        className="ml-auto inline-flex items-center gap-1 text-[11px] text-[#0052CC] hover:text-[#0A192F] font-semibold transition-colors py-1"
                       >
                         <span>Why this offer?</span>
                         {isExpanded ? (
@@ -181,12 +181,12 @@ export function NegotiationTimeline({
 
                   {/* Expandable Reasoning */}
                   {msg.reasoning && isExpanded && (
-                    <div className="mt-2 p-3 rounded-lg bg-white border border-[#CBD5E1] text-[11px] text-[#5B6472] space-y-1">
-                      <div className="flex items-center justify-between text-[#111827] font-semibold">
+                    <div className="mt-2 p-3 rounded-lg bg-white border border-[#CBD5E1] text-[11px] text-[#475569] space-y-1">
+                      <div className="flex items-center justify-between text-[#0A192F] font-semibold">
                         <span>Agent Strategy Rationale:</span>
-                        <span className="text-[10px] text-[#0070E0]">AI proposes. PayVia validates.</span>
+                        <span className="text-[10px] text-[#0052CC]">AI proposes. PayVia validates.</span>
                       </div>
-                      <p className="italic text-[#5B6472] leading-relaxed">
+                      <p className="italic text-[#475569] leading-relaxed">
                         {msg.reasoning}
                       </p>
                     </div>
@@ -199,13 +199,13 @@ export function NegotiationTimeline({
 
         {/* Live Active Thinking Indicator with LatticeLoader */}
         {isNegotiating && (
-          <div className="p-4 rounded-xl border border-[#0070E0]/30 bg-[#EFF8FF] text-[#003087] text-xs flex items-center justify-between">
+          <div className="p-4 rounded-xl border border-[#0052CC]/20 bg-[#F0F5FF] text-[#0A192F] text-xs flex items-center justify-between">
             <LatticeLoader
               status="working"
               label={activeStatusText || "Agents formulating negotiation terms with Google Gemini"}
               pattern="orbit"
-              color="#003087"
-              doneColor="#16845B"
+              color="#0052CC"
+              doneColor="#0E6245"
               fontSize={13}
               cellSize={6}
             />
@@ -214,13 +214,13 @@ export function NegotiationTimeline({
 
         {/* Agreement Banner */}
         {agreement && agreement.status === "AGREED" && (
-          <div className="p-5 rounded-xl bg-[#ECFDF5] border border-[#16845B]/30 text-[#111827] space-y-4 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#16845B]/20 pb-3">
-              <div className="flex items-center gap-2.5 font-bold text-base text-[#111827]">
-                <CheckCircle2 className="w-5 h-5 text-[#16845B] flex-shrink-0" />
+          <div className="p-5 rounded-xl bg-[#ECFDF5] border border-[#0E6245]/30 text-[#0A192F] space-y-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#0E6245]/20 pb-3">
+              <div className="flex items-center gap-2.5 font-bold text-base text-[#0A192F]">
+                <CheckCircle2 className="w-5 h-5 text-[#0E6245] flex-shrink-0" />
                 <span>Agreement Reached by AI Agents</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-[#16845B] bg-white px-3 py-1 rounded-full border border-[#16845B]/30 font-semibold">
+              <div className="flex items-center gap-1.5 text-xs text-[#0E6245] bg-white px-3 py-1 rounded-full border border-[#0E6245]/30 font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Ready for Human Approval</span>
               </div>
@@ -228,31 +228,31 @@ export function NegotiationTimeline({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
               <div className="p-3 rounded-lg bg-white border border-[#E2E8F0] space-y-0.5">
-                <span className="text-[#5B6472] block text-[11px] uppercase tracking-wider">Original Listing</span>
+                <span className="text-[#475569] block text-[11px] uppercase tracking-wider font-medium">Original Listing</span>
                 <span className="font-bold text-[#94A3B8] line-through text-base font-mono">
                   {formatCurrency(originalPrice, agreement.currency)}
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-white border border-[#0070E0] space-y-0.5 shadow-2xs">
-                <span className="text-[#0070E0] block text-[11px] uppercase tracking-wider font-bold">
+              <div className="p-3 rounded-lg bg-white border border-[#0052CC] space-y-0.5 shadow-2xs">
+                <span className="text-[#0052CC] block text-[11px] uppercase tracking-wider font-bold">
                   Final Negotiated Price
                 </span>
-                <span className="font-extrabold text-[#111827] text-xl font-mono">
+                <span className="font-extrabold text-[#0A192F] text-xl font-mono">
                   {formatCurrency(finalPrice, agreement.currency)}
                 </span>
               </div>
 
-              <div className="p-3 rounded-lg bg-white border border-[#16845B]/40 space-y-0.5">
-                <span className="text-[#16845B] block text-[11px] uppercase tracking-wider font-bold">Your Total Savings</span>
-                <span className="font-extrabold text-[#16845B] text-lg font-mono">
+              <div className="p-3 rounded-lg bg-white border border-[#0E6245]/40 space-y-0.5">
+                <span className="text-[#0E6245] block text-[11px] uppercase tracking-wider font-bold">Your Total Savings</span>
+                <span className="font-extrabold text-[#0E6245] text-lg font-mono">
                   +{formatCurrency(savings, agreement.currency)} ({percentage}%)
                 </span>
               </div>
             </div>
 
-            <div className="text-[11px] text-[#5B6472] flex items-center gap-1.5 justify-center">
-              <Info className="w-3.5 h-3.5 text-[#0070E0]" />
+            <div className="text-[11px] text-[#475569] flex items-center gap-1.5 justify-center">
+              <Info className="w-3.5 h-3.5 text-[#0052CC]" />
               <span>Terms locked server-side. Click below to review and authorize PayPal payment.</span>
             </div>
           </div>

@@ -1,185 +1,162 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { InteractiveTransactionPreview } from "@/components/home/InteractiveTransactionPreview";
 import { ShoppingIntentExperience } from "@/components/buyer/ShoppingIntentExperience";
 import {
   ArrowRight,
   ShieldCheck,
-  CheckCircle2,
-  Lock,
   CreditCard,
   SlidersHorizontal,
-  Store,
-  ShoppingBag,
-  Bot,
   FileCheck,
-  Terminal,
+  Scale,
 } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <div className="space-y-24 py-2">
+    <div className="space-y-16 sm:space-y-20 py-2">
       {/* 
         ========================================================================
-        PART 3 — THE NEGOTIATION DESK (Asymmetrical Editorial Hero Composition)
+        HERO SECTION & INTENT COMPOSER
         ========================================================================
       */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        {/* Left Column: Asymmetrical Product Statement & Actions (5 Columns) */}
-        <div className="lg:col-span-5 space-y-6 pt-2">
-          {/* Architecture Status Tag */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFF8FF] border border-[#0070E0]/20 text-[#003087] text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-[#0070E0] animate-pulse" />
-            <span className="tracking-tight">Agent-to-Agent Commerce Protocol</span>
+      <section className="space-y-8 max-w-4xl mx-auto text-center">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFDF5] border border-[#0E6245]/20 text-[#0E6245] text-xs font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>AI negotiates. PayPal settles.</span>
           </div>
 
-          {/* Main Editorial Statement */}
-          <div className="space-y-4">
-            <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold tracking-tight text-[#101828] leading-[1.08]">
-              Commerce, with room to negotiate.
-            </h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#0A192F] leading-[1.1]">
+            Your AI negotiates. You choose the deal.
+          </h1>
 
-            <p className="text-lg sm:text-xl font-bold text-[#0070E0] tracking-tight">
-              AI negotiates. PayPal settles.
-            </p>
+          <p className="text-base sm:text-lg text-[#475569] max-w-2xl mx-auto leading-relaxed">
+            Tell PayVia what you need. AI negotiates eligible offers within merchant-approved limits. You review the agreement and pay securely with PayPal.
+          </p>
 
-            <p className="text-sm sm:text-base text-[#5C6678] font-normal leading-relaxed">
-              Your buyer agent discovers terms across participating merchants within your private budget bounds. Merchant rules enforce strict price floors. You review the cryptographic agreement. PayPal executes the exact settlement.
-            </p>
-          </div>
-
-          {/* Direct Workspace Actions */}
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <Link href="/negotiate" className="flex-1 sm:flex-initial">
-              <Button size="lg" className="w-full px-6 text-sm font-bold gap-2 bg-[#003087] hover:bg-[#002266] text-white shadow-sm">
-                <ShoppingBag className="w-4 h-4" />
-                <span>Start Buyer Journey</span>
-                <ArrowRight className="w-4 h-4" />
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a href="#intent-composer">
+              <Button size="lg" className="px-6 bg-[#0052CC] hover:bg-[#0A192F] text-white font-bold shadow-xs">
+                <span>Start negotiating</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
-            </Link>
-
-            <Link href="/merchant" className="flex-1 sm:flex-initial">
-              <Button variant="secondary" size="lg" className="w-full text-sm font-semibold gap-2 bg-[#F8FAFC] border border-[#D9E0E9] text-[#003087] hover:bg-[#EFF8FF]">
-                <Store className="w-4 h-4 text-[#003087]" />
-                <span>Merchant Control</span>
+            </a>
+            <a href="#how-it-works">
+              <Button variant="secondary" size="lg" className="px-6 bg-white border border-[#CBD5E1] text-[#0A192F] hover:bg-[#F8FAFC] font-semibold">
+                <span>How it works</span>
               </Button>
-            </Link>
-          </div>
-
-          {/* Three Immutable Guarantees */}
-          <div className="pt-4 border-t border-[#E2E8F0] grid grid-cols-1 gap-2.5 text-xs text-[#5C6678]">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-[#16845B] flex-shrink-0" />
-              <span><strong className="text-[#101828]">Explicit Human Consent:</strong> No charge without review.</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[#003087] flex-shrink-0" />
-              <span><strong className="text-[#101828]">Zero-Tamper Hash:</strong> SHA-256 sealed contract payload.</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#0070E0] flex-shrink-0" />
-              <span><strong className="text-[#101828]">PayPal Orders v2:</strong> Verified Sandbox capture & webhook sync.</span>
-            </div>
+            </a>
           </div>
         </div>
 
-        {/* Right Column: The Negotiation Terminal / Desk Centerpiece (7 Columns) */}
-        <div className="lg:col-span-7">
-          <div className="rounded-2xl border border-[#D9E0E9] bg-white p-2 sm:p-3 shadow-lg">
-            <InteractiveTransactionPreview />
-          </div>
+        {/* Embedded Primary Shopping Intent Form */}
+        <div className="text-left pt-2">
+          <ShoppingIntentExperience />
         </div>
       </section>
 
       {/* 
         ========================================================================
-        LIVE BUYER EXPERIENCE SECTION (Interactive Discovery & Live Negotiation)
+        HOW IT WORKS: 3 ESSENTIAL STEPS
         ========================================================================
       */}
-      <section id="buyer-workspace" className="space-y-6 pt-4 scroll-mt-24">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0070E0]">
-              <Terminal className="w-4 h-4" />
-              <span>Autonomous Commerce Suite</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#101828] tracking-tight">
-              Direct Negotiation Workspace
-            </h2>
-          </div>
-          <p className="text-xs sm:text-sm text-[#5C6678] max-w-md">
-            Query catalog items, establish mathematical constraints, and trigger parallel negotiation with real-time settlement prep.
+      <section id="how-it-works" className="space-y-8 pt-4 scroll-mt-24 max-w-5xl mx-auto">
+        <div className="text-center space-y-1.5">
+          <span className="text-xs uppercase font-bold tracking-wider text-[#0052CC]">
+            Simple Process
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0A192F] tracking-tight">
+            How PayVia Works
+          </h2>
+          <p className="text-xs sm:text-sm text-[#475569]">
+            Three steps from purchase request to verified settlement.
           </p>
         </div>
 
-        <ShoppingIntentExperience />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Step 1 */}
+          <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#F0F5FF] text-[#0052CC] font-mono font-bold flex items-center justify-center text-sm">
+              01
+            </div>
+            <h3 className="text-base font-bold text-[#0A192F]">Describe what you need</h3>
+            <p className="text-xs text-[#475569] leading-relaxed">
+              Enter what you want to buy, your budget ceiling, and delivery requirements. Your constraints remain strictly confidential.
+            </p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#F0F5FF] text-[#0052CC] font-mono font-bold flex items-center justify-center text-sm">
+              02
+            </div>
+            <h3 className="text-base font-bold text-[#0A192F]">AI negotiates eligible offers</h3>
+            <p className="text-xs text-[#475569] leading-relaxed">
+              Buyer and merchant AI agents negotiate terms in parallel, strictly constrained by merchant-authorized pricing floors and inventory rules.
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-3 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-[#ECFDF5] text-[#0E6245] font-mono font-bold flex items-center justify-center text-sm">
+              03
+            </div>
+            <h3 className="text-base font-bold text-[#0A192F]">Review agreement &amp; pay with PayPal</h3>
+            <p className="text-xs text-[#475569] leading-relaxed">
+              Review authoritative commercial terms and approve the cryptographic agreement before PayPal processes the secure checkout.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* 
         ========================================================================
-        ZERO-TRUST COMMERCE PROTOCOL: 4 ARCHITECTURAL PILLARS
+        TRUST & TRANSPARENCY: SYSTEM BOUNDARIES
         ========================================================================
       */}
-      <section className="space-y-6 pt-6">
-        <div className="space-y-2 text-center max-w-2xl mx-auto">
-          <span className="text-xs uppercase font-bold text-[#003087] tracking-wider">
-            Architecture Blueprint
+      <section className="space-y-6 max-w-5xl mx-auto">
+        <div className="text-center space-y-1.5">
+          <span className="text-xs uppercase font-bold tracking-wider text-[#0052CC]">
+            System Integrity
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#101828] tracking-tight">
-            How Autonomous Negotiation Settle in PayVia
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#0A192F] tracking-tight">
+            Built on Real Boundaries
           </h2>
-          <p className="text-xs sm:text-sm text-[#5C6678]">
-            A zero-trust workflow bridging buyer utility, merchant margin boundaries, and PayPal settlement.
+          <p className="text-xs sm:text-sm text-[#475569]">
+            Autonomous negotiation with strict human-in-the-loop authorization and settlement guarantees.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Pillar 1 */}
-          <div className="p-5 rounded-xl border border-[#D9E0E9] bg-white space-y-3 hover:border-[#0070E0] transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-[#0070E0] bg-[#EFF8FF] px-2 py-0.5 rounded">01_INTENT</span>
-              <SlidersHorizontal className="w-4 h-4 text-[#0070E0]" />
-            </div>
-            <h3 className="text-sm font-bold text-[#101828]">Buyer Budget Bounds</h3>
-            <p className="text-xs text-[#5C6678] leading-relaxed">
-              Target product parameters and private budget ceilings are mathematically protected from merchant agent leakage.
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-5 rounded-xl bg-white border border-[#E2E8F0] space-y-2">
+            <Scale className="w-5 h-5 text-[#0052CC]" />
+            <h3 className="text-sm font-bold text-[#0A192F]">Merchant Policy Limits</h3>
+            <p className="text-xs text-[#475569] leading-relaxed">
+              Agents cannot negotiate below merchant-authorized price floors or promise inventory outside validated allocations.
             </p>
           </div>
 
-          {/* Pillar 2 */}
-          <div className="p-5 rounded-xl border border-[#D9E0E9] bg-white space-y-3 hover:border-[#0070E0] transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-[#6D28D9] bg-[#F5F3FF] px-2 py-0.5 rounded">02_PARALLEL</span>
-              <Bot className="w-4 h-4 text-[#6D28D9]" />
-            </div>
-            <h3 className="text-sm font-bold text-[#101828]">Deterministic Floors</h3>
-            <p className="text-xs text-[#5C6678] leading-relaxed">
-              Seller agents propose counter-offers under strict, server-enforced merchant floor margins and delivery timelines.
+          <div className="p-5 rounded-xl bg-white border border-[#E2E8F0] space-y-2">
+            <SlidersHorizontal className="w-5 h-5 text-[#0052CC]" />
+            <h3 className="text-sm font-bold text-[#0A192F]">Clear Offer Comparison</h3>
+            <p className="text-xs text-[#475569] leading-relaxed">
+              Participating merchant offers are ranked by genuine total price, delivery timeline, and savings against real reference listings.
             </p>
           </div>
 
-          {/* Pillar 3 */}
-          <div className="p-5 rounded-xl border border-[#D9E0E9] bg-white space-y-3 hover:border-[#0070E0] transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-[#16845B] bg-[#ECFDF5] px-2 py-0.5 rounded">03_SEAL</span>
-              <FileCheck className="w-4 h-4 text-[#16845B]" />
-            </div>
-            <h3 className="text-sm font-bold text-[#101828]">SHA-256 Agreement</h3>
-            <p className="text-xs text-[#5C6678] leading-relaxed">
-              Selected offer generates an immutable, cryptographically sealed agreement requiring explicit human consent.
+          <div className="p-5 rounded-xl bg-white border border-[#E2E8F0] space-y-2">
+            <FileCheck className="w-5 h-5 text-[#0052CC]" />
+            <h3 className="text-sm font-bold text-[#0A192F]">Buyer Approval Required</h3>
+            <p className="text-xs text-[#475569] leading-relaxed">
+              Every agreement requires explicit buyer review and signature. No charge is ever initiated autonomously.
             </p>
           </div>
 
-          {/* Pillar 4 */}
-          <div className="p-5 rounded-xl border border-[#D9E0E9] bg-white space-y-3 hover:border-[#0070E0] transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-mono font-bold text-[#003087] bg-[#EFF8FF] px-2 py-0.5 rounded">04_SETTLE</span>
-              <CreditCard className="w-4 h-4 text-[#003087]" />
-            </div>
-            <h3 className="text-sm font-bold text-[#101828]">PayPal Orders v2</h3>
-            <p className="text-xs text-[#5C6678] leading-relaxed">
-              Authoritative server capture executes against the sealed amount with immediate stock reservation decrement.
+          <div className="p-5 rounded-xl bg-white border border-[#E2E8F0] space-y-2">
+            <CreditCard className="w-5 h-5 text-[#0052CC]" />
+            <h3 className="text-sm font-bold text-[#0A192F]">PayPal Settlement</h3>
+            <p className="text-xs text-[#475569] leading-relaxed">
+              Funds are held and captured securely via PayPal Orders v2 with cryptographic agreement tamper verification.
             </p>
           </div>
         </div>
@@ -187,32 +164,32 @@ export default function HomePage() {
 
       {/* 
         ========================================================================
-        DEVELOPER & MERCHANT ACCESS CTA
+        MERCHANT & DEVELOPER CTA
         ========================================================================
       */}
-      <section className="rounded-2xl border border-[#003087] bg-[#003087] text-white p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
-        <div className="space-y-2 text-left max-w-xl">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-blue-200">
-            Developer Infrastructure
+      <section className="rounded-2xl border border-[#CBD5E1] bg-white p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs max-w-5xl mx-auto">
+        <div className="space-y-1.5 text-left max-w-xl">
+          <span className="text-[10px] uppercase font-bold tracking-wider text-[#0052CC]">
+            For Merchants &amp; Developers
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Integrate PayVia with Your Commerce API.
+          <h2 className="text-xl sm:text-2xl font-bold text-[#0A192F] tracking-tight">
+            Connect your catalog to PayVia
           </h2>
-          <p className="text-xs sm:text-sm text-blue-100">
-            Publish your catalog, configure margin policies, and allow AI buyer agents to negotiate directly against your inventory rules.
+          <p className="text-xs sm:text-sm text-[#475569]">
+            Configure autonomous negotiation policies, protect your profit floors, and let AI agents negotiate deals directly with buyers.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3 flex-shrink-0">
-          <Link href="/merchant?tab=developer">
-            <Button size="lg" className="px-6 bg-white text-[#003087] hover:bg-slate-100 text-sm font-bold shadow-xs">
-              <Terminal className="w-4 h-4 mr-1.5" />
-              <span>Developer SDK</span>
+          <Link href="/merchant">
+            <Button size="lg" className="px-6 bg-[#0052CC] hover:bg-[#0A192F] text-white text-sm font-bold shadow-xs">
+              <span>Merchant Console</span>
+              <ArrowRight className="w-4 h-4 ml-1.5" />
             </Button>
           </Link>
-          <Link href="/merchant">
-            <Button variant="outline" size="lg" className="px-6 bg-transparent border-white/40 text-white hover:bg-white/10 text-sm font-semibold">
-              <span>Merchant Console</span>
+          <Link href="/merchant?tab=developer">
+            <Button variant="secondary" size="lg" className="px-6 bg-[#F8FAFC] border border-[#CBD5E1] text-[#0052CC] hover:bg-[#F0F5FF] text-sm font-semibold">
+              <span>Developer API</span>
             </Button>
           </Link>
         </div>

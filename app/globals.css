@@ -4,16 +4,21 @@
 
 :root {
   --background: #F8FAFC;
-  --foreground: #111827;
+  --foreground: #0A192F;
   --surface: #FFFFFF;
-  --surface-muted: #F5F7FA;
+  --surface-muted: #F1F5F9;
+  --surface-subtle: #F8FAFC;
   --border: #E2E8F0;
+  --border-strong: #CBD5E1;
   --primary: #003087;
   --primary-hover: #002266;
+  --brand-navy: #0A192F;
+  --brand-blue: #0052CC;
   --secondary: #0070E0;
   --accent: #009CDE;
-  --success: #16845B;
-  --error: #D92D20;
+  --success: #0E6245;
+  --warning: #92400E;
+  --error: #991B1B;
 }
 
 body {
@@ -71,4 +76,16 @@ body {
   background: #FFFFFF;
   border: 1.5px solid #0070E0;
   box-shadow: 0 4px 16px -2px rgba(0, 112, 224, 0.12);
+}
+
+/* Accessibility: Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

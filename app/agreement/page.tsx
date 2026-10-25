@@ -15,11 +15,12 @@ function AgreementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const negotiationId = searchParams.get("id");
-  const { toast } = useToast();
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const [agreement, setAgreement] = useState<NegotiationAgreement | null>(null);
   const [loading, setLoading] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
+  const [approvalError, setApprovalError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadAgreement() {
@@ -51,10 +52,12 @@ function AgreementContent() {
         buyerMaxPrice: 760.0,
         buyerMaxDeliveryDays: 5,
         merchantMinPrice: sample.minAcceptablePrice,
+        merchantName: "ThinkPad Certified Store",
         currency: sample.currency || "USD",
         status: "AGREED",
         roundsCount: 3,
         createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 86400000 * 3).toISOString(),
         userApproved: false,
         termsSummary:
           "Buyer Agent negotiated final purchase price of $750.00 USD (saving $50.00) with 5-day delivery. Explicit human approval required before PayPal Sandbox charge.",
@@ -71,8 +74,10 @@ function AgreementContent() {
   const handleApprove = async () => {
     if (!agreement) return;
     setIsApproving(true);
+    setApprovalError(null);
+
     try {
-      await fetch("/api/negotiate/approve", {
+      const res = await fetch("/api/negotiate/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -80,52 +85,64 @@ function AgreementContent() {
           negotiationId: agreement.negotiationId,
         }),
       });
-      toast({
-        title: "Agreement Approved",
-        description: "Redirecting to PayPal Sandbox checkout...",
-        variant: "success",
-      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to record server-side agreement approval.");
+      }
+
+      toastSuccess(
+        "Agreement Approved",
+        "Terms locked. Redirecting to PayPal Sandbox checkout..."
+      );
+
+      // Advance to PayPal checkout
+      router.push(`/checkout?negotiationId=${agreement.negotiationId || agreement.id}`);
     } catch (err) {
-      console.error("Failed to record server-side agreement approval:", err);
+      console.error("Failed to record agreement approval:", err);
+      const msg = err instanceof Error ? err.message : "Failed to record approval.";
+      setApprovalError(msg);
+      toastError("Approval Failed", msg);
+      setIsApproving(false);
     }
-    router.push(`/checkout?negotiationId=${agreement.negotiationId || agreement.id}`);
   };
 
   if (loading || !agreement) {
     return (
       <div className="text-center py-20 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-payvia-blue" />
-        <p className="text-sm text-muted-foreground font-medium">Verifying immutable agreement terms...</p>
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#0052CC]" />
+        <p className="text-sm text-[#475569] font-medium">Verifying immutable agreement terms...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-4xl mx-auto py-2">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="w-6 h-6 rounded-full bg-payvia-blue text-white text-xs font-bold flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-[#0052CC] text-white text-xs font-bold flex items-center justify-center">
               2
             </span>
-            <Badge variant="secondary" className="font-semibold text-payvia-navy">
-              Human Review & Approval
+            <Badge variant="secondary" className="font-semibold text-[#0A192F] bg-[#F1F5F9]">
+              Human Review &amp; Approval
             </Badge>
           </div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Transaction Agreement Review
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0A192F] tracking-tight">
+            Review Negotiated Agreement
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Review the final commercial terms agreed by the Buyer and Merchant autonomous agents.
+          <p className="text-xs sm:text-sm text-[#475569] mt-1">
+            Carefully review the authoritative commercial terms formulated between Buyer and Merchant agents.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link href="/negotiate">
-            <Button variant="outline" size="sm">
+            <Button variant="secondary" size="sm" className="border-[#CBD5E1] text-[#0A192F] hover:bg-[#F8FAFC]">
               <ArrowLeft className="w-4 h-4 mr-1.5" />
-              <span>Back to Negotiator</span>
+              <span>Back to Offers</span>
             </Button>
           </Link>
         </div>
@@ -138,13 +155,14 @@ function AgreementContent() {
           onApprove={handleApprove}
           isApproved={agreement.userApproved}
           isLoading={isApproving}
+          errorMessage={approvalError}
         />
       </div>
 
       {/* Security & Protocol Verification Note */}
-      <div className="max-w-3xl mx-auto rounded-2xl bg-white border border-border p-6 shadow-sm space-y-3 text-xs text-muted-foreground">
-        <div className="flex items-center gap-2 text-payvia-navy font-bold text-sm">
-          <ShieldCheck className="w-4 h-4 text-payvia-blue" />
+      <div className="max-w-3xl mx-auto rounded-2xl bg-white border border-[#E2E8F0] p-6 shadow-xs space-y-2 text-xs text-[#475569]">
+        <div className="flex items-center gap-2 text-[#0A192F] font-bold text-sm">
+          <ShieldCheck className="w-4 h-4 text-[#0052CC]" />
           <span>PayVia Zero-Trust Hard Constraint Enforcement</span>
         </div>
         <p className="leading-relaxed">
@@ -157,7 +175,7 @@ function AgreementContent() {
 
 export default function AgreementPage() {
   return (
-    <Suspense fallback={<div className="text-center text-muted-foreground py-16">Loading agreement...</div>}>
+    <Suspense fallback={<div className="text-center text-[#475569] py-16">Loading agreement...</div>}>
       <AgreementContent />
     </Suspense>
   );

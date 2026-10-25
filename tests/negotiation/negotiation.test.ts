@@ -7,7 +7,8 @@ import {
 import { NegotiationAgreement } from "@/types/negotiation";
 
 export async function testSuccessfulNegotiation() {
-  const product = SAMPLE_PRODUCTS[0];
+  const product =
+    SAMPLE_PRODUCTS.find((p) => p.id === "prod_aurora_headphones") || SAMPLE_PRODUCTS[1];
   const constraints = {
     maxBudget: 270,
     targetPrice: 240,

@@ -12,15 +12,15 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variants = {
-    default: "bg-[#F5F7FA] text-[#5B6472] border-[#E2E8F0]",
-    secondary: "bg-[#EFF8FF] text-[#003087] border-[#0070E0]/20",
-    outline: "bg-transparent text-[#5B6472] border-[#CBD5E1]",
-    success: "bg-[#ECFDF5] text-[#16845B] border-[#16845B]/25",
-    warning: "bg-[#FFFBEB] text-[#B45309] border-[#F59E0B]/30",
-    info: "bg-[#EFF8FF] text-[#0070E0] border-[#0070E0]/25",
-    purple: "bg-[#F5F3FF] text-[#6D28D9] border-[#8B5CF6]/25",
-    error: "bg-[#FEF3F2] text-[#D92D20] border-[#D92D20]/25",
-    destructive: "bg-[#FEF3F2] text-[#D92D20] border-[#D92D20]/25",
+    default: "bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]",
+    secondary: "bg-[#EBF3FF] text-[#0A192F] border-[#0052CC]/25",
+    outline: "bg-transparent text-[#475569] border-[#CBD5E1]",
+    success: "bg-[#ECFDF5] text-[#0E6245] border-[#A7F3D0]",
+    warning: "bg-[#FFFBEB] text-[#92400E] border-[#FDE68A]",
+    info: "bg-[#EBF3FF] text-[#0052CC] border-[#BFDBFE]",
+    purple: "bg-[#F5F3FF] text-[#581C87] border-[#DDD6FE]",
+    error: "bg-[#FEF2F2] text-[#991B1B] border-[#FECACA]",
+    destructive: "bg-[#FEF2F2] text-[#991B1B] border-[#FECACA]",
   };
 
   return (

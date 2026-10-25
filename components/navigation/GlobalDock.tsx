@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Dock, { DockItemData } from "@/components/react-bits/Dock";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   Home,
   ShoppingBag,
@@ -12,105 +12,61 @@ import {
   Code,
 } from "lucide-react";
 
+/**
+ * GlobalDock Component
+ * Repaired for pointer events and stacking context.
+ * Provides quick access toolbar with genuine route destinations.
+ */
 export function GlobalDock() {
-  const router = useRouter();
   const pathname = usePathname();
 
+  // Avoid rendering dock on checkout and agreement review to eliminate cognitive distraction
+  if (
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/agreement")
+  ) {
+    return null;
+  }
+
   const isHome = pathname === "/";
-  const isNegotiate =
-    pathname.startsWith("/negotiate") ||
-    pathname.startsWith("/agreement") ||
-    pathname.startsWith("/checkout");
-  const isMerchant =
-    pathname.startsWith("/merchant") && !pathname.includes("tab=developer");
+  const isNegotiate = pathname.startsWith("/negotiate");
+  const isMerchant = pathname.startsWith("/merchant") && !pathname.includes("tab=developer");
   const isFulfillment = pathname.startsWith("/fulfillment");
   const isMemory = pathname.startsWith("/memory");
   const isDeveloper = pathname.includes("tab=developer");
 
-  const dockItems: DockItemData[] = [
-    {
-      icon: <Home className="w-5 h-5 text-[#003087]" />,
-      label: "Overview",
-      active: isHome,
-      onClick: () => router.push("/"),
-      menu: [
-        { label: "PayVia Architecture", onClick: () => router.push("/") },
-        { separator: true },
-        { label: "Start Buying", onClick: () => router.push("/negotiate") },
-        { label: "Merchant Portal", onClick: () => router.push("/merchant") },
-      ],
-    },
-    {
-      icon: <ShoppingBag className="w-5 h-5 text-[#0070E0]" />,
-      label: "Buyer Room",
-      active: isNegotiate,
-      onClick: () => router.push("/negotiate"),
-      menu: [
-        { label: "Autonomous Room", onClick: () => router.push("/negotiate") },
-        { label: "Active Agreement", onClick: () => router.push("/agreement") },
-        { label: "PayPal Checkout", onClick: () => router.push("/checkout") },
-      ],
-    },
-    {
-      icon: <Store className="w-5 h-5 text-[#003087]" />,
-      label: "Merchant Control",
-      active: isMerchant,
-      onClick: () => router.push("/merchant"),
-      menu: [
-        { label: "Performance Overview", onClick: () => router.push("/merchant?tab=overview") },
-        { label: "Negotiation Policy", onClick: () => router.push("/merchant?tab=policy") },
-        { label: "Product Inventory", onClick: () => router.push("/merchant?tab=products") },
-        { label: "Settlement Ledger", onClick: () => router.push("/merchant?tab=transactions") },
-      ],
-    },
-    { separator: true },
-    {
-      icon: <Calendar className="w-5 h-5 text-[#16845B]" />,
-      label: "Fulfillment",
-      active: isFulfillment,
-      onClick: () => router.push("/fulfillment"),
-      menu: [
-        { label: "Gantt Timeline", onClick: () => router.push("/fulfillment") },
-        { label: "Fulfillment AI Assistant", onClick: () => router.push("/fulfillment") },
-      ],
-    },
-    {
-      icon: <Brain className="w-5 h-5 text-[#8B5CF6]" />,
-      label: "AI Memory",
-      active: isMemory,
-      onClick: () => router.push("/memory"),
-      menu: [
-        { label: "Elasticsearch Vector Search", onClick: () => router.push("/memory") },
-        { label: "Benchmark Logs", onClick: () => router.push("/memory") },
-      ],
-    },
-    {
-      icon: <Code className="w-5 h-5 text-[#0F172A]" />,
-      label: "SDK & API",
-      active: isDeveloper,
-      onClick: () => router.push("/merchant?tab=developer"),
-      menu: [
-        { label: "Developer Credentials", onClick: () => router.push("/merchant?tab=developer") },
-        { label: "TypeScript Client Reference", onClick: () => router.push("/merchant?tab=developer") },
-      ],
-    },
+  const items = [
+    { href: "/", label: "Home", icon: <Home className="w-4 h-4" />, active: isHome },
+    { href: "/negotiate", label: "Shop", icon: <ShoppingBag className="w-4 h-4" />, active: isNegotiate },
+    { href: "/merchant", label: "Merchant", icon: <Store className="w-4 h-4" />, active: isMerchant },
+    { href: "/fulfillment", label: "Fulfillment", icon: <Calendar className="w-4 h-4" />, active: isFulfillment },
+    { href: "/memory", label: "AI Memory", icon: <Brain className="w-4 h-4" />, active: isMemory },
+    { href: "/merchant?tab=developer", label: "SDK/API", icon: <Code className="w-4 h-4" />, active: isDeveloper },
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden sm:block pointer-events-auto">
-      <Dock
-        items={dockItems}
-        theme="light"
-        position="bottom"
-        baseItemSize={52}
-        magnification={72}
-        panelHeight={78}
-        gap={12}
-        roundness={0.45}
-        accentColor="#003087"
-        badgeColor="#D92D20"
-        className="shadow-xl border border-[#D9E0E9]"
-      />
+    <div
+      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 hidden md:block pointer-events-auto"
+      role="toolbar"
+      aria-label="Quick Navigation Bar"
+    >
+      <nav className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/95 backdrop-blur-md border border-[#E2E8F0] shadow-lg">
+        {items.map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+              item.active
+                ? "bg-[#EFF8FF] text-[#003087] font-bold border border-[#0070E0]/20 shadow-2xs"
+                : "text-[#5C6678] hover:text-[#003087] hover:bg-[#F8FAFC]"
+            }`}
+            title={item.label}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

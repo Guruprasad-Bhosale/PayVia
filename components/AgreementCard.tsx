@@ -1,23 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { NegotiationAgreement } from "@/types/negotiation";
 import { formatCurrency } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import SlideCommit from "./react-bits/SlideCommit";
 import { 
   ShieldCheck, 
   ArrowRight, 
   DollarSign, 
   Sparkles, 
   Clock, 
-  Calendar, 
   Package, 
   Lock,
   FileCheck2,
-  SlidersHorizontal
+  AlertTriangle,
+  Store,
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
 
 interface AgreementCardProps {
@@ -25,6 +26,7 @@ interface AgreementCardProps {
   onApprove?: () => void;
   isApproved?: boolean;
   isLoading?: boolean;
+  errorMessage?: string | null;
 }
 
 export function AgreementCard({
@@ -32,205 +34,275 @@ export function AgreementCard({
   onApprove,
   isApproved = false,
   isLoading = false,
+  errorMessage = null,
 }: AgreementCardProps) {
-  const [useSlider, setUseSlider] = useState(true);
-
   const finalPrice = agreement.finalPrice ?? agreement.finalAgreedPrice ?? 0;
   const originalPrice = agreement.originalPrice ?? 0;
   const savings = agreement.savings ?? agreement.savingsAmount ?? (originalPrice - finalPrice);
   const savingsPct = originalPrice > 0 ? ((savings / originalPrice) * 100).toFixed(1) : "0.0";
   const deliveryDays = agreement.deliveryDays ?? 3;
-  const quantity = 1;
+  const merchantName = agreement.merchantName || "Verified Commerce Merchant";
 
-  const handleSlideConfirm = async () => {
-    if (onApprove && !isLoading && !isApproved) {
-      onApprove();
-    }
-  };
+  // Check expiration if expiresAt is present
+  const isExpired = agreement.expiresAt
+    ? Date.now() >= new Date(agreement.expiresAt).getTime()
+    : false;
+
+  const isFailed = agreement.status === "FAILED";
+  const canApprove = !isExpired && !isFailed && !isApproved && Boolean(onApprove);
+
+  const formattedExpiry = agreement.expiresAt
+    ? new Date(agreement.expiresAt).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "72 hours from generation";
 
   return (
-    <Card className="border-border bg-card shadow-lg overflow-hidden relative">
-      {/* Top Brand Accent Bar */}
-      <div className="h-1.5 bg-gradient-to-r from-payvia-navy via-payvia-blue to-payvia-cyan w-full" />
+    <Card className="border-[#E2E8F0] bg-white shadow-sm overflow-hidden relative rounded-2xl">
+      {/* Top Brand Accent Line */}
+      <div className="h-1 bg-[#0052CC] w-full" />
 
-      <CardHeader className="border-b border-border bg-slate-50/70 pb-5">
+      <CardHeader className="border-b border-[#E2E8F0] bg-[#F8FAFC] p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-payvia-success/10 border border-payvia-success/25 flex items-center justify-center text-payvia-success shadow-sm">
-              <FileCheck2 className="w-6 h-6" />
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#ECFDF5] border border-[#0E6245]/20 flex items-center justify-center text-[#0E6245] flex-shrink-0">
+              <FileCheck2 className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-2xl font-bold text-foreground tracking-tight">
-                  Negotiation Agreement
+              <div className="flex items-center gap-2 flex-wrap">
+                <CardTitle className="text-xl sm:text-2xl font-bold text-[#0A192F] tracking-tight">
+                  Commercial Agreement Terms
                 </CardTitle>
-                <Badge variant="success" className="px-2.5 py-0.5 text-xs font-semibold">
-                  Locked Terms
+                <Badge variant={isExpired ? "destructive" : isApproved ? "success" : "info"} className="text-xs font-semibold">
+                  {isExpired ? "Expired" : isApproved ? "Approved by Buyer" : "Locked Terms"}
                 </Badge>
               </div>
-              <CardDescription className="text-muted-foreground text-sm mt-0.5">
-                Mutually formulated and bound by Buyer and Merchant AI agents
-              </CardDescription>
+              <p className="text-xs sm:text-sm text-[#475569] mt-0.5">
+                Mutually bound and verified between Buyer and Merchant AI agents
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono bg-white text-muted-foreground px-3 py-1.5 rounded-lg border border-border flex items-center gap-1.5 shadow-sm">
-              <Lock className="w-3.5 h-3.5 text-payvia-blue" />
-              <span>SHA-256 Validated</span>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-xs font-mono bg-white text-[#475569] px-3 py-1 rounded-md border border-[#E2E8F0] flex items-center gap-1.5 shadow-2xs">
+              <Lock className="w-3.5 h-3.5 text-[#0052CC]" />
+              <span>SHA-256 Sealed</span>
             </span>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6 pt-6">
-        {/* Core Price & Savings Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-slate-50 border border-border">
-            <span className="text-xs font-medium text-muted-foreground block mb-1">Original List Price</span>
-            <span className="text-2xl font-bold text-slate-400 line-through block">
-              {formatCurrency(originalPrice, agreement.currency)}
+      <CardContent className="space-y-6 p-5 sm:p-8">
+        {/* 1. What You Are Buying */}
+        <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E2E8F0] pb-2.5">
+            <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider">
+              1. Purchase Item &amp; Merchant Identity
             </span>
-            <span className="text-xs text-muted-foreground block mt-1">Standard retail baseline</span>
+            <div className="flex items-center gap-1.5 text-xs text-[#0052CC] font-semibold">
+              <Store className="w-3.5 h-3.5" />
+              <span>{merchantName}</span>
+            </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-blue-50/60 border border-payvia-blue/30 ring-1 ring-payvia-blue/20">
-            <span className="text-xs text-payvia-navy font-bold block mb-1 flex items-center gap-1">
-              <DollarSign className="w-3.5 h-3.5 text-payvia-blue" />
-              <span>Agreed Settlement Price</span>
-            </span>
-            <span className="text-3xl font-black text-payvia-navy block">
-              {formatCurrency(finalPrice, agreement.currency)}
-            </span>
-            <span className="text-xs text-payvia-blue block mt-1 font-semibold flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Direct agent consensus</span>
-            </span>
-          </div>
-
-          <div className="p-4 rounded-xl bg-emerald-50/70 border border-payvia-success/30">
-            <span className="text-xs text-emerald-800 font-bold block mb-1">Verified Savings</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-payvia-success">
-                {formatCurrency(savings, agreement.currency)}
-              </span>
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-                {savingsPct}% off
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-base font-bold text-[#0A192F]">{agreement.productName}</h3>
+              <p className="text-xs text-[#475569] mt-0.5">
+                Allocated quantity: <strong>1 unit</strong> (Reserved in merchant inventory)
+              </p>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <span className="text-[11px] text-[#475569] block">Listing baseline</span>
+              <span className="text-sm font-semibold text-[#94A3B8] line-through font-mono">
+                {formatCurrency(originalPrice, agreement.currency)}
               </span>
             </div>
-            <span className="text-xs text-emerald-800 block mt-1 flex items-center gap-1 font-medium">
-              <Clock className="w-3 h-3 text-emerald-700" />
-              <span>{deliveryDays}-day SLA guaranteed</span>
-            </span>
           </div>
         </div>
 
-        {/* Agreed Transaction Details Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-border space-y-1">
-            <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
-              <Package className="w-3.5 h-3.5 text-payvia-blue" />
-              <span>Allocated Quantity</span>
-            </span>
-            <span className="font-bold text-foreground text-sm block">{quantity} unit (Reserved)</span>
-          </div>
+        {/* 2. What You'll Pay: Economic Breakdown Grid */}
+        <div className="space-y-2">
+          <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider block">
+            2. Economic Breakdown &amp; Settled Price
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+              <span className="text-xs font-medium text-[#475569] block">Original List Price</span>
+              <span className="text-xl font-bold text-[#94A3B8] line-through font-mono block">
+                {formatCurrency(originalPrice, agreement.currency)}
+              </span>
+              <span className="text-[11px] text-[#475569] block">Published catalog price</span>
+            </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-border space-y-1">
-            <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
-              <Clock className="w-3.5 h-3.5 text-payvia-success" />
-              <span>Fulfillment SLA</span>
-            </span>
-            <span className="font-bold text-foreground text-sm block">{deliveryDays} business days</span>
-          </div>
+            <div className="p-4 rounded-xl bg-[#F0F5FF] border border-[#0052CC]/30 space-y-1 ring-1 ring-[#0052CC]/20">
+              <span className="text-xs text-[#0A192F] font-bold block flex items-center gap-1">
+                <DollarSign className="w-3.5 h-3.5 text-[#0052CC]" />
+                <span>Final Agreed Price</span>
+              </span>
+              <span className="text-2xl font-extrabold text-[#0A192F] font-mono block">
+                {formatCurrency(finalPrice, agreement.currency)}
+              </span>
+              <span className="text-[11px] text-[#0052CC] block font-semibold flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Direct agent consensus</span>
+              </span>
+            </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-border space-y-1">
-            <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-amber-600" />
-              <span>Payment Protocol</span>
-            </span>
-            <span className="font-bold text-foreground text-sm block">PayPal Sandbox v2</span>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-border space-y-1">
-            <span className="text-muted-foreground flex items-center gap-1.5 font-medium">
-              <Lock className="w-3.5 h-3.5 text-purple-600" />
-              <span>Agreement Integrity</span>
-            </span>
-            <span className="font-bold text-payvia-success text-sm block">Immutable Hash</span>
+            <div className="p-4 rounded-xl bg-[#ECFDF5] border border-[#0E6245]/30 space-y-1">
+              <span className="text-xs text-[#0E6245] font-bold block">Your Verified Savings</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-extrabold text-[#0E6245] font-mono">
+                  {formatCurrency(savings, agreement.currency)}
+                </span>
+                <span className="text-[11px] font-bold text-[#0E6245] bg-white px-2 py-0.5 rounded-full border border-[#0E6245]/20">
+                  {savingsPct}% off
+                </span>
+              </div>
+              <span className="text-[11px] text-[#0E6245] block font-medium">
+                Protected against price changes
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Summary of Terms */}
-        <div className="p-4 rounded-xl bg-slate-50 border border-border space-y-2 text-xs text-foreground">
-          <div className="flex items-center gap-2 text-payvia-navy font-bold text-sm">
-            <ShieldCheck className="w-4 h-4 text-payvia-blue" />
-            <span>Economic Terms & Settlement Guarantee</span>
+        {/* 3. What You've Agreed To: SLA & Verification Terms */}
+        <div className="space-y-2">
+          <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider block">
+            3. Delivery &amp; Operational Commitments
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+              <span className="text-[#475569] flex items-center gap-1.5 font-medium">
+                <Package className="w-3.5 h-3.5 text-[#0052CC]" />
+                <span>Quantity</span>
+              </span>
+              <span className="font-bold text-[#0A192F] text-sm block">1 Unit Reserved</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+              <span className="text-[#475569] flex items-center gap-1.5 font-medium">
+                <Clock className="w-3.5 h-3.5 text-[#0E6245]" />
+                <span>Delivery SLA</span>
+              </span>
+              <span className="font-bold text-[#0A192F] text-sm block">{deliveryDays} Business Days</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+              <span className="text-[#475569] flex items-center gap-1.5 font-medium">
+                <Lock className="w-3.5 h-3.5 text-[#0052CC]" />
+                <span>Settlement Mode</span>
+              </span>
+              <span className="font-bold text-[#0A192F] text-sm block">PayPal Orders v2</span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
+              <span className="text-[#475569] flex items-center gap-1.5 font-medium">
+                <Clock className="w-3.5 h-3.5 text-[#0052CC]" />
+                <span>Terms Expiration</span>
+              </span>
+              <span className="font-bold text-[#0A192F] text-[11px] block truncate" title={formattedExpiry}>
+                {formattedExpiry}
+              </span>
+            </div>
           </div>
-          <p className="leading-relaxed text-muted-foreground">
-            {agreement.termsSummary || `Buyer Agent negotiated final purchase price of ${formatCurrency(finalPrice, agreement.currency)} (saving ${formatCurrency(savings, agreement.currency)}) with ${deliveryDays}-day guaranteed fulfillment. This agreement is cryptographically verified against merchant policy rules.`}
+        </div>
+
+        {/* 4. Strategy & Rationale Text */}
+        {agreement.termsSummary && (
+          <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[#0A192F] font-bold">
+              <ShieldCheck className="w-4 h-4 text-[#0052CC]" />
+              <span>Negotiation Agreement Consensus</span>
+            </div>
+            <p className="text-[#475569] leading-relaxed">
+              {agreement.termsSummary}
+            </p>
+          </div>
+        )}
+
+        {/* 5. What Happens Next: Zero-Trust Notice */}
+        <div className="p-4 rounded-xl bg-[#F0F5FF] border border-[#0052CC]/20 text-xs text-[#0A192F] space-y-1.5">
+          <div className="flex items-center gap-2 font-bold text-sm">
+            <ShieldCheck className="w-4 h-4 text-[#0052CC]" />
+            <span>What happens when you approve</span>
+          </div>
+          <p className="text-[#475569] leading-relaxed">
+            Under PayVia&apos;s zero-trust architecture, AI agents cannot charge your payment method. Approving this agreement locks the commercial terms server-side and advances you to PayPal Sandbox checkout. No money moves until you sign in and authorize the payment on PayPal.
           </p>
         </div>
 
-        {/* Human Approval Gate */}
-        {!isApproved && onApprove && (
-          <div className="pt-4 border-t border-border space-y-4">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-xl bg-blue-50/40 border border-blue-100">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm font-bold text-payvia-navy">
-                  <ShieldCheck className="w-4 h-4 text-payvia-blue" />
-                  <span>Mandatory Human Approval Gate</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Under PayVia zero-trust architecture, AI agents cannot initiate charges. Authorize this agreement to proceed to PayPal.
-                </p>
-              </div>
-
-              {/* Toggle slider vs standard button */}
-              <button
-                type="button"
-                onClick={() => setUseSlider(!useSlider)}
-                className="text-xs text-payvia-blue hover:text-payvia-navy font-medium flex items-center gap-1 self-end md:self-auto"
-              >
-                <SlidersHorizontal className="w-3 h-3" />
-                <span>{useSlider ? "Switch to standard button" : "Switch to slide confirmation"}</span>
-              </button>
-            </div>
-
-            <div className="flex flex-col items-center justify-center pt-2">
-              {useSlider ? (
-                <div className="w-full flex flex-col items-center gap-2">
-                  <SlideCommit
-                    label="Slide to approve agreement terms"
-                    doneLabel="Agreement Approved ✓"
-                    errorLabel="Approval Failed"
-                    onConfirm={handleSlideConfirm}
-                    trackColor="#E2E8F0"
-                    handleColor="#003087"
-                    successColor="#16845B"
-                    dangerColor="#D92D20"
-                    width={340}
-                    height={52}
-                    radius={26}
-                  />
-                  <span className="text-[11px] text-muted-foreground">
-                    Slide fully right to authorize and open PayPal Checkout
-                  </span>
-                </div>
-              ) : (
-                <Button
-                  onClick={onApprove}
-                  disabled={isLoading}
-                  className="w-full sm:w-auto bg-payvia-navy hover:bg-payvia-navy-dark text-white font-bold px-8 py-3 text-sm shadow-md"
-                  size="lg"
-                >
-                  <span>{isLoading ? "Locking Protocol..." : "Approve Agreement & Continue to PayPal"}</span>
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              )}
+        {/* Error Notification */}
+        {errorMessage && (
+          <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#EF4444]/30 text-[#991B1B] text-xs flex items-start gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-bold block">Approval Notice</span>
+              <p>{errorMessage}</p>
             </div>
           </div>
         )}
+
+        {/* Expiration Notice if Expired */}
+        {isExpired && (
+          <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#EF4444]/30 text-[#991B1B] text-xs flex items-start gap-2.5">
+            <AlertTriangle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-bold block">Agreement Expired</span>
+              <p>The time window authorized by the merchant has elapsed. Please start a new shopping search to negotiate fresh terms.</p>
+            </div>
+          </div>
+        )}
+
+        {/* 6. Human Approval Action */}
+        <div className="pt-2 border-t border-[#E2E8F0]">
+          {isApproved ? (
+            <div className="p-4 rounded-xl bg-[#ECFDF5] border border-[#0E6245]/30 text-[#0E6245] flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-sm font-bold">
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                <span>Agreement Approved by Buyer</span>
+              </div>
+              <Button
+                size="lg"
+                onClick={onApprove}
+                className="bg-[#0E6245] hover:bg-[#0A4E36] text-white font-bold px-6 gap-2"
+              >
+                <span>Proceed to PayPal Checkout</span>
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3 text-center sm:text-left">
+              <Button
+                onClick={onApprove}
+                disabled={!canApprove || isLoading}
+                size="lg"
+                className="w-full bg-[#0052CC] hover:bg-[#0A192F] text-white font-bold py-3.5 text-sm sm:text-base min-h-[48px] shadow-xs gap-2 transition-colors disabled:opacity-60"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>Authorizing Agreement Terms...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Approve agreement &amp; continue to PayPal</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+              <p className="text-[11px] text-[#475569] text-center">
+                Requires explicit buyer consent. You will review and authorize final payment on PayPal.
+              </p>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
 }
+
+export default AgreementCard;

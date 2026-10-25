@@ -31,6 +31,10 @@ export interface NegotiationAgreement {
   userApproved: boolean;
   userApprovedAt?: string;
   termsSummary: string;
+  merchantName?: string;
+  expiresAt?: string;
+  agreementHash?: string;
+  items?: { title: string; quantity: number; listPrice: number; agreedPrice: number }[];
   // Backward compatibility convenience getters
   finalAgreedPrice: number;
   savingsAmount: number;

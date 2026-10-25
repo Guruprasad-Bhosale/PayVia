@@ -3,9 +3,8 @@
 import React, { useState } from "react";
 import { NegotiationAgreement } from "@/types/negotiation";
 import { formatCurrency } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import SlideCommit from "./react-bits/SlideCommit";
 import { 
   Lock, 
   AlertCircle, 
@@ -14,8 +13,9 @@ import {
   Loader2, 
   Sparkles, 
   ShieldCheck, 
-  ArrowRight,
-  SlidersHorizontal
+  Store,
+  Clock,
+  ArrowRight
 } from "lucide-react";
 
 interface PayPalCheckoutProps {
@@ -32,12 +32,12 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [approvalUrl, setApprovalUrl] = useState<string | null>(null);
-  const [useSlider, setUseSlider] = useState(false);
 
   const finalPrice = agreement.finalPrice ?? agreement.finalAgreedPrice ?? 0;
   const originalPrice = agreement.originalPrice ?? 0;
   const savings = agreement.savings ?? agreement.savingsAmount ?? (originalPrice - finalPrice);
   const deliveryDays = agreement.deliveryDays ?? 3;
+  const merchantName = agreement.merchantName || "Verified Commerce Merchant";
 
   const handleExecutePayment = async () => {
     setLoading(true);
@@ -81,71 +81,80 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
   };
 
   return (
-    <Card className="border-border bg-card shadow-lg overflow-hidden">
+    <Card className="border-[#E2E8F0] bg-white shadow-sm overflow-hidden rounded-2xl">
       {/* PayPal Top Accent Stripe */}
-      <div className="h-1.5 bg-[#0070BA] w-full" />
+      <div className="h-1 bg-[#0070BA] w-full" />
 
-      <CardHeader className="border-b border-border bg-slate-50/70">
-        <div className="flex items-center justify-between">
+      <CardHeader className="border-b border-[#E2E8F0] bg-[#F8FAFC] p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#0070BA]/10 border border-[#0070BA]/30 flex items-center justify-center text-[#0070BA]">
+            <div className="w-10 h-10 rounded-xl bg-[#0070BA]/10 border border-[#0070BA]/20 flex items-center justify-center text-[#0070BA] flex-shrink-0">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-foreground">PayPal Sandbox Settlement</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
+              <CardTitle className="text-xl font-bold text-[#0A192F]">PayPal Sandbox Settlement</CardTitle>
+              <p className="text-xs text-[#475569] mt-0.5">
                 Authoritative server-validated checkout session
-              </CardDescription>
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-white px-3 py-1.5 rounded-full border border-border shadow-sm">
-            <Lock className="w-3.5 h-3.5 text-payvia-success" />
-            <span className="font-semibold text-payvia-navy">SSL 256-Bit</span>
+          <div className="flex items-center gap-1.5 text-xs text-[#475569] bg-white px-3 py-1 rounded-full border border-[#E2E8F0] shadow-2xs self-start sm:self-auto">
+            <Lock className="w-3.5 h-3.5 text-[#0E6245]" />
+            <span className="font-semibold text-[#0A192F]">TLS 256-Bit Encrypted</span>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6 pt-6">
+      <CardContent className="space-y-6 p-5 sm:p-6">
         {/* Itemized Payment Summary */}
-        <div className="rounded-xl bg-slate-50 border border-border divide-y divide-border">
-          <div className="p-4 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Product Item</span>
-            <span className="text-sm font-bold text-foreground">{agreement.productName}</span>
+        <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] divide-y divide-[#E2E8F0]">
+          <div className="p-3.5 flex items-center justify-between">
+            <span className="text-xs font-medium text-[#475569]">Product Item</span>
+            <span className="text-sm font-bold text-[#0A192F] text-right">{agreement.productName}</span>
           </div>
 
-          <div className="p-4 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Original List Price</span>
-            <span className="text-sm font-medium text-muted-foreground line-through">
+          <div className="p-3.5 flex items-center justify-between">
+            <span className="text-xs font-medium text-[#475569]">Fulfilling Merchant</span>
+            <span className="text-xs font-semibold text-[#0052CC] flex items-center gap-1">
+              <Store className="w-3.5 h-3.5" />
+              <span>{merchantName}</span>
+            </span>
+          </div>
+
+          <div className="p-3.5 flex items-center justify-between">
+            <span className="text-xs font-medium text-[#475569]">Original List Price</span>
+            <span className="text-sm font-medium text-[#94A3B8] line-through font-mono">
               {formatCurrency(originalPrice, agreement.currency)}
             </span>
           </div>
 
-          <div className="p-4 flex items-center justify-between bg-blue-50/60">
-            <span className="text-xs text-payvia-navy font-bold flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-payvia-blue" />
+          <div className="p-3.5 flex items-center justify-between bg-[#F0F5FF]">
+            <span className="text-xs text-[#0A192F] font-bold flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#0052CC]" />
               <span>Negotiated Price to Pay</span>
             </span>
-            <span className="text-xl font-black text-payvia-navy">
+            <span className="text-xl font-extrabold text-[#0A192F] font-mono">
               {formatCurrency(finalPrice, agreement.currency)}
             </span>
           </div>
 
-          <div className="p-4 flex items-center justify-between bg-emerald-50/50">
-            <span className="text-xs text-emerald-800 font-semibold">Total Savings</span>
-            <span className="text-sm font-bold text-payvia-success">
-              {formatCurrency(savings, agreement.currency)}
+          <div className="p-3.5 flex items-center justify-between bg-[#ECFDF5]">
+            <span className="text-xs text-[#0E6245] font-semibold">Total Savings</span>
+            <span className="text-sm font-bold text-[#0E6245] font-mono">
+              +{formatCurrency(savings, agreement.currency)}
             </span>
           </div>
 
-          <div className="p-4 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Delivery Commitment</span>
-            <span className="text-xs font-bold text-foreground">
-              {deliveryDays} business days SLA
+          <div className="p-3.5 flex items-center justify-between">
+            <span className="text-xs font-medium text-[#475569]">Delivery SLA</span>
+            <span className="text-xs font-bold text-[#0A192F] flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#475569]" />
+              <span>{deliveryDays} business days</span>
             </span>
           </div>
 
-          <div className="p-4 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Settlement Channel</span>
+          <div className="p-3.5 flex items-center justify-between">
+            <span className="text-xs font-medium text-[#475569]">Settlement Channel</span>
             <span className="text-xs font-bold text-[#003087] flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#0070BA] animate-pulse" />
               <span>PayPal Orders v2 Sandbox</span>
@@ -153,68 +162,47 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
           </div>
         </div>
 
+        {/* Guidance Note */}
+        <div className="p-3.5 rounded-xl bg-[#F0F5FF] border border-[#0052CC]/20 text-xs text-[#0A192F] space-y-1">
+          <div className="flex items-center gap-1.5 font-bold">
+            <ShieldCheck className="w-4 h-4 text-[#0052CC]" />
+            <span>How PayPal Settlement Works</span>
+          </div>
+          <p className="text-[#475569] leading-relaxed">
+            Clicking the button below redirects you to PayPal Sandbox. Log in with your test account, authorize the charge, and you will return to PayVia for verified confirmation.
+          </p>
+        </div>
+
         {errorMessage && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-payvia-error text-xs flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#EF4444]/30 text-[#991B1B] text-xs flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <span className="font-bold block">PayPal Order Creation Error:</span>
+              <span className="font-bold block">PayPal Order Error:</span>
               <p className="leading-relaxed">{errorMessage}</p>
             </div>
           </div>
         )}
 
         {statusMessage && !errorMessage && (
-          <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-payvia-navy text-xs flex items-center gap-2 font-medium">
-            <Loader2 className="w-4 h-4 text-payvia-blue animate-spin flex-shrink-0" />
+          <div className="p-3.5 rounded-xl bg-[#F0F5FF] border border-[#0052CC]/30 text-[#0A192F] text-xs flex items-center gap-2 font-medium">
+            <Loader2 className="w-4 h-4 text-[#0052CC] animate-spin flex-shrink-0" />
             <span>{statusMessage}</span>
           </div>
         )}
 
-        <div className="space-y-4 pt-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Preferred Checkout Interaction:</span>
-            <button
-              type="button"
-              onClick={() => setUseSlider(!useSlider)}
-              className="text-payvia-blue hover:text-payvia-navy font-medium flex items-center gap-1"
-            >
-              <SlidersHorizontal className="w-3 h-3" />
-              <span>{useSlider ? "Use PayPal button" : "Use Slide-to-Pay"}</span>
-            </button>
-          </div>
-
+        <div className="space-y-3 pt-1">
           {approvalUrl ? (
             <a
               href={approvalUrl}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-[#FFC439] hover:bg-[#F2B930] text-[#003087] font-extrabold rounded-xl shadow-md transition-all text-base"
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-[#FFC439] hover:bg-[#F2BA36] text-[#003087] font-extrabold rounded-xl shadow-xs transition-all text-base min-h-[48px]"
             >
               <span>Click to redirect to PayPal Sandbox</span>
               <ExternalLink className="w-4 h-4" />
             </a>
-          ) : useSlider ? (
-            <div className="flex flex-col items-center gap-2 py-2">
-              <SlideCommit
-                label="Slide to Pay with PayPal"
-                doneLabel="Redirecting..."
-                errorLabel="Payment Error"
-                onConfirm={handleExecutePayment}
-                trackColor="#E2E8F0"
-                handleColor="#003087"
-                successColor="#16845B"
-                dangerColor="#D92D20"
-                width={320}
-                height={54}
-                radius={27}
-              />
-              <span className="text-[11px] text-muted-foreground">
-                Slide right to initiate secure PayPal session
-              </span>
-            </div>
           ) : (
             <Button
-              variant="paypal"
               size="lg"
-              className="w-full flex items-center justify-center gap-2 text-base font-bold shadow-md hover:shadow-lg transition-all"
+              className="w-full bg-[#FFC439] hover:bg-[#F2BA36] text-[#003087] font-extrabold text-base py-4 min-h-[48px] shadow-xs hover:shadow-sm transition-all gap-2"
               onClick={handleExecutePayment}
               disabled={loading}
             >
@@ -232,12 +220,14 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
             </Button>
           )}
 
-          <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground text-center pt-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-payvia-success" />
-            <span>Server-authoritative amount validation. Price is immutable once locked.</span>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#475569] text-center pt-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#0E6245]" />
+            <span>Server-authoritative amount validation. Price is locked to {formatCurrency(finalPrice, agreement.currency)}.</span>
           </div>
         </div>
       </CardContent>
     </Card>
   );
 }
+
+export default PayPalCheckout;
