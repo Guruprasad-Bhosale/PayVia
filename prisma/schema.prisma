@@ -104,6 +104,10 @@ enum AuditActorType {
 }
 
 enum AuditEventType {
+  SHOPPING_INTENT_CREATED
+  CANDIDATES_DISCOVERED
+  OFFER_RECEIVED
+  OFFER_SELECTED
   TRANSACTION_CREATED
   NEGOTIATION_STARTED
   PROPOSAL_SUBMITTED
@@ -249,7 +253,6 @@ model Transaction {
   negotiations         NegotiationSession[]
   agreements           Agreement[]
   settlements          Settlement[]
-  auditEvents          AuditEvent[]
 
   @@index([platformId, merchantId, buyerId])
   @@map("transactions")
@@ -405,7 +408,6 @@ model AuditEvent {
   timestamp     DateTime       @default(now())
 
   platform      Platform       @relation(fields: [platformId], references: [id], onDelete: Cascade)
-  transaction   Transaction    @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 
   @@index([platformId, transactionId])
   @@map("audit_events")

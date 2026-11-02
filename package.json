@@ -16,6 +16,9 @@
     "check:secrets": "node scripts/check-secrets.mjs",
     "build:video": "node scripts/video/build-film.mjs",
     "audit:video": "node scripts/video/validate-svgs.mjs && node scripts/video/build-film.mjs",
+    "db:migrate": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
+    "db:generate": "prisma generate",
     "postinstall": "prisma generate"
   },
   "dependencies": {

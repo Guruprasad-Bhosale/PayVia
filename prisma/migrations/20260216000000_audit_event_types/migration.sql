@@ -1,0 +1,9 @@
+-- AlterEnum
+ALTER TYPE "AuditEventType" ADD VALUE 'SHOPPING_INTENT_CREATED';
+ALTER TYPE "AuditEventType" ADD VALUE 'CANDIDATES_DISCOVERED';
+ALTER TYPE "AuditEventType" ADD VALUE 'OFFER_RECEIVED';
+ALTER TYPE "AuditEventType" ADD VALUE 'OFFER_SELECTED';
+
+-- DropForeignKey
+ALTER TABLE "audit_events" DROP CONSTRAINT IF EXISTS "audit_events_transactionId_fkey";
+
