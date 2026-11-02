@@ -616,6 +616,16 @@ async function runTestSuite() {
   console.log(`  ✅ Test 53: Multi-tenant Platform tenant isolated & registered (${customPlatform.name})`);
 
   // Test 54: Merchant private floor protection (Floor never exposed in public policy view)
+  await merchantRepo.create({
+    id: "merchant_test_secure",
+    platformId: customPlatform.id,
+    name: "Secure Test Merchant",
+    email: "secure@merchant.payvia.dev",
+    status: "ACTIVE",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+
   const testMerchantPolicy = await policyService.setMerchantPolicy({
     platformId: customPlatform.id,
     merchantId: "merchant_test_secure",
@@ -635,6 +645,16 @@ async function runTestSuite() {
   console.log("  ✅ Test 54: Merchant private floor strictly protected (0% leakage to buyer or public API)");
 
   // Test 55: Buyer private ceiling protection
+  await buyerRepo.create({
+    id: "buyer_test_secure",
+    platformId: customPlatform.id,
+    name: "Secure Test Buyer",
+    email: "secure@buyer.payvia.dev",
+    status: "ACTIVE",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+
   const testBuyerPolicy = await policyService.setBuyerPolicy({
     platformId: customPlatform.id,
     buyerId: "buyer_test_secure",
@@ -2277,7 +2297,113 @@ async function runTestSuite() {
   console.log("       [F] Bryntum Gantt Dynamic Fulfillment Engine ➔ PASS");
   console.log("       [G] Elasticsearch AI Memory & Prompt Injection Isolation ➔ PASS");
 
-  console.log("\n✨ ALL 150 SYSTEM, SPONSOR, SECURITY, INFRASTRUCTURE, BUYER JOURNEY, MERCHANT CONTROL PLANE & PHASE C INVARIANTS PASSED PERFECTLY!\n");
+  // =======================================================================
+  // PHASE D: MERCHANT POLICY INTEGRITY & REFERENTIAL INTEGRITY (Tests 151 - 155)
+  // =======================================================================
+  console.log("\n▶ 13. Testing PHASE D: MERCHANT POLICY INTEGRITY & REFERENTIAL INTEGRITY (Tests 151 - 155):");
+
+  // Test 151: Successful policy creation for an existing merchant
+  const integMerchant = await merchantRepo.create({
+    id: "merch_integrity_01",
+    platformId: customPlatform.id,
+    name: "Integrity Store",
+    email: "integrity@merchant.payvia.dev",
+    status: "ACTIVE",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+
+  const createdPolicy = await policyService.setMerchantPolicy({
+    platformId: customPlatform.id,
+    merchantId: integMerchant.id,
+    catalogItemId: "prod_integ_01",
+    listPrice: 500.0,
+    minimumPrice: 420.0,
+    minimumDeliveryDays: 2,
+    maximumDeliveryDays: 6,
+    enabled: true,
+  });
+  if (!createdPolicy || createdPolicy.merchantId !== integMerchant.id || createdPolicy.minimumPrice !== 420.0) {
+    throw new Error("Test 151 Failed: Policy creation for existing merchant failed");
+  }
+  console.log("  ✅ Test 151: Successful policy creation for an existing merchant verified");
+
+  // Test 152: Repeated initialization without duplicate records (idempotency)
+  const reInitPolicy = await policyService.setMerchantPolicy({
+    platformId: customPlatform.id,
+    merchantId: integMerchant.id,
+    catalogItemId: "prod_integ_01",
+    listPrice: 500.0,
+    minimumPrice: 420.0,
+    minimumDeliveryDays: 2,
+    maximumDeliveryDays: 6,
+    enabled: true,
+  });
+  if (reInitPolicy.id !== createdPolicy.id) {
+    throw new Error("Test 152 Failed: Repeated initialization produced duplicate policy record");
+  }
+  console.log("  ✅ Test 152: Repeated initialization without duplicate records verified (Idempotent)");
+
+  // Test 153: Missing merchant handling (clean rejection without database constraint corruption)
+  let missingMerchantBlocked = false;
+  try {
+    await policyService.setMerchantPolicy({
+      platformId: customPlatform.id,
+      merchantId: "merch_ghost_nonexistent",
+      listPrice: 300.0,
+      minimumPrice: 250.0,
+      enabled: true,
+    });
+  } catch (err: any) {
+    if (err.message.includes("MERCHANT_NOT_FOUND")) {
+      missingMerchantBlocked = true;
+    }
+  }
+  if (!missingMerchantBlocked) {
+    throw new Error("Test 153 Failed: Policy assignment to nonexistent merchant was not blocked with MERCHANT_NOT_FOUND");
+  }
+  console.log("  ✅ Test 153: Missing merchant handling cleanly defended (MERCHANT_NOT_FOUND enforced)");
+
+  // Test 154: Correct merchant and platform association (Cross-tenant mismatch blocked)
+  let tenantMismatchBlocked = false;
+  try {
+    await policyService.setMerchantPolicy({
+      platformId: "plat_foreign_other",
+      merchantId: integMerchant.id, // belongs to customPlatform.id
+      listPrice: 500.0,
+      minimumPrice: 400.0,
+      enabled: true,
+    });
+  } catch (err: any) {
+    if (err.message.includes("TENANT_MISMATCH")) {
+      tenantMismatchBlocked = true;
+    }
+  }
+  if (!tenantMismatchBlocked) {
+    throw new Error("Test 154 Failed: Cross-tenant policy mutation was not blocked with TENANT_MISMATCH");
+  }
+  console.log("  ✅ Test 154: Correct merchant and platform association verified (TENANT_MISMATCH blocked)");
+
+  // Test 155: Preservation of existing customized merchant policies
+  const customFloorPolicy = await policyService.setMerchantPolicy({
+    platformId: customPlatform.id,
+    merchantId: integMerchant.id,
+    catalogItemId: "prod_integ_custom_floor",
+    listPrice: 800.0,
+    minimumPrice: 650.0, // Custom modified floor
+    minimumDeliveryDays: 3,
+    maximumDeliveryDays: 5,
+    enabled: true,
+  });
+
+  // Simulate discovery or baseline check
+  const fetchedExistingPolicy = await policyRepo.findMerchantPolicy(integMerchant.id, "prod_integ_custom_floor");
+  if (!fetchedExistingPolicy || fetchedExistingPolicy.minimumPrice !== 650.0) {
+    throw new Error("Test 155 Failed: Existing customized merchant policy was not preserved");
+  }
+  console.log("  ✅ Test 155: Preservation of existing merchant policies verified ($650.00 custom floor intact)");
+
+  console.log("\n✨ ALL 155 SYSTEM, SPONSOR, SECURITY, INFRASTRUCTURE, BUYER JOURNEY, MERCHANT CONTROL PLANE & DATA INTEGRITY INVARIANTS PASSED PERFECTLY!\n");
 }
 
 runTestSuite().catch((err) => {

@@ -17,6 +17,7 @@ import {
   buyerRepo,
   negotiationRepo,
   agreementRepo,
+  policyRepo,
 } from "@/lib/repositories";
 import { ShoppingIntentCreateSchema, OfferSelectSchema } from "@/lib/domain/validation";
 import { policyService } from "./policy.service";
@@ -189,21 +190,43 @@ export class ShoppingService {
       if (candidateOffers.some((c) => c.catalogItemId === prod.id)) continue;
 
       const isPayViaMerchant = prod.source !== "channel3";
-      // Ensure demo policy is configured
+      // Ensure demo merchant and policy are configured
       if (isPayViaMerchant) {
-        await policyService.setMerchantPolicy({
-          platformId: session.platformId,
-          merchantId: (prod as any).merchantId || (prod as any).merchant?.id || "merchant_apex",
-          catalogItemId: prod.id,
-          listPrice: prod.originalPrice,
-          minimumPrice: prod.minAcceptablePrice,
-          minimumDeliveryDays: 2,
-          maximumDeliveryDays: 5,
-          immediateDiscountPercent: 3,
-          allowedPaymentTiming: ["IMMEDIATE"],
-          enabled: true,
-          strategy: "BALANCED_ECONOMIC",
-        });
+        const merchantId = (prod as any).merchantId || (prod as any).merchant?.id || "merchant_apex";
+        const merchantName = (prod as any).merchantName || (prod as any).merchant?.name || "Apex Digital Store";
+
+        // 1. Ensure intended reference merchant exists on this platform
+        let merchant = await merchantRepo.findById(merchantId);
+        if (!merchant) {
+          merchant = await merchantRepo.create({
+            id: merchantId,
+            platformId: session.platformId,
+            name: merchantName,
+            email: "support@apexretailers.example.com",
+            settlementEmail: "merchant-sandbox@payvia.dev",
+            status: "ACTIVE",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        }
+
+        // 2. Preserve existing merchant policy if already configured
+        const existingPolicy = await policyRepo.findMerchantPolicy(merchant.id, prod.id);
+        if (!existingPolicy) {
+          await policyService.setMerchantPolicy({
+            platformId: session.platformId,
+            merchantId: merchant.id,
+            catalogItemId: prod.id,
+            listPrice: prod.originalPrice,
+            minimumPrice: prod.minAcceptablePrice,
+            minimumDeliveryDays: 2,
+            maximumDeliveryDays: 5,
+            immediateDiscountPercent: 3,
+            allowedPaymentTiming: ["IMMEDIATE"],
+            enabled: true,
+            strategy: "BALANCED_ECONOMIC",
+          });
+        }
       }
 
       candidateOffers.push({

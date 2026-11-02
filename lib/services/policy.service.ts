@@ -3,7 +3,7 @@ import {
   MerchantNegotiationPolicy,
   Proposal,
 } from "@/lib/domain/types";
-import { policyRepo } from "@/lib/repositories";
+import { policyRepo, merchantRepo, buyerRepo } from "@/lib/repositories";
 import {
   BuyerNegotiationPolicySchema,
   MerchantNegotiationPolicySchema,
@@ -43,6 +43,22 @@ export class PolicyService {
     };
 
     const validated = MerchantNegotiationPolicySchema.parse(input);
+
+    // 1. Verify intended merchant exists to prevent foreign key violations
+    const merchant = await merchantRepo.findById(validated.merchantId);
+    if (!merchant) {
+      throw new Error(
+        `MERCHANT_NOT_FOUND: Cannot configure policy for merchant '${validated.merchantId}'. The merchant does not exist.`
+      );
+    }
+
+    // 2. Verify platform/tenant isolation
+    if (merchant.platformId !== validated.platformId) {
+      throw new Error(
+        `TENANT_MISMATCH: Merchant '${validated.merchantId}' belongs to platform '${merchant.platformId}', not platform '${validated.platformId}'. Cross-tenant policy assignment is forbidden.`
+      );
+    }
+
     const policy: MerchantNegotiationPolicy = {
       id: `pol_${validated.merchantId}_${validated.catalogItemId || "store"}`,
       platformId: validated.platformId,
@@ -78,6 +94,22 @@ export class PolicyService {
    */
   async setBuyerPolicy(policyInput: unknown): Promise<BuyerNegotiationPolicy> {
     const validated = BuyerNegotiationPolicySchema.parse(policyInput);
+
+    // 1. Verify intended buyer exists
+    const buyer = await buyerRepo.findById(validated.buyerId);
+    if (!buyer) {
+      throw new Error(
+        `BUYER_NOT_FOUND: Cannot configure policy for buyer '${validated.buyerId}'. The buyer does not exist.`
+      );
+    }
+
+    // 2. Verify platform/tenant isolation
+    if (buyer.platformId !== validated.platformId) {
+      throw new Error(
+        `TENANT_MISMATCH: Buyer '${validated.buyerId}' belongs to platform '${buyer.platformId}', not platform '${validated.platformId}'. Cross-tenant policy assignment is forbidden.`
+      );
+    }
+
     const policy: BuyerNegotiationPolicy = {
       ...validated,
       id: `bpol_${validated.buyerId}`,
