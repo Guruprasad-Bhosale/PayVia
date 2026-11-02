@@ -600,7 +600,7 @@ async function runTestSuite() {
   const { settlementService } = await import("../lib/services/settlement.service");
   const { auditService } = await import("../lib/services/audit.service");
   const { idempotencyService } = await import("../lib/services/idempotency.service");
-  const { platformRepo, merchantRepo, buyerRepo } = await import("../lib/repositories");
+  const { platformRepo, merchantRepo, buyerRepo, policyRepo } = await import("../lib/repositories");
 
   // Test 53: Multi-tenant Platform & Tenant Isolation
   const customPlatform = await platformRepo.create({
