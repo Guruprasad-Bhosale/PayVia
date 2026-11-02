@@ -33,7 +33,7 @@ const MerchantGrid = dynamic(
   () => import("@/components/merchant/MerchantGrid").then((mod) => mod.MerchantGrid),
   {
     loading: () => (
-      <div className="p-12 text-center text-xs text-[#475569] bg-white rounded-2xl border border-[#E2E8F0]">
+      <div className="p-12 text-center text-xs text-[#52607A] bg-white rounded-2xl border border-[#DCE4EE]">
         Loading settlement ledger grid (AG Grid Community)...
       </div>
     ),
@@ -45,7 +45,7 @@ const MerchantStudioDashboard = dynamic(
   () => import("@/components/merchant/MerchantStudioDashboard").then((mod) => mod.MerchantStudioDashboard),
   {
     loading: () => (
-      <div className="p-12 text-center text-xs text-[#475569] bg-white rounded-2xl border border-[#E2E8F0]">
+      <div className="p-12 text-center text-xs text-[#52607A] bg-white rounded-2xl border border-[#DCE4EE]">
         Loading AG Studio analytics...
       </div>
     ),
@@ -57,7 +57,7 @@ const MerchantPolicyEditor = dynamic(
   () => import("@/components/merchant/MerchantPolicyEditor").then((mod) => mod.MerchantPolicyEditor),
   {
     loading: () => (
-      <div className="p-12 text-center text-xs text-[#475569] bg-white rounded-2xl border border-[#E2E8F0]">
+      <div className="p-12 text-center text-xs text-[#52607A] bg-white rounded-2xl border border-[#DCE4EE]">
         Loading policy editor...
       </div>
     ),
@@ -69,7 +69,7 @@ const MerchantAgentSimulator = dynamic(
   () => import("@/components/merchant/MerchantAgentSimulator").then((mod) => mod.MerchantAgentSimulator),
   {
     loading: () => (
-      <div className="p-12 text-center text-xs text-[#475569] bg-white rounded-2xl border border-[#E2E8F0]">
+      <div className="p-12 text-center text-xs text-[#52607A] bg-white rounded-2xl border border-[#DCE4EE]">
         Loading strategy simulator...
       </div>
     ),
@@ -81,7 +81,7 @@ const MerchantProductCatalog = dynamic(
   () => import("@/components/merchant/MerchantProductCatalog").then((mod) => mod.MerchantProductCatalog),
   {
     loading: () => (
-      <div className="p-12 text-center text-xs text-[#475569] bg-white rounded-2xl border border-[#E2E8F0]">
+      <div className="p-12 text-center text-xs text-[#52607A] bg-white rounded-2xl border border-[#DCE4EE]">
         Loading product catalog...
       </div>
     ),
@@ -93,7 +93,7 @@ const PayViaConnectDeveloper = dynamic(
   () => import("@/components/merchant/PayViaConnectDeveloper").then((mod) => mod.PayViaConnectDeveloper),
   {
     loading: () => (
-      <div className="p-12 text-center text-xs text-[#475569] bg-white rounded-2xl border border-[#E2E8F0]">
+      <div className="p-12 text-center text-xs text-[#52607A] bg-white rounded-2xl border border-[#DCE4EE]">
         Loading developer portal...
       </div>
     ),
@@ -182,8 +182,8 @@ function MerchantContent() {
   if (loading || !dataset) {
     return (
       <div className="text-center py-24 space-y-4">
-        <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#0052CC]" />
-        <p className="text-sm text-[#475569] font-medium">Loading PayVia Merchant Control Plane...</p>
+        <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#0284C7]" />
+        <p className="text-sm text-[#52607A] font-medium">Loading PayVia Merchant Control Plane...</p>
       </div>
     );
   }
@@ -194,25 +194,25 @@ function MerchantContent() {
   return (
     <div className="space-y-6 py-2">
       {/* Top Banner & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#DCE4EE] pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <Badge variant="secondary" className="gap-1 text-xs font-bold text-[#0A192F] bg-blue-50 border-blue-200">
-              <Zap className="w-3 h-3 text-[#0052CC]" />
+            <Badge variant="secondary" className="gap-1 text-xs font-bold text-[#0B1B33] bg-blue-50 border-blue-200">
+              <Zap className="w-3 h-3 text-[#0284C7]" />
               <span>PAYVIA CONNECT · MERCHANT CONTROL PLANE</span>
             </Badge>
             <Badge variant="success" className="gap-1 text-xs font-semibold">
               <ShieldCheck className="w-3 h-3" />
               <span>Autonomous Rules: ACTIVE</span>
             </Badge>
-            <span className="text-xs font-mono text-[#475569] bg-slate-100 px-2 py-0.5 rounded">
+            <span className="text-xs font-mono text-[#52607A] bg-slate-100 px-2 py-0.5 rounded">
               Store: merchant_default
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0A192F] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1B33] tracking-tight">
             Merchant Operations &amp; Negotiation Control
           </h1>
-          <p className="text-xs sm:text-sm text-[#475569] mt-1 max-w-3xl">
+          <p className="text-xs sm:text-sm text-[#52607A] mt-1 max-w-3xl">
             Configure private price floors and delivery boundaries. Your merchant AI agent negotiates autonomously within these limits, and PayPal Orders v2 settles all approved transactions.
           </p>
         </div>
@@ -223,14 +223,14 @@ function MerchantContent() {
             size="sm"
             onClick={loadAnalytics}
             disabled={refreshing}
-            className="gap-2 text-xs border-[#E2E8F0] text-[#0A192F] hover:bg-slate-50"
+            className="gap-2 text-xs border-[#DCE4EE] text-[#0B1B33] hover:bg-slate-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#0052CC]" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#0284C7]" : ""}`} />
             <span>Refresh</span>
           </Button>
 
           <Link href="/negotiate">
-            <Button size="sm" className="gap-2 text-xs bg-[#0A192F] hover:bg-[#0052CC] text-white font-bold shadow-xs">
+            <Button size="sm" className="gap-2 text-xs bg-[#0B1B33] hover:bg-[#0284C7] text-white font-bold shadow-xs">
               <span>Test as Buyer</span>
               <ExternalLink className="w-3 h-3" />
             </Button>
@@ -239,13 +239,13 @@ function MerchantContent() {
       </div>
 
       {/* 4 Focused Sections Navigation Bar */}
-      <nav aria-label="Merchant Navigation" className="flex border-b border-[#E2E8F0] overflow-x-auto gap-2">
+      <nav aria-label="Merchant Navigation" className="flex border-b border-[#DCE4EE] overflow-x-auto gap-2">
         <button
           onClick={() => handleTabChange("overview")}
           className={`flex items-center gap-2 py-3 px-4 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeSection === "overview"
-              ? "border-[#0052CC] text-[#0052CC]"
-              : "border-transparent text-[#475569] hover:text-[#0A192F]"
+              ? "border-[#0284C7] text-[#0284C7]"
+              : "border-transparent text-[#52607A] hover:text-[#0B1B33]"
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -256,8 +256,8 @@ function MerchantContent() {
           onClick={() => handleTabChange("catalog")}
           className={`flex items-center gap-2 py-3 px-4 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeSection === "catalog"
-              ? "border-[#0052CC] text-[#0052CC]"
-              : "border-transparent text-[#475569] hover:text-[#0A192F]"
+              ? "border-[#0284C7] text-[#0284C7]"
+              : "border-transparent text-[#52607A] hover:text-[#0B1B33]"
           }`}
         >
           <Package className="w-4 h-4" />
@@ -268,8 +268,8 @@ function MerchantContent() {
           onClick={() => handleTabChange("policies")}
           className={`flex items-center gap-2 py-3 px-4 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeSection === "policies"
-              ? "border-[#0052CC] text-[#0052CC]"
-              : "border-transparent text-[#475569] hover:text-[#0A192F]"
+              ? "border-[#0284C7] text-[#0284C7]"
+              : "border-transparent text-[#52607A] hover:text-[#0B1B33]"
           }`}
         >
           <Sliders className="w-4 h-4" />
@@ -280,8 +280,8 @@ function MerchantContent() {
           onClick={() => handleTabChange("transactions")}
           className={`flex items-center gap-2 py-3 px-4 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
             activeSection === "transactions"
-              ? "border-[#0052CC] text-[#0052CC]"
-              : "border-transparent text-[#475569] hover:text-[#0A192F]"
+              ? "border-[#0284C7] text-[#0284C7]"
+              : "border-transparent text-[#52607A] hover:text-[#0B1B33]"
           }`}
         >
           <Receipt className="w-4 h-4" />
@@ -294,103 +294,103 @@ function MerchantContent() {
         <div className="space-y-6">
           {/* Key Commerce Performance Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-[#475569] font-medium">
+            <div className="p-4 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-xs text-[#52607A] font-medium">
                 <span>Negotiations</span>
-                <Layers className="w-4 h-4 text-[#0052CC]" />
+                <Layers className="w-4 h-4 text-[#0284C7]" />
               </div>
-              <div className="text-2xl font-black text-[#0A192F] font-mono">
+              <div className="text-2xl font-black text-[#0B1B33] font-mono">
                 {kpis.totalNegotiations}
               </div>
-              <span className="text-[10px] text-[#475569] block">Historical buyer sessions</span>
+              <span className="text-[10px] text-[#52607A] block">Historical buyer sessions</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-[#475569] font-medium">
+            <div className="p-4 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-xs text-[#52607A] font-medium">
                 <span>Agreements Reached</span>
-                <CheckCircle2 className="w-4 h-4 text-[#0E6245]" />
+                <CheckCircle2 className="w-4 h-4 text-[#059669]" />
               </div>
-              <div className="text-2xl font-black text-[#0E6245] font-mono">
+              <div className="text-2xl font-black text-[#059669] font-mono">
                 {kpis.completedTransactions}
               </div>
-              <span className="text-[10px] text-[#475569] block">Consensus agreements locked</span>
+              <span className="text-[10px] text-[#52607A] block">Consensus agreements locked</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-[#475569] font-medium">
+            <div className="p-4 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-xs text-[#52607A] font-medium">
                 <span>Settled Volume</span>
-                <DollarSign className="w-4 h-4 text-[#0A192F]" />
+                <DollarSign className="w-4 h-4 text-[#0B1B33]" />
               </div>
-              <div className="text-2xl font-black text-[#0A192F] font-mono">
+              <div className="text-2xl font-black text-[#0B1B33] font-mono">
                 {formatCurrency(kpis.totalRevenue, "USD")}
               </div>
-              <span className="text-[10px] text-[#0052CC] font-bold block">PayPal Orders v2 Settled</span>
+              <span className="text-[10px] text-[#0284C7] font-bold block">PayPal Orders v2 Settled</span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-              <div className="flex items-center justify-between text-xs text-[#475569] font-medium">
+            <div className="p-4 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+              <div className="flex items-center justify-between text-xs text-[#52607A] font-medium">
                 <span>Avg Discount</span>
                 <Percent className="w-4 h-4 text-amber-600" />
               </div>
               <div className="text-2xl font-black text-amber-800 font-mono">
                 {kpis.averageSavingsPct}%
               </div>
-              <span className="text-[10px] text-[#475569] block">
+              <span className="text-[10px] text-[#52607A] block">
                 Total savings: ${kpis.totalSavings.toFixed(2)}
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-1 col-span-2 md:col-span-1">
-              <div className="flex items-center justify-between text-xs text-[#475569] font-medium">
+            <div className="p-4 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-1 col-span-2 md:col-span-1">
+              <div className="flex items-center justify-between text-xs text-[#52607A] font-medium">
                 <span>Deal Conversion</span>
                 <TrendingUp className="w-4 h-4 text-indigo-600" />
               </div>
               <div className="text-2xl font-black text-indigo-800 font-mono">
                 {kpis.acceptanceRate}%
               </div>
-              <span className="text-[10px] text-[#475569] block">Consensus conversion rate</span>
+              <span className="text-[10px] text-[#52607A] block">Consensus conversion rate</span>
             </div>
           </div>
 
           {/* Operational Alerts & System Boundaries */}
-          <div className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-3">
+          <div className="p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-[#0A192F] uppercase tracking-wider flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#0E6245]" />
+              <h2 className="text-sm font-bold text-[#0B1B33] uppercase tracking-wider flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#059669]" />
                 <span>Operational Health &amp; Active Policy Safeguards</span>
               </h2>
-              <span className="text-xs text-[#0E6245] font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-xs text-[#059669] font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 All 3 Boundaries Normal
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0] space-y-1">
-                <div className="text-xs font-bold text-[#0A192F] flex items-center gap-1.5">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-[#DCE4EE] space-y-1">
+                <div className="text-xs font-bold text-[#0B1B33] flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-amber-600" />
                   <span>Price Floor Protection</span>
                 </div>
-                <p className="text-[11px] text-[#475569]">
-                  Floor protected at <strong className="text-[#0A192F]">$750.00 USD</strong>. Server-side rejection is active for all below-floor proposals.
+                <p className="text-[11px] text-[#52607A]">
+                  Floor protected at <strong className="text-[#0B1B33]">$750.00 USD</strong>. Server-side rejection is active for all below-floor proposals.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0] space-y-1">
-                <div className="text-xs font-bold text-[#0A192F] flex items-center gap-1.5">
-                  <Package className="w-3.5 h-3.5 text-[#0052CC]" />
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-[#DCE4EE] space-y-1">
+                <div className="text-xs font-bold text-[#0B1B33] flex items-center gap-1.5">
+                  <Package className="w-3.5 h-3.5 text-[#0284C7]" />
                   <span>Negotiable Inventory</span>
                 </div>
-                <p className="text-[11px] text-[#475569]">
+                <p className="text-[11px] text-[#52607A]">
                   2 items actively negotiable, 1 external listing set to discovery-only. Zero overselling incidents recorded.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0] space-y-1">
-                <div className="text-xs font-bold text-[#0A192F] flex items-center gap-1.5">
-                  <Receipt className="w-3.5 h-3.5 text-[#0E6245]" />
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-[#DCE4EE] space-y-1">
+                <div className="text-xs font-bold text-[#0B1B33] flex items-center gap-1.5">
+                  <Receipt className="w-3.5 h-3.5 text-[#059669]" />
                   <span>PayPal Orders v2 Gateway</span>
                 </div>
-                <p className="text-[11px] text-[#475569]">
+                <p className="text-[11px] text-[#52607A]">
                   Sandbox settlement binding active. Capture restricted to server-side verified POST requests only.
                 </p>
               </div>
@@ -398,52 +398,52 @@ function MerchantContent() {
           </div>
 
           {/* Recent Activity Snapshot */}
-          <div className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
+          <div className="p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <h2 className="text-sm font-bold text-[#0A192F] uppercase tracking-wider flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 text-[#0052CC]" />
+                <h2 className="text-sm font-bold text-[#0B1B33] uppercase tracking-wider flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-[#0284C7]" />
                   <span>Recent Transaction &amp; Settlement Activity</span>
                 </h2>
-                <p className="text-xs text-[#475569]">Showing latest verified sessions</p>
+                <p className="text-xs text-[#52607A]">Showing latest verified sessions</p>
               </div>
 
               <button
                 onClick={() => handleTabChange("transactions")}
-                className="text-xs font-bold text-[#0052CC] hover:text-[#0A192F] flex items-center gap-1"
+                className="text-xs font-bold text-[#0284C7] hover:text-[#0B1B33] flex items-center gap-1"
               >
                 <span>View Full AG Grid Ledger</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="divide-y divide-[#E2E8F0] border border-[#E2E8F0] rounded-xl overflow-hidden">
+            <div className="divide-y divide-[#DCE4EE] border border-[#DCE4EE] rounded-xl overflow-hidden">
               {recentRecords.map((r) => (
                 <div key={r.id} className="p-3.5 bg-white hover:bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div className="space-y-0.5">
-                    <div className="font-bold text-[#0A192F]">{r.productName}</div>
-                    <div className="text-[11px] text-[#475569] font-mono">
+                    <div className="font-bold text-[#0B1B33]">{r.productName}</div>
+                    <div className="text-[11px] text-[#52607A] font-mono">
                       Session: {r.negotiationId} · {r.category}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 flex-wrap">
                     <div className="text-right">
-                      <div className="font-mono font-bold text-[#0A192F]">{formatCurrency(r.negotiatedPrice, r.currency)}</div>
-                      <div className="text-[10px] text-[#0E6245]">Save ${r.savings.toFixed(2)} ({r.savingsPercentage}%)</div>
+                      <div className="font-mono font-bold text-[#0B1B33]">{formatCurrency(r.negotiatedPrice, r.currency)}</div>
+                      <div className="text-[10px] text-[#059669]">Save ${r.savings.toFixed(2)} ({r.savingsPercentage}%)</div>
                     </div>
 
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                       r.paymentStatus === "SETTLED"
-                        ? "bg-emerald-50 text-[#0E6245] border border-emerald-200"
-                        : "bg-slate-100 text-[#475569]"
+                        ? "bg-emerald-50 text-[#059669] border border-emerald-200"
+                        : "bg-slate-100 text-[#52607A]"
                     }`}>
                       {r.paymentStatus === "SETTLED" ? "● SETTLED" : "UNSETTLED"}
                     </span>
 
                     <Link
                       href={`/fulfillment?negotiationId=${encodeURIComponent(r.negotiationId)}`}
-                      className="text-[#0052CC] hover:text-[#0A192F] font-bold text-[11px] flex items-center gap-1"
+                      className="text-[#0284C7] hover:text-[#0B1B33] font-bold text-[11px] flex items-center gap-1"
                     >
                       <span>Fulfillment</span>
                       <ExternalLink className="w-3 h-3" />
@@ -458,39 +458,39 @@ function MerchantContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
               onClick={() => handleTabChange("policies")}
-              className="p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#0052CC]/50 hover:shadow-xs cursor-pointer transition space-y-2"
+              className="p-5 rounded-2xl bg-white border border-[#DCE4EE] hover:border-[#0284C7]/50 hover:shadow-xs cursor-pointer transition space-y-2"
             >
-              <div className="flex items-center gap-2 text-sm font-bold text-[#0A192F]">
-                <Sliders className="w-4 h-4 text-[#0052CC]" />
+              <div className="flex items-center gap-2 text-sm font-bold text-[#0B1B33]">
+                <Sliders className="w-4 h-4 text-[#0284C7]" />
                 <span>Adjust Negotiation Policy</span>
               </div>
-              <p className="text-xs text-[#475569] leading-relaxed">
+              <p className="text-xs text-[#52607A] leading-relaxed">
                 Update floor price, delivery SLA bounds, and payment incentives enforced by your agent.
               </p>
             </div>
 
             <div
               onClick={() => handlePolicySubViewChange("simulator")}
-              className="p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#0052CC]/50 hover:shadow-xs cursor-pointer transition space-y-2"
+              className="p-5 rounded-2xl bg-white border border-[#DCE4EE] hover:border-[#0284C7]/50 hover:shadow-xs cursor-pointer transition space-y-2"
             >
-              <div className="flex items-center gap-2 text-sm font-bold text-[#0A192F]">
+              <div className="flex items-center gap-2 text-sm font-bold text-[#0B1B33]">
                 <Play className="w-4 h-4 text-indigo-600" />
                 <span>Test Strategy Simulator</span>
               </div>
-              <p className="text-xs text-[#475569] leading-relaxed">
+              <p className="text-xs text-[#52607A] leading-relaxed">
                 Simulate buyer bids against your private rules and review autonomous counter-offers.
               </p>
             </div>
 
             <div
               onClick={() => handleTransactionsSubViewChange("developer")}
-              className="p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#0052CC]/50 hover:shadow-xs cursor-pointer transition space-y-2"
+              className="p-5 rounded-2xl bg-white border border-[#DCE4EE] hover:border-[#0284C7]/50 hover:shadow-xs cursor-pointer transition space-y-2"
             >
-              <div className="flex items-center gap-2 text-sm font-bold text-[#0A192F]">
-                <Code className="w-4 h-4 text-[#0E6245]" />
+              <div className="flex items-center gap-2 text-sm font-bold text-[#0B1B33]">
+                <Code className="w-4 h-4 text-[#059669]" />
                 <span>API &amp; Developer Setup</span>
               </div>
-              <p className="text-xs text-[#475569] leading-relaxed">
+              <p className="text-xs text-[#52607A] leading-relaxed">
                 Retrieve platform API keys, configure settlement webhooks, and embed the TypeScript SDK.
               </p>
             </div>
@@ -514,13 +514,13 @@ function MerchantContent() {
       {activeSection === "policies" && (
         <div className="space-y-6">
           {/* Sub-view switcher */}
-          <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-3">
+          <div className="flex items-center gap-2 border-b border-[#DCE4EE] pb-3">
             <button
               onClick={() => handlePolicySubViewChange("editor")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                 policySubView === "editor"
-                  ? "bg-[#0A192F] text-white shadow-xs"
-                  : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                  ? "bg-[#0B1B33] text-white shadow-xs"
+                  : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
               }`}
             >
               Policy Rules &amp; Limits
@@ -529,8 +529,8 @@ function MerchantContent() {
               onClick={() => handlePolicySubViewChange("simulator")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 policySubView === "simulator"
-                  ? "bg-[#0A192F] text-white shadow-xs"
-                  : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                  ? "bg-[#0B1B33] text-white shadow-xs"
+                  : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
               }`}
             >
               <Play className="w-3.5 h-3.5 text-indigo-500" />
@@ -545,11 +545,11 @@ function MerchantContent() {
             />
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs text-[#0A192F] flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs text-[#0B1B33] flex items-center justify-between">
                 <span>Testing against active rules for <strong>merchant_default</strong> (Floor: $750.00 USD)</span>
                 <button
                   onClick={() => handlePolicySubViewChange("editor")}
-                  className="text-xs font-bold text-[#0052CC] hover:underline"
+                  className="text-xs font-bold text-[#0284C7] hover:underline"
                 >
                   Edit Rules
                 </button>
@@ -564,13 +564,13 @@ function MerchantContent() {
       {activeSection === "transactions" && (
         <div className="space-y-6">
           {/* Sub-view switcher */}
-          <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-3 flex-wrap">
+          <div className="flex items-center gap-2 border-b border-[#DCE4EE] pb-3 flex-wrap">
             <button
               onClick={() => handleTransactionsSubViewChange("ledger")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 transactionsSubView === "ledger"
-                  ? "bg-[#0A192F] text-white shadow-xs"
-                  : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                  ? "bg-[#0B1B33] text-white shadow-xs"
+                  : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
               }`}
             >
               <Receipt className="w-3.5 h-3.5" />
@@ -581,8 +581,8 @@ function MerchantContent() {
               onClick={() => handleTransactionsSubViewChange("analytics")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 transactionsSubView === "analytics"
-                  ? "bg-[#0A192F] text-white shadow-xs"
-                  : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                  ? "bg-[#0B1B33] text-white shadow-xs"
+                  : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
               }`}
             >
               <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
@@ -593,11 +593,11 @@ function MerchantContent() {
               onClick={() => handleTransactionsSubViewChange("developer")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                 transactionsSubView === "developer"
-                  ? "bg-[#0A192F] text-white shadow-xs"
-                  : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                  ? "bg-[#0B1B33] text-white shadow-xs"
+                  : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
               }`}
             >
-              <Code className="w-3.5 h-3.5 text-[#0E6245]" />
+              <Code className="w-3.5 h-3.5 text-[#059669]" />
               <span>API &amp; Webhooks</span>
             </button>
           </div>
@@ -606,10 +606,10 @@ function MerchantContent() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <h2 className="text-base font-bold text-[#0A192F]">
+                  <h2 className="text-base font-bold text-[#0B1B33]">
                     Negotiation History &amp; PayPal Settlement Ledger
                   </h2>
-                  <p className="text-xs text-[#475569]">
+                  <p className="text-xs text-[#52607A]">
                     Authoritative transaction records, consensus status, and dynamic fulfillment links.
                   </p>
                 </div>
@@ -643,8 +643,8 @@ export default function MerchantPage() {
     <Suspense
       fallback={
         <div className="text-center py-24 space-y-4">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#0052CC]" />
-          <p className="text-sm text-[#475569] font-medium">Loading PayVia Merchant Control Plane...</p>
+          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#0284C7]" />
+          <p className="text-sm text-[#52607A] font-medium">Loading PayVia Merchant Control Plane...</p>
         </div>
       }
     >

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&amp;display=swap');
+      .pill-text { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; fill: #0052CC; letter-spacing: 0.12em; text-transform: uppercase; }
+      .headline { font-family: 'Inter', sans-serif; font-size: 54px; font-weight: 800; fill: #0A192F; letter-spacing: -0.025em; }
+    </style>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#0A192F" flood-opacity="0.12" />
+    </filter>
+  </defs>
+
+  <!-- Editorial Top-Left Lower-Third / Banner Overlay -->
+  <g transform="translate(120, 110)" filter="url(#softShadow)">
+    <!-- Frosted backdrop plate -->
+    <rect width="980" height="136" rx="20" fill="#FFFFFF" fill-opacity="0.94" stroke="#E2E8F0" stroke-width="1.5" />
+    
+    <!-- Left Accent Stripe -->
+    <rect x="0" y="0" width="6" height="136" rx="3" fill="#0052CC" />
+
+    <!-- Content Group -->
+    <g transform="translate(36, 28)">
+      <!-- Pill Badge -->
+      <g>
+        <rect width="144" height="28" rx="14" fill="#EBF3FF" stroke="#0052CC" stroke-opacity="0.25" stroke-width="1" />
+        <circle cx="16" cy="14" r="4" fill="#0052CC" />
+        <text x="28" y="19" class="pill-text">MEET PAYVIA</text>
+      </g>
+
+      <!-- Headline -->
+      <text x="0" y="68" class="headline">AI THAT NEGOTIATES BEFORE YOU PAY.</text>
+    </g>
+  </g>
+</svg>

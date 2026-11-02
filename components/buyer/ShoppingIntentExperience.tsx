@@ -78,75 +78,90 @@ export function ShoppingIntentExperience({
             allowedPaymentTiming: ["IMMEDIATE"],
           },
           preferences: {
+            brandKeywords: [],
             priority,
-            paymentTiming: "IMMEDIATE",
           },
         }),
       });
 
-      const intentData = await intentRes.json();
-      if (!intentRes.ok || !intentData.session) {
-        throw new Error(intentData.error?.message || "Failed to initialize shopping intent");
+      if (!intentRes.ok) {
+        const err = await intentRes.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to create shopping intent");
       }
 
-      const activeSessionId = intentData.session.id;
+      const intentData = await intentRes.json();
+      const currentSession: ShoppingSession = intentData.session;
+      setSession(currentSession);
 
-      // 2. Discover Candidates
+      // 2. Discover Merchant Items
+      setStepMessage("Matching with participating merchant inventories...");
       const discoverRes = await fetch(`/api/v1/shopping-intents/${intentData.intent.id}/discover`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: currentSession.id }),
       });
-      const discoverData = await discoverRes.json();
+
       if (!discoverRes.ok) {
-        throw new Error(discoverData.error?.message || "Failed to discover candidates");
+        const err = await discoverRes.json().catch(() => ({}));
+        throw new Error(err.message || "Discovery failed");
       }
 
-      // 3. Parallel Multi-Merchant AI Negotiation
+      // 3. Negotiate Eligible Offers
       setStep("NEGOTIATING");
-      setStepMessage("Negotiating in parallel with merchant agents within price floors...");
-      await new Promise((r) => setTimeout(r, 600));
-
-      const negotiateRes = await fetch(`/api/v1/shopping-sessions/${activeSessionId}/negotiate`, {
+      setStepMessage("Buyer & merchant AI agents negotiating prices and delivery SLA...");
+      const negotiateRes = await fetch(`/api/v1/shopping-sessions/${currentSession.id}/negotiate`, {
         method: "POST",
       });
-      const negotiateData = await negotiateRes.json();
+
       if (!negotiateRes.ok) {
-        throw new Error(negotiateData.error?.message || "Failed to negotiate offers");
+        const err = await negotiateRes.json().catch(() => ({}));
+        throw new Error(err.message || "Negotiation round failed");
       }
 
-      const candidateOffers = negotiateData.offers || negotiateData.session?.candidateOffers || [];
-      setSession(negotiateData.session);
+      const negotiateData = await negotiateRes.json();
+      const candidateOffers: CandidateOffer[] = negotiateData.offers || [];
+
       setOffers(candidateOffers);
       setStep("OFFERS");
-      toastSuccess("Negotiation Complete", `${candidateOffers.length} merchant offers ready`);
+
+      if (candidateOffers.length > 0) {
+        toastSuccess("Offers Ready", `Found ${candidateOffers.length} negotiated offers matching your criteria`);
+      } else {
+        toastInfo("No Deals Met Criteria", "Try raising your budget or extending your delivery SLA");
+      }
     } catch (err: any) {
       console.error("Shopping flow error:", err);
-      const msg = err instanceof Error ? err.message : "Failed to find deals";
+      const msg = err.message || "An unexpected error occurred";
       setErrorMessage(msg);
+      toastError("Negotiation Error", msg);
       setStep("INTENT");
-      toastError("Error", msg);
     }
   };
 
   const handleSelectOffer = async (offerId: string) => {
     if (!session) return;
-    setErrorMessage(null);
     try {
       setSelectedOfferId(offerId);
       const res = await fetch(`/api/v1/shopping-sessions/${session.id}/offers/${offerId}/select`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error(data.error?.message || "Failed to select offer");
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to select offer");
       }
 
-      const lockedAgreementId = data.agreement?.id || data.transaction?.activeAgreementId || null;
-      setSession(data.session);
-      setAgreementId(lockedAgreementId);
-      setStep("SELECTED");
-      toastSuccess("Offer Selected", "Agreement generated. Ready for your review.");
+      const data = await res.json();
+      const agreement = data.agreement;
+      if (agreement?.id) {
+        setAgreementId(agreement.id);
+        toastSuccess("Offer Selected", "Draft agreement created. Navigating to agreement review...");
+        router.push(`/agreement?id=${agreement.id}`);
+      } else {
+        setStep("SELECTED");
+      }
     } catch (err: any) {
+      console.error("Select offer error:", err);
       const msg = err.message || "Failed to select offer";
       setErrorMessage(msg);
       toastError("Error", msg);
@@ -166,27 +181,30 @@ export function ShoppingIntentExperience({
       {/* 
         ========================================================================
         SHOPPING INTENT FORM
-        - Logical order: Product, Budget, Delivery SLA
-        - Single primary action: Find my deal
-        - Progressive disclosure for advanced ranking priorities
+        - Clean White Surface, Light Slate Borders, Sky Blue Accents
+        - Subtle Ice Blue example helper
         ========================================================================
       */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm space-y-6">
+      <div className="p-6 sm:p-8 rounded-2xl bg-white border border-[#DCE4EE] shadow-sm space-y-6">
         <div className="space-y-1">
-          <h2 className="text-xl sm:text-2xl font-bold text-[#0A192F] tracking-tight">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#0284C7]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#EC4899]" />
+            <span>Autonomous Procurement</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#0B1B33] tracking-tight">
             Describe your purchase
           </h2>
-          <p className="text-xs sm:text-sm text-[#475569]">
+          <p className="text-xs sm:text-sm text-[#52607A]">
             Tell PayVia what you need. AI agents negotiate eligible offers within merchant-authorized limits.
           </p>
         </div>
 
         {/* Natural Language Example Helper */}
-        <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#475569] flex items-center justify-between gap-2">
+        <div className="p-3.5 rounded-xl bg-[#F0F9FF] border border-[#BAE6FD] text-xs text-[#52607A] flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#0052CC] flex-shrink-0" />
+            <Sparkles className="w-4 h-4 text-[#0284C7] flex-shrink-0" />
             <span>
-              <strong className="text-[#0A192F] font-semibold">Example:</strong> &ldquo;A lightweight laptop for college, under $760, delivered within five days.&rdquo;
+              <strong className="text-[#0B1B33] font-semibold">Example:</strong> &ldquo;A lightweight laptop for college, under $760, delivered within five days.&rdquo;
             </span>
           </div>
           <button
@@ -196,7 +214,7 @@ export function ShoppingIntentExperience({
               setMaxBudget(760);
               setMaxDeliveryDays(5);
             }}
-            className="text-[11px] font-semibold text-[#0052CC] hover:underline flex-shrink-0"
+            className="text-[11px] font-semibold text-[#0284C7] hover:underline flex-shrink-0 cursor-pointer"
           >
             Use this example
           </button>
@@ -206,7 +224,7 @@ export function ShoppingIntentExperience({
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5">
             {/* 1. Product Query (6 cols) */}
             <div className="sm:col-span-6 space-y-1.5">
-              <label htmlFor="shopping-product-query" className="text-xs font-bold text-[#0A192F] block">
+              <label htmlFor="shopping-product-query" className="text-xs font-bold text-[#0B1B33] block">
                 Product or Item Description
               </label>
               <div className="relative">
@@ -217,7 +235,7 @@ export function ShoppingIntentExperience({
                   placeholder="e.g. ThinkPad Laptop, Sony Headphones"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="pl-9 h-11 text-sm bg-[#F8FAFC] border-[#CBD5E1] text-[#0A192F] focus:bg-white focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC]"
+                  className="pl-9 h-11 text-sm bg-white border-[#DCE4EE] text-[#0B1B33] focus:border-[#0284C7] focus:ring-2 focus:ring-[#38BDF8]/20"
                   disabled={step === "DISCOVERING" || step === "NEGOTIATING"}
                   required
                 />
@@ -226,7 +244,7 @@ export function ShoppingIntentExperience({
 
             {/* 2. Maximum Budget (3 cols) */}
             <div className="sm:col-span-3 space-y-1.5">
-              <label htmlFor="shopping-max-budget" className="text-xs font-bold text-[#0A192F] block">
+              <label htmlFor="shopping-max-budget" className="text-xs font-bold text-[#0B1B33] block">
                 Maximum Budget ($)
               </label>
               <div className="relative">
@@ -239,7 +257,7 @@ export function ShoppingIntentExperience({
                   placeholder="760"
                   value={maxBudget}
                   onChange={(e) => setMaxBudget(Number(e.target.value))}
-                  className="pl-9 h-11 text-sm bg-[#F8FAFC] border-[#CBD5E1] text-[#0A192F] focus:bg-white font-mono focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC]"
+                  className="pl-9 h-11 text-sm bg-white border-[#DCE4EE] text-[#0B1B33] font-mono focus:border-[#0284C7] focus:ring-2 focus:ring-[#38BDF8]/20"
                   disabled={step === "DISCOVERING" || step === "NEGOTIATING"}
                   required
                 />
@@ -248,7 +266,7 @@ export function ShoppingIntentExperience({
 
             {/* 3. Delivery SLA (3 cols) */}
             <div className="sm:col-span-3 space-y-1.5">
-              <label htmlFor="shopping-delivery-time" className="text-xs font-bold text-[#0A192F] block">
+              <label htmlFor="shopping-delivery-time" className="text-xs font-bold text-[#0B1B33] block">
                 Delivery Deadline
               </label>
               <div className="relative">
@@ -257,7 +275,7 @@ export function ShoppingIntentExperience({
                   id="shopping-delivery-time"
                   value={maxDeliveryDays}
                   onChange={(e) => setMaxDeliveryDays(Number(e.target.value))}
-                  className="w-full h-11 pl-9 pr-3 text-sm rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] focus:bg-white text-[#0A192F] focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC]"
+                  className="w-full h-11 pl-9 pr-3 text-sm rounded-lg border border-[#DCE4EE] bg-white focus:bg-white text-[#0B1B33] focus:outline-none focus:border-[#0284C7] focus:ring-2 focus:ring-[#38BDF8]/20 transition-colors"
                   disabled={step === "DISCOVERING" || step === "NEGOTIATING"}
                 >
                   <option value={3}>Within 3 Days</option>
@@ -274,7 +292,7 @@ export function ShoppingIntentExperience({
             <button
               type="button"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-xs font-semibold text-[#0052CC] hover:text-[#0A192F] flex items-center gap-1 transition-colors"
+              className="text-xs font-semibold text-[#0284C7] hover:text-[#0B1B33] flex items-center gap-1 transition-colors cursor-pointer"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span>{showAdvanced ? "Hide advanced preferences" : "Show advanced preferences"}</span>
@@ -282,35 +300,35 @@ export function ShoppingIntentExperience({
             </button>
 
             {showAdvanced && (
-              <div className="mt-3 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-wrap items-center gap-4 text-xs">
-                <span className="font-bold text-[#0A192F]">Deal Priority:</span>
-                <label className="flex items-center gap-1.5 cursor-pointer text-[#475569]">
+              <div className="mt-3 p-3.5 rounded-xl bg-[#F0F9FF] border border-[#BAE6FD] flex flex-wrap items-center gap-4 text-xs">
+                <span className="font-bold text-[#0B1B33]">Deal Priority:</span>
+                <label className="flex items-center gap-1.5 cursor-pointer text-[#52607A]">
                   <input
                     type="radio"
                     name="priority"
                     checked={priority === "PRICE"}
                     onChange={() => setPriority("PRICE")}
-                    className="text-[#0052CC] focus:ring-[#0052CC]"
+                    className="text-[#0284C7] focus:ring-[#38BDF8]"
                   />
                   <span>Lowest Price</span>
                 </label>
-                <label className="flex items-center gap-1.5 cursor-pointer text-[#475569]">
+                <label className="flex items-center gap-1.5 cursor-pointer text-[#52607A]">
                   <input
                     type="radio"
                     name="priority"
                     checked={priority === "DELIVERY"}
                     onChange={() => setPriority("DELIVERY")}
-                    className="text-[#0052CC] focus:ring-[#0052CC]"
+                    className="text-[#0284C7] focus:ring-[#38BDF8]"
                   />
                   <span>Fastest Delivery</span>
                 </label>
-                <label className="flex items-center gap-1.5 cursor-pointer text-[#475569]">
+                <label className="flex items-center gap-1.5 cursor-pointer text-[#52607A]">
                   <input
                     type="radio"
                     name="priority"
                     checked={priority === "BALANCED"}
                     onChange={() => setPriority("BALANCED")}
-                    className="text-[#0052CC] focus:ring-[#0052CC]"
+                    className="text-[#0284C7] focus:ring-[#38BDF8]"
                   />
                   <span>Balanced Score</span>
                 </label>
@@ -320,7 +338,7 @@ export function ShoppingIntentExperience({
 
           {/* Primary Submit Action */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-[#475569]">
+            <p className="text-xs text-[#52607A]">
               Your budget is kept private and never exposed to seller agents.
             </p>
 
@@ -328,9 +346,9 @@ export function ShoppingIntentExperience({
               type="submit"
               size="lg"
               disabled={step === "DISCOVERING" || step === "NEGOTIATING" || !query.trim()}
-              className="w-full sm:w-auto px-8 font-bold bg-[#0052CC] hover:bg-[#0A192F] text-white shadow-xs gap-2 min-h-[44px]"
+              className="w-full sm:w-auto px-8 font-bold bg-[#0284C7] hover:bg-[#0369A1] text-white shadow-xs gap-2 min-h-[44px]"
             >
-              <Sparkles className="w-4 h-4 text-blue-200" />
+              <Sparkles className="w-4 h-4 text-sky-200" />
               <span>Find my deal</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -338,11 +356,11 @@ export function ShoppingIntentExperience({
         </form>
 
         {errorMessage && (
-          <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#EF4444]/30 text-[#991B1B] text-xs flex items-start gap-2.5">
+          <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[#DC2626] text-xs flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-semibold text-sm">Unable to complete request</p>
-              <p className="font-medium text-[#475569]">{errorMessage}</p>
+              <p className="font-medium text-[#52607A]">{errorMessage}</p>
             </div>
           </div>
         )}
@@ -354,13 +372,13 @@ export function ShoppingIntentExperience({
         ========================================================================
       */}
       {(step === "DISCOVERING" || step === "NEGOTIATING") && (
-        <div className="p-8 rounded-2xl bg-white border border-[#E2E8F0] text-center space-y-3 shadow-xs">
-          <div className="w-10 h-10 rounded-full bg-[#F0F5FF] border border-[#0052CC]/20 flex items-center justify-center text-[#0052CC] mx-auto animate-spin">
+        <div className="p-8 rounded-2xl bg-white border border-[#BAE6FD] text-center space-y-3 shadow-xs">
+          <div className="w-10 h-10 rounded-full bg-[#F0F9FF] border border-[#BAE6FD] flex items-center justify-center text-[#0284C7] mx-auto animate-spin">
             <Sparkles className="w-5 h-5" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-[#0A192F]">Finding and negotiating your deal</h3>
-            <p className="text-xs text-[#475569]">{stepMessage}</p>
+            <h3 className="text-base font-bold text-[#0B1B33]">Finding and negotiating your deal</h3>
+            <p className="text-xs text-[#52607A]">{stepMessage}</p>
           </div>
         </div>
       )}
@@ -371,20 +389,20 @@ export function ShoppingIntentExperience({
         ========================================================================
       */}
       {step === "OFFERS" && offers.length === 0 && (
-        <div className="p-8 rounded-2xl bg-white border border-[#E2E8F0] text-center space-y-4 shadow-xs">
-          <div className="w-12 h-12 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center text-[#475569] mx-auto">
-            <Search className="w-6 h-6" />
+        <div className="p-8 rounded-2xl bg-white border border-[#DCE4EE] text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-full bg-[#F0F9FF] border border-[#BAE6FD] flex items-center justify-center text-[#52607A] mx-auto">
+            <Search className="w-6 h-6 text-[#0284C7]" />
           </div>
           <div className="space-y-1 max-w-md mx-auto">
-            <h3 className="text-base font-bold text-[#0A192F]">No eligible offers found</h3>
-            <p className="text-xs text-[#475569]">
+            <h3 className="text-base font-bold text-[#0B1B33]">No eligible offers found</h3>
+            <p className="text-xs text-[#52607A]">
               No merchants could meet your budget of ${maxBudget} or delivery time of {maxDeliveryDays} days. Try adjusting your constraints.
             </p>
           </div>
           <Button
             variant="outline"
             onClick={handleReset}
-            className="border-[#CBD5E1] text-[#0A192F] hover:bg-[#F8FAFC]"
+            className="border-[#DCE4EE] text-[#0B1B33] hover:bg-[#F0F9FF]"
           >
             <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
             <span>Revise Request</span>
@@ -400,13 +418,14 @@ export function ShoppingIntentExperience({
       {step === "OFFERS" && offers.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-[#0A192F]">
-              {offers.length} Negotiated Deals Found
+            <h3 className="text-lg font-bold text-[#0B1B33] flex items-center gap-2">
+              <span>{offers.length} Negotiated Deals Found</span>
+              <span className="w-2 h-2 rounded-full bg-[#EC4899]" />
             </h3>
             <button
               type="button"
               onClick={handleReset}
-              className="text-xs font-semibold text-[#475569] hover:text-[#0052CC] flex items-center gap-1"
+              className="text-xs font-semibold text-[#52607A] hover:text-[#0284C7] flex items-center gap-1 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>New Search</span>
@@ -427,17 +446,17 @@ export function ShoppingIntentExperience({
         ========================================================================
       */}
       {step === "SELECTED" && (
-        <div className="p-6 rounded-2xl bg-[#ECFDF5] border border-[#0E6245]/30 space-y-4 shadow-sm">
+        <div className="p-6 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] space-y-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#0E6245]">
-                <ShieldCheck className="w-4 h-4 text-[#0E6245]" />
+              <div className="flex items-center gap-2 text-xs font-bold text-[#059669]">
+                <ShieldCheck className="w-4 h-4 text-[#059669]" />
                 <span>Deal Selected &amp; Locked</span>
               </div>
-              <h3 className="text-lg font-bold text-[#0A192F]">
+              <h3 className="text-lg font-bold text-[#0B1B33]">
                 Ready for your explicit review and approval
               </h3>
-              <p className="text-xs text-[#475569]">
+              <p className="text-xs text-[#52607A]">
                 Review the exact price, delivery SLA, and terms before PayPal is charged.
               </p>
             </div>
@@ -445,7 +464,7 @@ export function ShoppingIntentExperience({
             <Button
               size="lg"
               onClick={() => router.push(`/agreement?id=${agreementId || session?.id}`)}
-              className="bg-[#0E6245] hover:bg-[#0A4E36] text-white font-bold px-6 gap-2"
+              className="bg-[#059669] hover:bg-[#047857] text-white font-bold px-6 gap-2"
             >
               <span>Review Agreement &amp; Settle</span>
               <ArrowRight className="w-4 h-4" />

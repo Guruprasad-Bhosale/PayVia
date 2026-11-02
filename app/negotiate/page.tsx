@@ -19,31 +19,31 @@ function NegotiateContent() {
   return (
     <div className="max-w-4xl mx-auto py-2 space-y-6">
       {/* Route Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#DCE4EE] pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFDF5] border border-[#0E6245]/20 text-[#0E6245] text-xs font-semibold">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFDF5] border border-[#A7F3D0] text-[#059669] text-xs font-semibold">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Canonical Buyer Journey</span>
             </span>
             {product && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F0F5FF] border border-[#0052CC]/20 text-[#0052CC] text-xs font-medium">
-                <Sparkles className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F0F9FF] border border-[#BAE6FD] text-[#0284C7] text-xs font-medium">
+                <Sparkles className="w-3 h-3 text-[#EC4899]" />
                 <span>Pre-selected item</span>
               </span>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0A192F] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1B33] tracking-tight">
             AI Negotiation &amp; Deal Discovery
           </h1>
-          <p className="text-xs sm:text-sm text-[#475569]">
+          <p className="text-xs sm:text-sm text-[#52607A]">
             Describe your purchase or refine constraints. PayVia AI negotiates directly with participating merchant agents.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
           <Link href="/">
-            <Button variant="secondary" size="sm" className="gap-1.5 text-xs border-[#CBD5E1] text-[#0A192F] hover:bg-[#F8FAFC]">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs border-[#DCE4EE] text-[#0B1B33] hover:bg-[#F0F9FF]">
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Home</span>
             </Button>
@@ -62,7 +62,7 @@ function NegotiateContent() {
 
 export default function NegotiatePage() {
   return (
-    <Suspense fallback={<div className="text-center py-16 text-[#475569]">Loading negotiation experience...</div>}>
+    <Suspense fallback={<div className="text-center py-16 text-[#52607A]">Loading negotiation experience...</div>}>
       <NegotiateContent />
     </Suspense>
   );

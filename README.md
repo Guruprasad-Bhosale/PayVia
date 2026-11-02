@@ -3,7 +3,8 @@
 > **AI Agent-to-Agent Commerce Negotiation & PayPal Settlement Platform**  
 > Built for the **PayPal AI Hackathon 2026**.  
 > **Core Promise:** *“AI negotiates. PayPal settles.”*  
-> **Status:** 🏆 **150/150 Automated Invariant Tests Passing · Production Build Passing · Zero Credential Leaks**
+> **Status:** 🏆 **150/150 Automated Invariant Tests Passing · Production Build Passing · Zero Credential Leaks**  
+> **Pitch & Demo Storyboard:** [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) *(3-minute buyer-to-PayPal demo script & storyboard)*
 
 ---
 
@@ -270,84 +271,145 @@ npm run test:elastic
 
 ## ⚙️ Local Development & Testing
 
-### 1. Clone & Install
+### 1. Prerequisites
+- **Node.js**: `>= 20.0.0` (LTS 20.x or 22.x recommended)
+- **Package Manager**: `npm` (`>= 9.x`)
+- **Database (Optional for Local Dev, Required for Production)**:
+  - In local development (`NODE_ENV=development`), PayVia automatically uses fast in-memory repositories if `DATABASE_URL` is omitted.
+  - For PostgreSQL persistent testing: PostgreSQL 14+ (local instance or hosted e.g. Neon, Supabase, Render Postgres).
+
+### 2. Clone & Install
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Guruprasad-Bhosale/PayVia.git
 cd PayVia
 npm install
 ```
+> Note: `npm install` automatically triggers `postinstall: prisma generate` to ensure the Prisma Client bindings match `prisma/schema.prisma`.
 
-### 2. Configure Secrets
-Create `secrets.txt` in the project root:
+### 3. Configure Environment Variables
+Copy the environment template to `.env.local` (or `secrets.txt`):
+```bash
+cp .env.example .env.local
+```
+
+Configure your credentials in `.env.local`:
 ```properties
+# Core PayPal Sandbox (Required for payment settlement)
 PAYPAL_CLIENT_ID=your_paypal_client_id
 PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-GOOGLE_GENERATIVE_AI_API_KEY=your_google_generative_ai_api_key
 PAYPAL_MERCHANT_EMAIL=your_paypal_business_sandbox_email
+PAYPAL_ENVIRONMENT=sandbox
+
+# Google Gemini AI (Required for autonomous Buyer/Merchant negotiation)
+GOOGLE_GENERATIVE_AI_API_KEY=your_google_generative_ai_api_key
+
+# Public App Base URL
+APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Optional Integrations (Features fallback seamlessly if omitted)
+DATABASE_URL=postgresql://postgres:password@localhost:5432/payvia?schema=public
 CHANNEL3_API_KEY=your_channel3_api_key_here
+ELASTICSEARCH_URL=https://your-serverless-endpoint.es.io:443
+ELASTICSEARCH_API_KEY=your_elasticsearch_api_key
 ```
 
-### 3. Run Security & Type Checks
+### 4. Database Setup & Migrations (PostgreSQL Mode)
+If using PostgreSQL (`DATABASE_URL` provided):
 ```bash
+# Apply migrations to your PostgreSQL database:
+npx prisma migrate deploy
+
+# Generate or update Prisma client bindings:
+npx prisma generate
+```
+*If `DATABASE_URL` is not provided in development mode, PayVia defaults cleanly to in-memory repositories without requiring a local database.*
+
+### 5. Run Security Scans & Test Suite
+Verify your setup before launching:
+```bash
+# 1. Verify that no private credentials or secret files are exposed
 npm run check:secrets
+
+# 2. Run TypeScript strict type verification
 npm run typecheck
+
+# 3. Execute the automated invariant & security test suite
+npm test
 ```
 
-### 4. Start Development Server
+### 6. Start Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 5. Verify Integration Endpoints
-- **Gemini AI Connection**: `GET http://localhost:3000/api/ai/test`
+### 7. Core Verification Endpoints
+- **Service Health Check**: `GET http://localhost:3000/api/health`
+- **Gemini AI Connectivity**: `GET http://localhost:3000/api/ai/test`
 - **PayPal OAuth2 Connection**: `GET http://localhost:3000/api/paypal/test`
-- **PayPal Order Creation**: `POST http://localhost:3000/api/paypal/create-order`
+- **Elasticsearch Memory Status**: `GET http://localhost:3000/api/memory/status`
+
+---
+
+## 🔧 Troubleshooting & Operational Fallbacks
+
+| Symptom / Error | Root Cause | Fallback / Resolution |
+|---|---|---|
+| **Gemini AI 503 / High Demand Spikes** | Google Gemini model endpoint capacity spikes or rate-limiting. | **Handled automatically.** PayVia catches 503/timeouts and falls back to strategic bounded negotiation rules that guarantee seller price floors and buyer budgets are never violated. |
+| **Elasticsearch DNS / Unreachable** | Serverless cluster endpoint is asleep, unconfigured, or offline. | **Handled automatically.** Indexing is asynchronous and non-blocking; memory queries gracefully fall back to in-memory semantic memory. |
+| **Channel3 Search Timeout / Error** | Network latency or unconfigured API key. | **Handled automatically.** The discovery engine automatically serves the curated PayVia catalog (`SAMPLE_PRODUCTS`). |
+| **PayPal OAuth Error (`401 Unauthorized`)** | Invalid Sandbox Client ID or Secret. | Verify that credentials in `.env.local` / `secrets.txt` are from the **Sandbox** tab (not Live) in the PayPal Developer Dashboard. |
+| **PayPal Capture Error (`INVALID_RESOURCE_ID`)** | Order already captured or token expired. | PayVia enforces idempotent capture. Ensure the order was approved in Sandbox checkout and captured within the session TTL. |
+| **`FATAL: DATABASE_URL is missing in production`** | Running in production (`NODE_ENV=production`) without a database. | **Fail-Closed Security Design.** In production, PayVia requires durable PostgreSQL persistence to avoid silent data loss. Provide a valid `DATABASE_URL` connection string or set `NODE_ENV=development` for local testing. |
 
 ---
 
 ## 🚀 Deploy to Render (Production Web Service)
 
-PayVia is configured for zero-friction deployment on **Render** as a persistent Node.js Web Service.
+PayVia is pre-configured for deployment on **Render** using [render.yaml](render.yaml) as a persistent Node.js Web Service.
 
-### Quick Deploy via Render Dashboard:
+### Quick Deploy Steps:
 1. Push your repository to **GitHub**.
 2. Log in to [Render Dashboard](https://dashboard.render.com).
-3. Click **New +** → **Web Service**.
-4. Connect your `PayVia` GitHub repository.
+3. Click **New +** → **PostgreSQL** to create a free PostgreSQL database. Copy its **Internal Database URL**.
+4. Click **New +** → **Web Service** and connect your `PayVia` repository.
 5. Configure the service settings:
    - **Environment / Runtime**: `Node`
    - **Node Version**: `20` (or `22`)
-   - **Build Command**: `npm ci && npm run build`
+   - **Build Command**: `npm ci && npm run build` (runs `prisma generate` via postinstall)
+   - **Pre-Deploy Command** (Optional): `npx prisma migrate deploy`
    - **Start Command**: `npm start`
    - **Health Check Path**: `/api/health`
-6. Add the required Environment Variables in the Render Dashboard (**Environment** tab):
+6. Add the Environment Variables in the Render Dashboard (**Environment** tab):
 
-| Variable | Required | Purpose / Context |
-|---|---|---|
-| `NODE_ENV` | Yes | Set to `production` |
-| `APP_URL` | Optional | Custom production domain or let Render auto-detect `RENDER_EXTERNAL_URL` |
-| `PAYPAL_CLIENT_ID` | Yes | PayPal Sandbox REST API Client ID |
-| `PAYPAL_CLIENT_SECRET` | Yes | PayPal Sandbox REST API Client Secret (Server-Only) |
-| `PAYPAL_MERCHANT_EMAIL` | Yes | PayPal Sandbox Business/Merchant Payee Email |
-| `PAYPAL_ENVIRONMENT` | Yes | `sandbox` |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes | Google Gemini API Key for Buyer/Merchant/Fulfillment Agents |
-| `CHANNEL3_API_KEY` | Optional | Channel3 live product discovery API key (falls back to catalog if absent) |
-| `ELASTICSEARCH_URL` | Optional | Elasticsearch Serverless endpoint (falls back gracefully if absent) |
-| `ELASTICSEARCH_API_KEY` | Optional | Elasticsearch Serverless API Key (Server-Only) |
+| Variable | Required in Production | Purpose / Context |
+|---|:---:|---|
+| `NODE_ENV` | **Yes** | Set to `production`. |
+| `DATABASE_URL` | **Yes** | PostgreSQL connection string from Render PostgreSQL (enforces durable settlement persistence; fails closed if omitted). |
+| `PAYPAL_CLIENT_ID` | **Yes** | PayPal Sandbox REST API Client ID. |
+| `PAYPAL_CLIENT_SECRET` | **Yes** | PayPal Sandbox REST API Client Secret (Server-Only). |
+| `PAYPAL_MERCHANT_EMAIL` | **Yes** | PayPal Sandbox Business/Merchant Payee Email. |
+| `PAYPAL_ENVIRONMENT` | **Yes** | Set to `sandbox`. |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | **Yes** | Google Gemini API Key for Buyer/Merchant/Fulfillment Agents. |
+| `APP_URL` | Optional | Custom production domain or let Render auto-detect `RENDER_EXTERNAL_URL`. |
+| `CHANNEL3_API_KEY` | Optional | Channel3 live product discovery API key (falls back to catalog if absent). |
+| `ELASTICSEARCH_URL` | Optional | Elasticsearch Serverless endpoint (falls back gracefully if absent). |
+| `ELASTICSEARCH_API_KEY` | Optional | Elasticsearch Serverless API Key (Server-Only). |
+| `PAYPAL_WEBHOOK_ID` | Optional | Webhook ID for signature verification (defaults to sandbox test ID). |
 
 7. Click **Create Web Service** to launch.
-8. Once deployed, verify:
-   - `GET https://<your-service>.onrender.com/api/health` returns `200 OK`
-   - `GET https://<your-service>.onrender.com/api/memory/status` returns memory connectivity state
-   - Perform an end-to-end negotiation and PayPal Sandbox settlement from your live Render URL.
+8. Verify production deployment:
+   - `GET https://<your-service>.onrender.com/api/health` returns `200 OK`.
+   - Perform an end-to-end negotiation and PayPal Sandbox settlement from your live URL.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for complete details.
 
 ## 👨‍💻 Built For
 
-**PayPal AI Hackathon** — *Intelligent Agent-to-Agent Commerce & Settlement Layer*.
+**PayPal AI Hackathon 2026** — *Intelligent Agent-to-Agent Commerce & Settlement Layer*.
+

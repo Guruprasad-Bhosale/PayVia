@@ -166,26 +166,26 @@ export function MerchantPolicyEditor({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0A192F]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0B1B33]">
               Autonomous Merchant Agent Rules
             </span>
             <Badge variant={formData.enabled ? "success" : "secondary"} className="text-[10px] font-semibold">
               {formData.enabled ? "AI Negotiation Active" : "AI Negotiation Paused"}
             </Badge>
             {lastSavedAt && (
-              <span className="text-[11px] font-mono text-[#0E6245] flex items-center gap-1">
+              <span className="text-[11px] font-mono text-[#059669] flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
                 <span>Saved at {lastSavedAt}</span>
               </span>
             )}
           </div>
-          <h2 className="text-xl font-extrabold text-[#0A192F] tracking-tight">
+          <h2 className="text-xl font-extrabold text-[#0B1B33] tracking-tight">
             Configure Negotiation Economics &amp; Strategy
           </h2>
-          <p className="text-xs text-[#475569]">
+          <p className="text-xs text-[#52607A]">
             Define acceptable price floors, delivery constraints, and concession strategies. PayVia enforces these rules server-side for every incoming buyer agent proposal.
           </p>
         </div>
@@ -196,8 +196,8 @@ export function MerchantPolicyEditor({
             onClick={() => setFormData({ ...formData, enabled: !formData.enabled })}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
               formData.enabled
-                ? "bg-emerald-50 border-emerald-300 text-[#0E6245] hover:bg-emerald-100"
-                : "bg-slate-100 border-slate-300 text-slate-700 hover:text-[#0A192F]"
+                ? "bg-emerald-50 border-emerald-300 text-[#059669] hover:bg-emerald-100"
+                : "bg-slate-100 border-slate-300 text-slate-700 hover:text-[#0B1B33]"
             }`}
           >
             {formData.enabled ? "● Pause AI Agent" : "○ Enable AI Agent"}
@@ -216,15 +216,15 @@ export function MerchantPolicyEditor({
       {/* Editor Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Section 1: Pricing Economics */}
-        <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+        <div className="p-6 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-5">
+          <div className="flex items-center justify-between border-b border-[#DCE4EE] pb-3">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-blue-50 text-[#0052CC]">
+              <div className="p-2 rounded-lg bg-blue-50 text-[#0284C7]">
                 <DollarSign className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#0A192F]">1. Pricing Economics</h3>
-                <p className="text-[11px] text-[#475569]">Public list price &amp; private negotiation floor</p>
+                <h3 className="text-sm font-bold text-[#0B1B33]">1. Pricing Economics</h3>
+                <p className="text-[11px] text-[#52607A]">Public list price &amp; private negotiation floor</p>
               </div>
             </div>
             <div className="flex items-center gap-1 text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium">
@@ -235,18 +235,18 @@ export function MerchantPolicyEditor({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0A192F]">Catalog List Price ($ USD)</label>
+              <label className="text-xs font-semibold text-[#0B1B33]">Catalog List Price ($ USD)</label>
               <input
                 type="number"
                 value={formData.listPrice}
                 onChange={(e) => setFormData({ ...formData, listPrice: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 bg-slate-50 border border-[#E2E8F0] rounded-xl text-sm text-[#0A192F] focus:outline-none focus:border-[#0052CC]"
+                className="w-full px-3 py-2 bg-slate-50 border border-[#DCE4EE] rounded-xl text-sm text-[#0B1B33] focus:outline-none focus:border-[#0284C7]"
               />
-              <span className="text-[10px] text-[#475569]">Public starting price</span>
+              <span className="text-[10px] text-[#52607A]">Public starting price</span>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0A192F] flex items-center gap-1">
+              <label className="text-xs font-semibold text-[#0B1B33] flex items-center gap-1">
                 <span>Minimum Floor ($ USD)</span>
                 <span className="text-red-500 font-bold">*</span>
               </label>
@@ -254,30 +254,30 @@ export function MerchantPolicyEditor({
                 type="number"
                 value={formData.minimumPrice}
                 onChange={(e) => setFormData({ ...formData, minimumPrice: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 bg-slate-50 border border-amber-300 rounded-xl text-sm text-[#0A192F] focus:outline-none focus:border-amber-500"
+                className="w-full px-3 py-2 bg-slate-50 border border-amber-300 rounded-xl text-sm text-[#0B1B33] focus:outline-none focus:border-amber-500"
               />
               <span className="text-[10px] text-amber-700 font-medium">Strict confidential floor</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0] text-xs text-[#475569] flex items-start gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-[#0E6245] shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-[#DCE4EE] text-xs text-[#52607A] flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-[#059669] shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold text-[#0A192F]">Anti-Tampering Guard:</span> The server-side policy engine will automatically reject any buyer offer below <strong className="text-[#0A192F]">${formData.minimumPrice}</strong>.
+              <span className="font-bold text-[#0B1B33]">Anti-Tampering Guard:</span> The server-side policy engine will automatically reject any buyer offer below <strong className="text-[#0B1B33]">${formData.minimumPrice}</strong>.
             </div>
           </div>
         </div>
 
         {/* Section 2: Fulfillment & Delivery Window */}
-        <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+        <div className="p-6 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-5">
+          <div className="flex items-center justify-between border-b border-[#DCE4EE] pb-3">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
                 <Truck className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#0A192F]">2. Delivery Capability</h3>
-                <p className="text-[11px] text-[#475569]">Expedited vs standard fulfillment bounds</p>
+                <h3 className="text-sm font-bold text-[#0B1B33]">2. Delivery Capability</h3>
+                <p className="text-[11px] text-[#52607A]">Expedited vs standard fulfillment bounds</p>
               </div>
             </div>
             <Badge variant="secondary" className="text-[10px]">SLA Bounds</Badge>
@@ -285,63 +285,63 @@ export function MerchantPolicyEditor({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0A192F]">Min Delivery (Days)</label>
+              <label className="text-xs font-semibold text-[#0B1B33]">Min Delivery (Days)</label>
               <input
                 type="number"
                 value={formData.minimumDeliveryDays}
                 onChange={(e) => setFormData({ ...formData, minimumDeliveryDays: parseInt(e.target.value) || 1 })}
-                className="w-full px-3 py-2 bg-slate-50 border border-[#E2E8F0] rounded-xl text-sm text-[#0A192F] focus:outline-none focus:border-[#0052CC]"
+                className="w-full px-3 py-2 bg-slate-50 border border-[#DCE4EE] rounded-xl text-sm text-[#0B1B33] focus:outline-none focus:border-[#0284C7]"
               />
-              <span className="text-[10px] text-[#475569]">Fastest rush dispatch</span>
+              <span className="text-[10px] text-[#52607A]">Fastest rush dispatch</span>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0A192F]">Max Delivery (Days)</label>
+              <label className="text-xs font-semibold text-[#0B1B33]">Max Delivery (Days)</label>
               <input
                 type="number"
                 value={formData.maximumDeliveryDays}
                 onChange={(e) => setFormData({ ...formData, maximumDeliveryDays: parseInt(e.target.value) || 1 })}
-                className="w-full px-3 py-2 bg-slate-50 border border-[#E2E8F0] rounded-xl text-sm text-[#0A192F] focus:outline-none focus:border-[#0052CC]"
+                className="w-full px-3 py-2 bg-slate-50 border border-[#DCE4EE] rounded-xl text-sm text-[#0B1B33] focus:outline-none focus:border-[#0284C7]"
               />
-              <span className="text-[10px] text-[#475569]">Standard shipping ceiling</span>
+              <span className="text-[10px] text-[#52607A]">Standard shipping ceiling</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0] text-xs text-[#475569]">
-            Current Negotiable Window: <strong className="text-[#0A192F]">{formData.minimumDeliveryDays} to {formData.maximumDeliveryDays} business days</strong>.
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-[#DCE4EE] text-xs text-[#52607A]">
+            Current Negotiable Window: <strong className="text-[#0B1B33]">{formData.minimumDeliveryDays} to {formData.maximumDeliveryDays} business days</strong>.
           </div>
         </div>
 
         {/* Section 3: Payment Incentives */}
-        <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+        <div className="p-6 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-5">
+          <div className="flex items-center justify-between border-b border-[#DCE4EE] pb-3">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-emerald-50 text-[#0E6245]">
+              <div className="p-2 rounded-lg bg-emerald-50 text-[#059669]">
                 <CreditCard className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#0A192F]">3. Payment Incentives</h3>
-                <p className="text-[11px] text-[#475569]">Incentives for immediate PayPal checkout</p>
+                <h3 className="text-sm font-bold text-[#0B1B33]">3. Payment Incentives</h3>
+                <p className="text-[11px] text-[#52607A]">Incentives for immediate PayPal checkout</p>
               </div>
             </div>
-            <span className="text-[10px] text-[#0052CC] font-bold">PayPal Settled</span>
+            <span className="text-[10px] text-[#0284C7] font-bold">PayPal Settled</span>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#0A192F]">Immediate Payment Concession (%)</label>
+            <label className="text-xs font-semibold text-[#0B1B33]">Immediate Payment Concession (%)</label>
             <input
               type="number"
               value={formData.immediateDiscountPercent}
               onChange={(e) => setFormData({ ...formData, immediateDiscountPercent: parseFloat(e.target.value) || 0 })}
-              className="w-full px-3 py-2 bg-slate-50 border border-[#E2E8F0] rounded-xl text-sm text-[#0A192F] focus:outline-none focus:border-[#0052CC]"
+              className="w-full px-3 py-2 bg-slate-50 border border-[#DCE4EE] rounded-xl text-sm text-[#0B1B33] focus:outline-none focus:border-[#0284C7]"
             />
-            <span className="text-[10px] text-[#475569]">
+            <span className="text-[10px] text-[#52607A]">
               Additional discount granted when buyer chooses upfront PayPal settlement
             </span>
           </div>
 
           <div className="space-y-2 pt-1">
-            <label className="text-xs font-semibold text-[#0A192F] block">Permitted Payment Timing Modes:</label>
+            <label className="text-xs font-semibold text-[#0B1B33] block">Permitted Payment Timing Modes:</label>
             <div className="flex flex-wrap gap-2">
               {["IMMEDIATE", "NET_15", "NET_30", "ESCROW_DELIVERY"].map((timing) => {
                 const active = formData.allowedPaymentTiming.includes(timing as any);
@@ -364,8 +364,8 @@ export function MerchantPolicyEditor({
                     }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
                       active
-                        ? "bg-emerald-50 border-emerald-300 text-[#0E6245]"
-                        : "bg-slate-50 border-[#E2E8F0] text-[#475569] hover:text-[#0A192F]"
+                        ? "bg-emerald-50 border-emerald-300 text-[#059669]"
+                        : "bg-slate-50 border-[#DCE4EE] text-[#52607A] hover:text-[#0B1B33]"
                     }`}
                   >
                     {timing.replace("_", " ")}
@@ -377,15 +377,15 @@ export function MerchantPolicyEditor({
         </div>
 
         {/* Section 4: Negotiation Strategy */}
-        <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+        <div className="p-6 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-5">
+          <div className="flex items-center justify-between border-b border-[#DCE4EE] pb-3">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600">
                 <TrendingUp className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[#0A192F]">4. Autonomous Strategy Mode</h3>
-                <p className="text-[11px] text-[#475569]">Defines AI concession cadence &amp; behavior</p>
+                <h3 className="text-sm font-bold text-[#0B1B33]">4. Autonomous Strategy Mode</h3>
+                <p className="text-[11px] text-[#52607A]">Defines AI concession cadence &amp; behavior</p>
               </div>
             </div>
             <Badge variant="secondary" className="text-[10px]">Algorithm</Badge>
@@ -416,15 +416,15 @@ export function MerchantPolicyEditor({
                   onClick={() => setFormData({ ...formData, strategy: strat.id })}
                   className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                     active
-                      ? "bg-blue-50/70 border-[#0052CC] text-[#0A192F]"
-                      : "bg-slate-50 border-[#E2E8F0] text-[#475569] hover:bg-slate-100"
+                      ? "bg-blue-50/70 border-[#0284C7] text-[#0B1B33]"
+                      : "bg-slate-50 border-[#DCE4EE] text-[#52607A] hover:bg-slate-100"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#0A192F]">{strat.title}</span>
-                    {active && <span className="w-2 h-2 rounded-full bg-[#0052CC]" />}
+                    <span className="text-xs font-bold text-[#0B1B33]">{strat.title}</span>
+                    {active && <span className="w-2 h-2 rounded-full bg-[#0284C7]" />}
                   </div>
-                  <p className="text-[11px] text-[#475569] mt-1 leading-relaxed">{strat.desc}</p>
+                  <p className="text-[11px] text-[#52607A] mt-1 leading-relaxed">{strat.desc}</p>
                 </div>
               );
             })}
@@ -437,7 +437,7 @@ export function MerchantPolicyEditor({
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="gap-2 px-8 py-3 bg-[#0A192F] hover:bg-[#0052CC] text-white font-bold shadow-sm text-sm h-11"
+          className="gap-2 px-8 py-3 bg-[#0B1B33] hover:bg-[#0284C7] text-white font-bold shadow-sm text-sm h-11"
         >
           <Save className="w-4 h-4" />
           <span>{saving ? "Deploying Policy..." : "Save & Activate Negotiation Rules"}</span>

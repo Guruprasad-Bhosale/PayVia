@@ -11,6 +11,10 @@ coverage/
 out/
 build/
 dist/
+public/video-footage/*
+!public/video-footage/README.md
+public/video-audio/*
+!public/video-audio/README.md
 
 # Environment and Secret Files (CRITICAL - NEVER COMMIT)
 .env

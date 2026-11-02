@@ -13,7 +13,10 @@
     "typecheck": "tsc --noEmit",
     "test": "npx tsx scripts/test-runner.ts",
     "test:elastic": "node scripts/test-elastic.mjs",
-    "check:secrets": "node scripts/check-secrets.mjs"
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "build:video": "node scripts/video/build-film.mjs",
+    "audit:video": "node scripts/video/validate-svgs.mjs && node scripts/video/build-film.mjs",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.92",

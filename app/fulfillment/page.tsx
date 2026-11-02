@@ -19,13 +19,13 @@ import Link from "next/link";
 
 function MilestoneStepper({ tasks }: { tasks: FulfillmentTask[] }) {
   return (
-    <div className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
+    <div className="p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold text-[#0A192F] uppercase tracking-wider flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#0052CC]" />
+        <h2 className="text-sm font-bold text-[#0B1B33] uppercase tracking-wider flex items-center gap-2">
+          <Clock className="w-4 h-4 text-[#0284C7]" />
           <span>Fulfillment Milestone Progression</span>
         </h2>
-        <span className="text-xs text-[#475569]">
+        <span className="text-xs text-[#52607A]">
           {tasks.filter((t) => t.status === "completed").length} of {tasks.length} stages complete
         </span>
       </div>
@@ -43,43 +43,43 @@ function MilestoneStepper({ tasks }: { tasks: FulfillmentTask[] }) {
                 isDone
                   ? "bg-emerald-50/60 border-emerald-200"
                   : isInProgress
-                  ? "bg-blue-50/80 border-[#0052CC] ring-1 ring-[#0052CC]/20"
+                  ? "bg-blue-50/80 border-[#0284C7] ring-1 ring-[#0284C7]/20"
                   : isRisk
                   ? "bg-amber-50 border-amber-300"
-                  : "bg-slate-50/70 border-[#E2E8F0]"
+                  : "bg-slate-50/70 border-[#DCE4EE]"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                   isDone
-                    ? "bg-emerald-100 text-[#0E6245]"
+                    ? "bg-emerald-100 text-[#059669]"
                     : isInProgress
-                    ? "bg-blue-100 text-[#0052CC]"
-                    : "bg-slate-200 text-[#475569]"
+                    ? "bg-blue-100 text-[#0284C7]"
+                    : "bg-slate-200 text-[#52607A]"
                 }`}>
                   Stage {idx + 1}
                 </span>
 
                 {isDone ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#0E6245]" />
+                  <CheckCircle2 className="w-4 h-4 text-[#059669]" />
                 ) : isInProgress ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#0052CC] animate-ping" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#0284C7] animate-ping" />
                 ) : (
                   <span className="w-2 h-2 rounded-full bg-slate-300" />
                 )}
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-[#0A192F] line-clamp-1">{task.name}</h4>
-                <p className="text-[10px] text-[#475569] truncate mt-0.5">
+                <h4 className="text-xs font-bold text-[#0B1B33] line-clamp-1">{task.name}</h4>
+                <p className="text-[10px] text-[#52607A] truncate mt-0.5">
                   Handler: {task.resourceName}
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-black/5 flex items-center justify-between text-[10px] text-[#475569]">
+              <div className="pt-2 border-t border-black/5 flex items-center justify-between text-[10px] text-[#52607A]">
                 <span>{task.duration}{task.durationUnit} SLA</span>
                 <span className={`font-semibold capitalize ${
-                  isDone ? "text-[#0E6245]" : isInProgress ? "text-[#0052CC]" : "text-[#475569]"
+                  isDone ? "text-[#059669]" : isInProgress ? "text-[#0284C7]" : "text-[#52607A]"
                 }`}>
                   {task.status.replace("_", " ")}
                 </span>
@@ -137,8 +137,8 @@ function FulfillmentContent() {
 
   if (loading) {
     return (
-      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-3 text-[#475569]">
-        <RefreshCw className="w-8 h-8 animate-spin text-[#0052CC]" />
+      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-3 text-[#52607A]">
+        <RefreshCw className="w-8 h-8 animate-spin text-[#0284C7]" />
         <p className="text-sm font-medium">Loading Fulfillment Schedule &amp; Milestones...</p>
       </div>
     );
@@ -146,16 +146,16 @@ function FulfillmentContent() {
 
   if (!plan) {
     return (
-      <Card className="p-8 text-center border-[#E2E8F0] bg-white max-w-lg mx-auto space-y-4 shadow-sm my-12">
+      <Card className="p-8 text-center border-[#DCE4EE] bg-white max-w-lg mx-auto space-y-4 shadow-sm my-12">
         <Package className="w-12 h-12 text-[#94A3B8] mx-auto" />
         <div className="space-y-1">
-          <h2 className="text-lg font-bold text-[#0A192F]">No Fulfillment Plan Found</h2>
-          <p className="text-xs text-[#475569]">
+          <h2 className="text-lg font-bold text-[#0B1B33]">No Fulfillment Plan Found</h2>
+          <p className="text-xs text-[#52607A]">
             Complete an AI negotiation and PayPal settlement to generate an operational fulfillment schedule.
           </p>
         </div>
         <Link href="/negotiate">
-          <button className="px-5 py-2.5 rounded-xl bg-[#0A192F] hover:bg-[#0052CC] text-white text-xs font-bold shadow-xs transition-colors">
+          <button className="px-5 py-2.5 rounded-xl bg-[#0B1B33] hover:bg-[#0284C7] text-white text-xs font-bold shadow-xs transition-colors">
             Start New Negotiation
           </button>
         </Link>
@@ -167,9 +167,9 @@ function FulfillmentContent() {
     <div className="space-y-6 py-2">
       {/* Plan Selector Switcher (if multiple plans exist) */}
       {allPlans.length > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-[#E2E8F0] text-xs shadow-xs">
-          <div className="flex items-center gap-2 text-[#475569]">
-            <Package className="w-4 h-4 text-[#0052CC]" />
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-[#DCE4EE] text-xs shadow-xs">
+          <div className="flex items-center gap-2 text-[#52607A]">
+            <Package className="w-4 h-4 text-[#0284C7]" />
             <span>Select Active Order:</span>
           </div>
 
@@ -182,8 +182,8 @@ function FulfillmentContent() {
                   onClick={() => setPlan(p)}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all text-xs flex items-center gap-1.5 ${
                     isActive
-                      ? "bg-[#0A192F] text-white shadow-xs font-bold"
-                      : "bg-[#F8FAFC] hover:bg-blue-50 text-[#475569] border border-[#E2E8F0]"
+                      ? "bg-[#0B1B33] text-white shadow-xs font-bold"
+                      : "bg-[#F8FAFC] hover:bg-blue-50 text-[#52607A] border border-[#DCE4EE]"
                   }`}
                 >
                   <span>{p.productName}</span>
@@ -202,14 +202,14 @@ function FulfillmentContent() {
       <MilestoneStepper tasks={plan.tasks} />
 
       {/* 3. View Mode Switcher: Milestones & Operations vs Bryntum Gantt */}
-      <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2">
+      <div className="flex items-center justify-between border-b border-[#DCE4EE] pb-2">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode("milestones")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               viewMode === "milestones"
-                ? "bg-[#0A192F] text-white shadow-xs"
-                : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                ? "bg-[#0B1B33] text-white shadow-xs"
+                : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
             }`}
           >
             Milestone Operations &amp; Q&amp;A
@@ -218,8 +218,8 @@ function FulfillmentContent() {
             onClick={() => setViewMode("gantt")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               viewMode === "gantt"
-                ? "bg-[#0A192F] text-white shadow-xs"
-                : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                ? "bg-[#0B1B33] text-white shadow-xs"
+                : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
             }`}
           >
             <Calendar className="w-3.5 h-3.5 text-indigo-500" />
@@ -227,7 +227,7 @@ function FulfillmentContent() {
           </button>
         </div>
 
-        <span className="text-[11px] text-[#475569] hidden sm:inline">
+        <span className="text-[11px] text-[#52607A] hidden sm:inline">
           {viewMode === "gantt" ? "Interactive desktop timeline" : "Operational breakdown view"}
         </span>
       </div>
@@ -255,8 +255,8 @@ export default function FulfillmentPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-[400px] flex flex-col items-center justify-center space-y-3 text-[#475569]">
-          <RefreshCw className="w-8 h-8 animate-spin text-[#0052CC]" />
+        <div className="min-h-[400px] flex flex-col items-center justify-center space-y-3 text-[#52607A]">
+          <RefreshCw className="w-8 h-8 animate-spin text-[#0284C7]" />
           <p className="text-sm font-medium">Loading Fulfillment Schedule &amp; Milestones...</p>
         </div>
       }

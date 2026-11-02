@@ -58,8 +58,8 @@ export function NegotiationTimeline({
   const percentage = originalPrice > 0 ? ((savings / originalPrice) * 100).toFixed(1) : "0";
 
   return (
-    <Card className="border-[#E2E8F0] bg-white shadow-xs">
-      <CardHeader className="border-b border-[#E2E8F0] pb-4">
+    <Card className="border-[#DCE4EE] bg-white shadow-xs">
+      <CardHeader className="border-b border-[#DCE4EE] pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-[#0A192F]">
@@ -100,7 +100,7 @@ export function NegotiationTimeline({
                 className={`flex gap-3.5 p-4 sm:p-5 rounded-xl border transition-all ${
                   isBuyer
                     ? "bg-[#EBF3FF]/70 border-[#0052CC]/30 text-[#0A192F] mr-4 sm:mr-10 shadow-xs"
-                    : "bg-[#F8FAFC] border-[#E2E8F0] text-[#0A192F] ml-4 sm:ml-10 shadow-xs"
+                    : "bg-[#F8FAFC] border-[#DCE4EE] text-[#0A192F] ml-4 sm:ml-10 shadow-xs"
                 }`}
               >
                 {/* Agent Avatar */}
@@ -146,9 +146,9 @@ export function NegotiationTimeline({
                   </p>
 
                   {/* Proposal Metadata Pills */}
-                  <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#475569] border-t border-[#E2E8F0]">
+                  <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#475569] border-t border-[#DCE4EE]">
                     {msg.proposedPrice !== undefined && (
-                      <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-[#E2E8F0]">
+                      <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-[#DCE4EE]">
                         <span className="text-[#475569] text-[11px]">Proposed Price:</span>
                         <span className="font-bold text-[#0A192F] text-sm font-mono">
                           {formatCurrency(msg.proposedPrice)}
@@ -156,7 +156,7 @@ export function NegotiationTimeline({
                       </div>
                     )}
                     {msg.deliveryDays !== undefined && (
-                      <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-[#E2E8F0]">
+                      <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-md border border-[#DCE4EE]">
                         <Clock className="w-3.5 h-3.5 text-[#0052CC]" />
                         <span className="text-[#0A192F] font-medium">
                           {msg.deliveryDays} business days
@@ -227,7 +227,7 @@ export function NegotiationTimeline({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-              <div className="p-3 rounded-lg bg-white border border-[#E2E8F0] space-y-0.5">
+              <div className="p-3 rounded-lg bg-white border border-[#DCE4EE] space-y-0.5">
                 <span className="text-[#475569] block text-[11px] uppercase tracking-wider font-medium">Original Listing</span>
                 <span className="font-bold text-[#94A3B8] line-through text-base font-mono">
                   {formatCurrency(originalPrice, agreement.currency)}

@@ -21,14 +21,14 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
       onClick={onSelect}
       className={`transition-all duration-150 cursor-pointer border flex flex-col justify-between overflow-hidden group bg-white ${
         selected
-          ? "border-[#0070E0] shadow-md ring-2 ring-[#0070E0]/20"
-          : "border-[#E2E8F0] hover:border-[#CBD5E1] shadow-2xs hover:shadow-xs"
+          ? "border-[#0284C7] shadow-md ring-2 ring-[#0284C7]/20"
+          : "border-[#DCE4EE] hover:border-[#CBD5E1] shadow-2xs hover:shadow-xs"
       }`}
     >
       <div>
         {/* Product Image Thumbnail if provided */}
         {product.imageUrl && (
-          <div className="relative w-full h-40 bg-[#F5F7FA] border-b border-[#E2E8F0] flex items-center justify-center p-3 overflow-hidden">
+          <div className="relative w-full h-40 bg-[#F5F7FA] border-b border-[#DCE4EE] flex items-center justify-center p-3 overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={product.imageUrl}
@@ -37,20 +37,20 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
               loading="lazy"
             />
             <div className="absolute top-2 left-2 flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ECFDF5] text-[#16845B] border border-[#16845B]/25 shadow-2xs">
-                <Sparkles className="w-2.5 h-2.5 text-[#16845B]" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ECFDF5] text-[#059669] border border-[#059669]/25 shadow-2xs">
+                <Sparkles className="w-2.5 h-2.5 text-[#059669]" />
                 <span>AI Negotiable</span>
               </span>
               {isChannel3 && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EFF8FF] text-[#0070E0] border border-[#0070E0]/25 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#0070E0] animate-pulse" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F0F9FF] text-[#0284C7] border border-[#0284C7]/25 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7] animate-pulse" />
                   <span>Channel3</span>
                 </span>
               )}
             </div>
             {product.availability && (
               <div className="absolute top-2 right-2">
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white text-[#5B6472] border border-[#E2E8F0] shadow-2xs">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white text-[#52607A] border border-[#DCE4EE] shadow-2xs">
                   {product.availability}
                 </span>
               </div>
@@ -63,8 +63,8 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             <div className="space-y-1.5">
               {!product.imageUrl && (
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ECFDF5] text-[#16845B] border border-[#16845B]/25 shadow-2xs">
-                    <Sparkles className="w-2.5 h-2.5 text-[#16845B]" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ECFDF5] text-[#059669] border border-[#059669]/25 shadow-2xs">
+                    <Sparkles className="w-2.5 h-2.5 text-[#059669]" />
                     <span>AI Negotiable</span>
                   </span>
                   <Badge variant={isChannel3 ? "info" : "default"}>
@@ -72,17 +72,17 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
                   </Badge>
                 </div>
               )}
-              <CardTitle className="text-base sm:text-lg text-[#111827] group-hover:text-[#003087] transition-colors line-clamp-2 leading-snug">
+              <CardTitle className="text-base sm:text-lg text-[#0B1B33] group-hover:text-[#0B1B33] transition-colors line-clamp-2 leading-snug">
                 {product.name}
               </CardTitle>
-              <CardDescription className="text-xs text-[#5B6472] line-clamp-1">
+              <CardDescription className="text-xs text-[#52607A] line-clamp-1">
                 {product.tagline || product.merchantName || "Verified Commerce Listing"}
               </CardDescription>
             </div>
 
             <div className="text-right flex-shrink-0">
-              <span className="text-[10px] text-[#5B6472] block uppercase font-semibold">List Price</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-[#111827] font-mono">
+              <span className="text-[10px] text-[#52607A] block uppercase font-semibold">List Price</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-[#0B1B33] font-mono">
                 {formatCurrency(product.originalPrice, product.currency)}
               </span>
             </div>
@@ -90,27 +90,27 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <p className="text-xs text-[#5B6472] leading-relaxed line-clamp-2">
+          <p className="text-xs text-[#52607A] leading-relaxed line-clamp-2">
             {product.description}
           </p>
 
-          <div className="grid grid-cols-2 gap-2 text-xs text-[#5B6472]">
+          <div className="grid grid-cols-2 gap-2 text-xs text-[#52607A]">
             {product.features.slice(0, 4).map((feature, idx) => (
-              <div key={idx} className="flex items-center gap-1.5 text-[#5B6472] text-[11px]">
-                <Zap className="w-3 h-3 text-[#0070E0] flex-shrink-0" />
+              <div key={idx} className="flex items-center gap-1.5 text-[#52607A] text-[11px]">
+                <Zap className="w-3 h-3 text-[#0284C7] flex-shrink-0" />
                 <span className="truncate">{feature}</span>
               </div>
             ))}
           </div>
 
-          <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-[11px] text-[#5B6472]">
-            <div className="flex items-center gap-1.5 text-[#16845B] truncate max-w-[50%] font-medium">
+          <div className="pt-3 border-t border-[#DCE4EE] flex items-center justify-between text-[11px] text-[#52607A]">
+            <div className="flex items-center gap-1.5 text-[#059669] truncate max-w-[50%] font-medium">
               <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">{product.merchantName || "Verified Merchant"}</span>
             </div>
             {standardDelivery && (
-              <div className="flex items-center gap-1.5 text-[#5B6472] flex-shrink-0">
-                <Truck className="w-3.5 h-3.5 text-[#0070E0]" />
+              <div className="flex items-center gap-1.5 text-[#52607A] flex-shrink-0">
+                <Truck className="w-3.5 h-3.5 text-[#0284C7]" />
                 <span>Est. {standardDelivery.estimatedDays}d SLA</span>
               </div>
             )}
@@ -147,7 +147,7 @@ export function ProductCard({ product, selected, onSelect }: ProductCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            className="flex items-center justify-center gap-1 text-[10px] text-[#5B6472] hover:text-[#0070E0] transition-colors pt-0.5"
+            className="flex items-center justify-center gap-1 text-[10px] text-[#52607A] hover:text-[#0284C7] transition-colors pt-0.5"
           >
             <span>View catalog source</span>
             <ExternalLink className="w-2.5 h-2.5" />

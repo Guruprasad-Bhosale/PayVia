@@ -1,15 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Bot,
   ShieldCheck,
   ArrowRight,
   ArrowLeft,
   RotateCcw,
   Sparkles,
+  Lock,
+  Bot,
+  Store,
+  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -62,304 +66,247 @@ const STAGES: StageConfig[] = [
   {
     id: "PAYPAL",
     stepNumber: 6,
-    shortLabel: "6. Settlement",
+    shortLabel: "6. PayPal",
     title: "PayPal Orders v2 Settlement",
-    subtitle: "PayPal executes payment for the exact agreed amount. Server verifies and captures instantly.",
+    subtitle: "Buyer authorizes payment on PayPal. Server captures funds and decrements merchant inventory.",
   },
 ];
 
 export function InteractiveTransactionPreview() {
-  const [currentStageIndex, setCurrentStageIndex] = useState<number>(0);
-  const currentStage = STAGES[currentStageIndex];
+  const [currentIdx, setCurrentIdx] = useState(2); // Start at Negotiation phase for maximum visual engagement
+  const currentStage = STAGES[currentIdx];
 
   const handleNext = () => {
-    if (currentStageIndex < STAGES.length - 1) {
-      setCurrentStageIndex((prev) => prev + 1);
+    if (currentIdx < STAGES.length - 1) {
+      setCurrentIdx(currentIdx + 1);
     }
   };
 
   const handlePrev = () => {
-    if (currentStageIndex > 0) {
-      setCurrentStageIndex((prev) => prev - 1);
+    if (currentIdx > 0) {
+      setCurrentIdx(currentIdx - 1);
     }
   };
 
   const handleReset = () => {
-    setCurrentStageIndex(0);
+    setCurrentIdx(0);
   };
 
   return (
-    <div className="w-full bg-white rounded-xl border border-[#D9E0E9] shadow-sm overflow-hidden flex flex-col">
-      {/* 
-        ========================================================================
-        STEP PROGRESS BAR
-        - Clean, responsive tabs showing progress across all 6 stages
-        ========================================================================
-      */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 border-b border-[#E2E8F0] bg-[#F8FAFC] text-xs">
-        {STAGES.map((s, idx) => {
-          const isActive = idx === currentStageIndex;
-          const isPassed = idx < currentStageIndex;
-
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setCurrentStageIndex(idx)}
-              className={`p-3 text-center sm:text-left transition-all relative border-r last:border-r-0 border-[#E2E8F0] focus:outline-none ${
-                isActive
-                  ? "bg-white text-[#003087] font-bold shadow-2xs"
-                  : isPassed
-                  ? "text-[#16845B] font-medium hover:bg-white/60"
-                  : "text-[#5C6678] hover:bg-white/40"
-              }`}
-            >
-              <div className="flex items-center justify-center sm:justify-start gap-1.5">
-                <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    isActive
-                      ? "bg-[#003087] text-white"
-                      : isPassed
-                      ? "bg-[#ECFDF5] text-[#16845B] border border-[#16845B]/30"
-                      : "bg-[#E2E8F0] text-[#5C6678]"
-                  }`}
-                >
-                  {isPassed ? "✓" : s.stepNumber}
-                </span>
-                <span className="hidden sm:inline truncate">{s.shortLabel}</span>
-              </div>
-              {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0070E0]" />
-              )}
-            </button>
-          );
-        })}
+    <div className="rounded-2xl bg-white border border-[#DCE4EE] shadow-sm overflow-hidden flex flex-col justify-between">
+      {/* Top Protocol Header Bar */}
+      <div className="bg-[#0B1B33] text-white p-3.5 px-5 flex items-center justify-between border-b border-sky-900/30">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#EC4899] animate-pulse" />
+          <span className="text-xs font-semibold font-mono tracking-wider text-sky-300 uppercase">
+            PayVia Autonomous Engine
+          </span>
+          <span className="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded font-mono">
+            Demo Sandbox
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-mono text-slate-400">Step {currentIdx + 1} of 6</span>
+        </div>
       </div>
 
-      {/* 
-        ========================================================================
-        STAGE CARD BODY
-        - Renders ONLY the currently active stage with full clarity
-        ========================================================================
-      */}
-      <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between min-h-[340px]">
-        <div className="space-y-4">
-          {/* Stage Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0070E0] bg-[#EFF8FF] px-2 py-0.5 rounded border border-[#0070E0]/20 inline-block">
-                Stage {currentStage.stepNumber} of 6
-              </span>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-[#101828] tracking-tight">
-                {currentStage.title}
-              </h3>
-              <p className="text-xs sm:text-sm text-[#5C6678] max-w-xl">
-                {currentStage.subtitle}
-              </p>
-            </div>
+      {/* Stage Tracker Navigation Pills */}
+      <div className="flex border-b border-[#DCE4EE] bg-[#F0F9FF]/50 overflow-x-auto p-1.5 gap-1 scrollbar-none">
+        {STAGES.map((s, idx) => (
+          <button
+            key={s.id}
+            onClick={() => setCurrentIdx(idx)}
+            className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-150 cursor-pointer ${
+              idx === currentIdx
+                ? "bg-[#0284C7] text-white font-semibold shadow-xs"
+                : "text-[#52607A] hover:bg-white hover:text-[#0B1B33]"
+            }`}
+          >
+            {s.shortLabel}
+          </button>
+        ))}
+      </div>
 
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono font-semibold text-[#16845B] bg-[#ECFDF5] px-2.5 py-1 rounded-lg border border-[#16845B]/20">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verified Rule</span>
-            </div>
+      {/* Main Interactive Stage Body with Motion Transitions */}
+      <div className="p-5 sm:p-6 space-y-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#0284C7]">
+              Phase {currentStage.stepNumber}
+            </span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#EC4899]" />
           </div>
+          <h3 className="text-base sm:text-lg font-bold text-[#0B1B33] mt-0.5">{currentStage.title}</h3>
+          <p className="text-xs text-[#52607A] leading-relaxed mt-0.5">{currentStage.subtitle}</p>
+        </div>
 
-          {/* Stage Content Switcher */}
-          <div className="pt-2">
+        {/* Dynamic Mock View of Each Stage */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStage.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="rounded-xl bg-[#F0F9FF]/60 border border-[#BAE6FD] p-4 text-xs space-y-2.5 min-h-[140px] flex flex-col justify-center"
+          >
             {currentStage.id === "INTENT" && (
-              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#101828]">
-                  <Bot className="w-4 h-4 text-[#0070E0]" />
-                  <span>Buyer Request: ThinkPad Workstation under $760</span>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-[#52607A]">
+                  <span>Target Item:</span>
+                  <strong className="text-[#0B1B33] font-medium">ThinkPad Workstation Laptop</strong>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 bg-white rounded-lg border border-[#E2E8F0]">
-                    <span className="text-[10px] uppercase font-bold text-[#5C6678] block">Max Budget Ceiling</span>
-                    <span className="text-base font-bold text-[#16845B] font-mono">$760.00 USD</span>
-                    <span className="text-[10px] text-[#5C6678] block">Private constraint</span>
-                  </div>
-                  <div className="p-3 bg-white rounded-lg border border-[#E2E8F0]">
-                    <span className="text-[10px] uppercase font-bold text-[#5C6678] block">Target Delivery</span>
-                    <span className="text-base font-bold text-[#003087] font-mono">≤ 5 Days</span>
-                    <span className="text-[10px] text-[#5C6678] block">Express shipping</span>
-                  </div>
-                  <div className="p-3 bg-white rounded-lg border border-[#E2E8F0]">
-                    <span className="text-[10px] uppercase font-bold text-[#5C6678] block">Ranking Priority</span>
-                    <span className="text-base font-bold text-[#0070E0] font-mono">BALANCED</span>
-                    <span className="text-[10px] text-[#5C6678] block">Price &amp; Speed score</span>
-                  </div>
+                <div className="flex justify-between items-center text-[#52607A]">
+                  <span>Private Budget Ceiling:</span>
+                  <strong className="text-[#0284C7] font-mono">$760.00 USD (Encrypted)</strong>
+                </div>
+                <div className="flex justify-between items-center text-[#52607A]">
+                  <span>Max Transit SLA:</span>
+                  <strong className="text-[#0B1B33]">5 Days</strong>
                 </div>
               </div>
             )}
 
             {currentStage.id === "DISCOVERY" && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
-                  <div className="flex justify-between items-center text-xs font-bold text-[#101828]">
-                    <span>Alpha Direct</span>
-                    <Badge variant="info" className="text-[9px]">Registered</Badge>
-                  </div>
-                  <div className="text-xs text-[#5C6678]">ThinkPad T14 Gen 4</div>
-                  <div className="text-xs font-mono font-bold text-[#101828] pt-1">List: $800.00</div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">ThinkPad Certified Store</span>
+                  <Badge variant="success" className="text-[10px]">Negotiable (Floor: $730)</Badge>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
-                  <div className="flex justify-between items-center text-xs font-bold text-[#101828]">
-                    <span>Beta Systems</span>
-                    <Badge variant="info" className="text-[9px]">Registered</Badge>
-                  </div>
-                  <div className="text-xs text-[#5C6678]">ThinkPad E14 Pro</div>
-                  <div className="text-xs font-mono font-bold text-[#101828] pt-1">List: $790.00</div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Premier Hardware Co</span>
+                  <Badge variant="success" className="text-[10px]">Negotiable (Floor: $740)</Badge>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
-                  <div className="flex justify-between items-center text-xs font-bold text-[#101828]">
-                    <span>Gamma Express</span>
-                    <Badge variant="info" className="text-[9px]">Registered</Badge>
-                  </div>
-                  <div className="text-xs text-[#5C6678]">ThinkPad L15 Fast</div>
-                  <div className="text-xs font-mono font-bold text-[#101828] pt-1">List: $820.00</div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Direct Logistics Hub</span>
+                  <Badge variant="default" className="text-[10px]">Discovery Only</Badge>
                 </div>
               </div>
             )}
 
             {currentStage.id === "NEGOTIATING" && (
-              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#003087]">Multi-Turn Agent Exchange</span>
-                  <span className="text-[#16845B] font-semibold">3 Rounds Completed</span>
+              <div className="space-y-2">
+                <div className="p-2.5 rounded-lg bg-white border border-[#DCE4EE] space-y-0.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#0284C7] font-semibold text-[11px] flex items-center gap-1">
+                      <Bot className="w-3 h-3" />
+                      <span>Buyer Agent</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">Round 2</span>
+                  </div>
+                  <p className="text-[#52607A] text-[11px] leading-relaxed">
+                    &ldquo;Proposing $745 with 5-day delivery commitment for fast settlement.&rdquo;
+                  </p>
                 </div>
-                <div className="space-y-2 text-xs">
-                  <div className="p-2.5 bg-white rounded-lg border border-[#E2E8F0] flex items-center justify-between">
-                    <span>Alpha Direct Agent counter-offered:</span>
-                    <strong className="text-[#0070E0] font-mono">$755.00 · 4 Days</strong>
+                <div className="p-2.5 rounded-lg bg-white border border-[#DCE4EE] space-y-0.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#EC4899] font-semibold text-[11px] flex items-center gap-1">
+                      <Store className="w-3 h-3" />
+                      <span>Merchant Agent</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">Counter</span>
                   </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-[#E2E8F0] flex items-center justify-between">
-                    <span>Beta Systems Agent counter-offered:</span>
-                    <strong className="text-[#0070E0] font-mono">$760.00 · 4 Days</strong>
-                  </div>
-                  <div className="p-2.5 bg-white rounded-lg border border-[#E2E8F0] flex items-center justify-between">
-                    <span>Gamma Express Agent counter-offered:</span>
-                    <strong className="text-[#0070E0] font-mono">$765.00 · 3 Days</strong>
-                  </div>
+                  <p className="text-[#52607A] text-[11px] leading-relaxed">
+                    &ldquo;Consensus at $750.00 USD with guaranteed 3-day express dispatch.&rdquo;
+                  </p>
                 </div>
               </div>
             )}
 
             {currentStage.id === "OFFERS" && (
-              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#101828]">Ranked Offer Matrix (Top Match Selected)</span>
-                  <Badge variant="success" className="text-[10px]">Rank #1 Selected</Badge>
-                </div>
-                <div className="p-3 bg-white rounded-lg border-2 border-[#0070E0] flex items-center justify-between text-xs">
-                  <div className="space-y-0.5">
-                    <strong className="text-[#003087] block">Alpha Direct — Best Composite Score</strong>
-                    <span className="text-[#5C6678]">ThinkPad T14 Gen 4 · Free Express Delivery</span>
+              <div className="space-y-2">
+                <div className="p-3 rounded-lg bg-white border-2 border-[#0284C7] flex justify-between items-center shadow-xs">
+                  <div>
+                    <span className="font-semibold text-[#0B1B33] block">ThinkPad Certified Store</span>
+                    <span className="text-[10px] text-[#059669]">Save $50.00 (3 days transit)</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-base font-bold text-[#16845B] font-mono">$755.00</span>
-                    <span className="text-[10px] text-[#5C6678] block">Saved $45.00</span>
+                    <span className="text-sm font-bold text-[#0B1B33] font-mono">$750.00</span>
+                    <Badge variant="pink" className="text-[9px] block">★ Best Value</Badge>
                   </div>
                 </div>
               </div>
             )}
 
             {currentStage.id === "AGREEMENT" && (
-              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#101828]">Cryptographic Agreement Record</span>
-                  <span className="font-mono text-[10px] text-[#16845B]">SHA-256 Validated</span>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Agreement Hash:</span>
+                  <code className="text-[10px] font-mono font-bold text-[#0B1B33]">sha256:4f8e...9a12</code>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-[#E2E8F0] space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-[#5C6678]">Agreement ID:</span>
-                    <span className="font-mono font-bold text-[#101828]">agr_alpha_755_prod</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#5C6678]">Authoritative Final Price:</span>
-                    <span className="font-mono font-bold text-[#16845B] text-sm">$755.00 USD</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#5C6678]">Human Approval Gate:</span>
-                    <span className="text-[#0070E0] font-bold">Explicit Consent Required</span>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Buyer Authorization:</span>
+                  <span className="text-[#059669] font-semibold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Explicit Approval Required</span>
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Locked Amount:</span>
+                  <strong className="text-[#0B1B33] font-mono text-sm">$750.00 USD</strong>
                 </div>
               </div>
             )}
 
             {currentStage.id === "PAYPAL" && (
-              <div className="p-4 rounded-xl bg-[#ECFDF5] border border-[#16845B]/30 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#16845B]">PayPal Orders v2 Sandbox Handshake</span>
-                  <Badge variant="success" className="text-[10px]">Captured</Badge>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Settlement Gateway:</span>
+                  <strong className="text-[#0284C7]">PayPal Orders v2 Sandbox</strong>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-[#16845B]/20 space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-[#5C6678]">PayPal Transaction:</span>
-                    <span className="font-mono font-bold text-[#101828]">ORD_PAYPAL_9941_V2</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#5C6678]">Settled Exact Amount:</span>
-                    <span className="font-mono font-bold text-[#16845B] text-sm">$755.00 USD</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#5C6678]">Inventory Reservation:</span>
-                    <span className="text-[#003087] font-semibold">Stock Decremented &amp; Confirmed</span>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Execution:</span>
+                  <span className="text-[#059669] font-semibold">Atomic Server Capture</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#52607A]">Inventory Action:</span>
+                  <span className="text-[#0B1B33]">1 Unit Decremented Permanently</span>
                 </div>
               </div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
 
-        {/* 
-          ========================================================================
-          STAGE CONTROLS & STEP NAVIGATION
-          ========================================================================
-        */}
-        <div className="pt-6 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePrev}
-              disabled={currentStageIndex === 0}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#D9E0E9] bg-white text-[#5C6678] hover:bg-[#F8FAFC] disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 inline mr-1" />
-              Previous
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="px-2.5 py-1.5 text-xs font-semibold rounded-lg text-[#5C6678] hover:text-[#003087] hover:bg-[#EFF8FF] transition"
-              title="Reset to Step 1"
-            >
-              <RotateCcw className="w-3.5 h-3.5 inline mr-1" />
-              Reset
-            </button>
-          </div>
+        {/* Stepper Navigation Buttons */}
+        <div className="flex items-center justify-between pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrev}
+            disabled={currentIdx === 0}
+            className="text-xs border-[#DCE4EE] text-[#0B1B33] gap-1 cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Previous</span>
+          </Button>
 
-          <div className="flex items-center gap-3">
-            {currentStageIndex < STAGES.length - 1 ? (
-              <Button
-                size="sm"
-                onClick={handleNext}
-                className="gap-1.5 bg-[#003087] hover:bg-[#002266] text-white font-bold text-xs px-4"
-              >
-                <span>Next: {STAGES[currentStageIndex + 1].shortLabel}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="text-xs text-[#52607A] gap-1 cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Demo</span>
+          </Button>
+
+          {currentIdx < STAGES.length - 1 ? (
+            <Button
+              size="sm"
+              onClick={handleNext}
+              className="text-xs bg-[#0284C7] hover:bg-[#0EA5E9] text-white font-semibold gap-1 cursor-pointer"
+            >
+              <span>Next</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          ) : (
+            <Link href="/negotiate">
+              <Button size="sm" className="text-xs bg-[#059669] hover:bg-[#047857] text-white font-semibold gap-1">
+                <span>Start Live Deal</span>
+                <Sparkles className="w-3.5 h-3.5" />
               </Button>
-            ) : (
-              <Link href="/negotiate">
-                <Button
-                  size="sm"
-                  className="gap-1.5 bg-[#16845B] hover:bg-[#136C4A] text-white font-bold text-xs px-4"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Start Live Negotiation</span>
-                </Button>
-              </Link>
-            )}
-          </div>
+            </Link>
+          )}
         </div>
       </div>
     </div>

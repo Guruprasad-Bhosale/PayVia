@@ -121,17 +121,17 @@ export default function MemoryExplorerPage() {
   return (
     <div className="space-y-6 py-2">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#0A192F]">
-              <Brain className="w-5 h-5 text-[#0052CC]" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#0B1B33]">
+              <Brain className="w-5 h-5 text-[#0284C7]" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-[#0A192F] tracking-tight flex items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-[#0B1B33] tracking-tight flex items-center gap-2">
                 <span>PAYVIA AI MEMORY EXPLORER</span>
               </h1>
-              <p className="text-xs text-[#475569]">
+              <p className="text-xs text-[#52607A]">
                 Historical Negotiation Patterns, Category Preferences &amp; Outcome Benchmarks
               </p>
             </div>
@@ -141,13 +141,13 @@ export default function MemoryExplorerPage() {
         <div className="flex items-center gap-3 flex-wrap">
           {/* Elastic Serverless Status Badge */}
           {isCloudElastic ? (
-            <div className="flex items-center gap-1.5 text-xs text-[#0E6245] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-semibold">
+            <div className="flex items-center gap-1.5 text-xs text-[#059669] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>Elasticsearch Serverless Vector Active</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 text-xs text-[#0A192F] bg-blue-50 px-3 py-1 rounded-full border border-blue-200 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#0052CC]"></span>
+            <div className="flex items-center gap-1.5 text-xs text-[#0B1B33] bg-blue-50 px-3 py-1 rounded-full border border-blue-200 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-[#0284C7]"></span>
               <span>Resilient In-Memory Vector Index</span>
             </div>
           )}
@@ -157,25 +157,25 @@ export default function MemoryExplorerPage() {
             size="sm"
             onClick={handleSeed}
             disabled={syncing}
-            className="h-8 px-3 text-xs gap-1.5 border-[#E2E8F0] text-[#0A192F] hover:bg-slate-50"
+            className="h-8 px-3 text-xs gap-1.5 border-[#DCE4EE] text-[#0B1B33] hover:bg-slate-50"
             title="Seed / Sync Benchmark Memories"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin text-[#0052CC]" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin text-[#0284C7]" : ""}`} />
             <span>{syncing ? "Syncing..." : "Sync Benchmark Memories"}</span>
           </Button>
         </div>
       </div>
 
       {/* Trust & Architecture Transparency Notice */}
-      <div className="p-4 rounded-xl bg-slate-50 border border-[#E2E8F0] text-xs text-[#475569] space-y-2">
-        <div className="flex items-center gap-2 font-bold text-[#0A192F]">
-          <ShieldCheck className="w-4 h-4 text-[#0E6245]" />
+      <div className="p-4 rounded-xl bg-slate-50 border border-[#DCE4EE] text-xs text-[#52607A] space-y-2">
+        <div className="flex items-center gap-2 font-bold text-[#0B1B33]">
+          <ShieldCheck className="w-4 h-4 text-[#059669]" />
           <span>Non-Authoritative Role of AI Memory</span>
         </div>
         <p className="leading-relaxed">
           PayVia uses historical negotiation context and category patterns strictly as <strong>untrusted reference context</strong> to suggest initial proposal terms. AI Memory <strong>never</strong> overrides merchant minimum floor policies, buyer budget caps, authoritative agreement terms, explicit buyer approval, or PayPal settlement amounts.
         </p>
-        <div className="flex items-center gap-4 text-[11px] text-[#475569] pt-1 border-t border-[#E2E8F0] flex-wrap">
+        <div className="flex items-center gap-4 text-[11px] text-[#52607A] pt-1 border-t border-[#DCE4EE] flex-wrap">
           <span>Storage Persistence: <strong>{isCloudElastic ? "Persistent Elasticsearch Cloud Index" : "Session-Scoped In-Memory Store"}</strong></span>
           <span>Security Fence: <strong>Strict Prompt Injection &amp; Data-Only Boundary Active</strong></span>
         </div>
@@ -183,53 +183,53 @@ export default function MemoryExplorerPage() {
 
       {/* KPI Diagnostic Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider block">
+        <div className="p-4 rounded-xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-bold text-[#52607A] uppercase tracking-wider block">
             Indexed Records
           </span>
-          <div className="text-2xl font-black text-[#0A192F] flex items-center gap-2">
-            <Database className="w-5 h-5 text-[#0052CC]" />
+          <div className="text-2xl font-black text-[#0B1B33] flex items-center gap-2">
+            <Database className="w-5 h-5 text-[#0284C7]" />
             <span>{status?.documentCount || results.length} records</span>
           </div>
-          <p className="text-[11px] text-[#475569]">Cross-negotiation documents</p>
+          <p className="text-[11px] text-[#52607A]">Cross-negotiation documents</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider block">
+        <div className="p-4 rounded-xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-bold text-[#52607A] uppercase tracking-wider block">
             Search Index
           </span>
-          <div className="text-sm font-bold text-[#0A192F] font-mono flex items-center gap-2 pt-1">
-            <Layers className="w-4 h-4 text-[#0052CC]" />
+          <div className="text-sm font-bold text-[#0B1B33] font-mono flex items-center gap-2 pt-1">
+            <Layers className="w-4 h-4 text-[#0284C7]" />
             <span>{status?.indexName || "payvia-memory"}</span>
           </div>
-          <p className="text-[11px] text-[#475569]">BM25 + Vector Semantic Matching</p>
+          <p className="text-[11px] text-[#52607A]">BM25 + Vector Semantic Matching</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider block">
+        <div className="p-4 rounded-xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-bold text-[#52607A] uppercase tracking-wider block">
             Memory Dimensions
           </span>
-          <div className="text-sm font-bold text-[#0E6245] flex items-center gap-1.5 pt-1">
+          <div className="text-sm font-bold text-[#059669] flex items-center gap-1.5 pt-1">
             <Sparkles className="w-4 h-4" />
             <span>Buyer, Merchant &amp; Logistics</span>
           </div>
-          <p className="text-[11px] text-[#475569]">Multi-Actor Historical Storage</p>
+          <p className="text-[11px] text-[#52607A]">Multi-Actor Historical Storage</p>
         </div>
 
-        <div className="p-4 rounded-xl bg-white border border-[#E2E8F0] shadow-xs space-y-1">
-          <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider block">
+        <div className="p-4 rounded-xl bg-white border border-[#DCE4EE] shadow-xs space-y-1">
+          <span className="text-[11px] font-bold text-[#52607A] uppercase tracking-wider block">
             Financial Authority
           </span>
-          <div className="text-sm font-bold text-[#0A192F] flex items-center gap-1.5 pt-1">
+          <div className="text-sm font-bold text-[#0B1B33] flex items-center gap-1.5 pt-1">
             <Lock className="w-4 h-4 text-amber-600" />
             <span>Zero Policy Override</span>
           </div>
-          <p className="text-[11px] text-[#475569]">Price floors locked server-side</p>
+          <p className="text-[11px] text-[#52607A]">Price floors locked server-side</p>
         </div>
       </div>
 
       {/* Interactive Search Panel */}
-      <Card className="p-4 sm:p-5 border-[#E2E8F0] bg-white shadow-xs space-y-4">
+      <Card className="p-4 sm:p-5 border-[#DCE4EE] bg-white shadow-xs space-y-4">
         {/* Search Input */}
         <form
           onSubmit={(e) => {
@@ -239,19 +239,19 @@ export default function MemoryExplorerPage() {
           className="flex items-center gap-2"
         >
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#475569] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#52607A] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search PayVia AI memories (e.g. 'previous laptop negotiations', 'discount patterns', 'headphones')..."
-              className="w-full h-11 pl-10 pr-3.5 rounded-xl bg-slate-50 border border-[#E2E8F0] text-sm text-[#0A192F] placeholder-[#475569] focus:outline-none focus:border-[#0052CC] focus:ring-1 focus:ring-[#0052CC]/20"
+              className="w-full h-11 pl-10 pr-3.5 rounded-xl bg-slate-50 border border-[#DCE4EE] text-sm text-[#0B1B33] placeholder-[#52607A] focus:outline-none focus:border-[#0284C7] focus:ring-1 focus:ring-[#0284C7]/20"
             />
           </div>
           <Button
             type="submit"
             disabled={loading}
-            className="h-11 px-6 bg-[#0A192F] hover:bg-[#0052CC] text-white rounded-xl gap-2 font-bold shadow-xs transition-colors"
+            className="h-11 px-6 bg-[#0B1B33] hover:bg-[#0284C7] text-white rounded-xl gap-2 font-bold shadow-xs transition-colors"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             <span className="hidden sm:inline">Search Memory</span>
@@ -260,8 +260,8 @@ export default function MemoryExplorerPage() {
 
         {/* Suggested Queries */}
         <div className="space-y-1.5">
-          <span className="text-[11px] font-bold text-[#475569] uppercase tracking-wider flex items-center gap-1">
-            <HelpCircle className="w-3 h-3 text-[#0052CC]" />
+          <span className="text-[11px] font-bold text-[#52607A] uppercase tracking-wider flex items-center gap-1">
+            <HelpCircle className="w-3 h-3 text-[#0284C7]" />
             <span>Suggested Context Inquiries</span>
           </span>
           <div className="flex flex-wrap gap-1.5">
@@ -274,9 +274,9 @@ export default function MemoryExplorerPage() {
                   handleSearch(q, activeFilter);
                 }}
                 disabled={loading}
-                className="text-xs px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-[#0A192F] hover:text-[#0052CC] border border-[#E2E8F0] transition-colors flex items-center gap-1.5 font-medium"
+                className="text-xs px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-blue-50 text-[#0B1B33] hover:text-[#0284C7] border border-[#DCE4EE] transition-colors flex items-center gap-1.5 font-medium"
               >
-                <Sparkles className="w-3 h-3 text-[#0052CC]" />
+                <Sparkles className="w-3 h-3 text-[#0284C7]" />
                 <span>{q}</span>
               </button>
             ))}
@@ -284,14 +284,14 @@ export default function MemoryExplorerPage() {
         </div>
 
         {/* Memory Type Filter Tabs */}
-        <div className="pt-2 border-t border-[#E2E8F0] flex flex-wrap items-center gap-2">
-          <span className="text-xs text-[#475569] font-semibold mr-1">Filter:</span>
+        <div className="pt-2 border-t border-[#DCE4EE] flex flex-wrap items-center gap-2">
+          <span className="text-xs text-[#52607A] font-semibold mr-1">Filter:</span>
           <button
             onClick={() => onFilterChange("all")}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               activeFilter === "all"
-                ? "bg-[#0A192F] text-white shadow-xs"
-                : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                ? "bg-[#0B1B33] text-white shadow-xs"
+                : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
             }`}
           >
             All Memory Types
@@ -300,11 +300,11 @@ export default function MemoryExplorerPage() {
             onClick={() => onFilterChange("negotiation")}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeFilter === "negotiation"
-                ? "bg-[#0A192F] text-white shadow-xs"
-                : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                ? "bg-[#0B1B33] text-white shadow-xs"
+                : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
             }`}
           >
-            <Brain className="w-3 h-3 text-[#0052CC]" />
+            <Brain className="w-3 h-3 text-[#0284C7]" />
             <span>Buyer Negotiations</span>
           </button>
           <button
@@ -312,7 +312,7 @@ export default function MemoryExplorerPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeFilter === "merchant_pattern"
                 ? "bg-purple-900 text-white shadow-xs"
-                : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
             }`}
           >
             <Building2 className="w-3 h-3 text-purple-600" />
@@ -322,11 +322,11 @@ export default function MemoryExplorerPage() {
             onClick={() => onFilterChange("purchase")}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeFilter === "purchase"
-                ? "bg-[#0E6245] text-white shadow-xs"
-                : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                ? "bg-[#059669] text-white shadow-xs"
+                : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
             }`}
           >
-            <ShoppingBag className="w-3 h-3 text-[#0E6245]" />
+            <ShoppingBag className="w-3 h-3 text-[#059669]" />
             <span>PayPal Settlements</span>
           </button>
           <button
@@ -334,7 +334,7 @@ export default function MemoryExplorerPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeFilter === "fulfillment"
                 ? "bg-cyan-900 text-white shadow-xs"
-                : "bg-slate-50 text-[#475569] hover:text-[#0A192F] border border-[#E2E8F0]"
+                : "bg-slate-50 text-[#52607A] hover:text-[#0B1B33] border border-[#DCE4EE]"
             }`}
           >
             <Truck className="w-3 h-3 text-cyan-600" />
@@ -346,22 +346,22 @@ export default function MemoryExplorerPage() {
       {/* Results Header & Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-[#0A192F] uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-bold text-[#0B1B33] uppercase tracking-wider flex items-center gap-2">
             <span>Retrieved Reference Memories</span>
-            <span className="text-xs text-[#475569] font-normal">({results.length} found)</span>
+            <span className="text-xs text-[#52607A] font-normal">({results.length} found)</span>
           </h2>
 
-          <div className="text-xs text-[#475569] flex items-center gap-2">
+          <div className="text-xs text-[#52607A] flex items-center gap-2">
             <span>Source:</span>
-            <Badge variant="secondary" className="text-[10px] py-0.5 px-2 text-[#0A192F] bg-blue-50 border-blue-200">
+            <Badge variant="secondary" className="text-[10px] py-0.5 px-2 text-[#0B1B33] bg-blue-50 border-blue-200">
               {isCloudElastic ? "Elasticsearch Serverless" : "Local Memory Fallback"}
             </Badge>
           </div>
         </div>
 
         {loading ? (
-          <div className="min-h-[240px] flex flex-col items-center justify-center text-[#475569] text-sm gap-2 bg-white rounded-2xl border border-[#E2E8F0]">
-            <RefreshCw className="w-6 h-6 animate-spin text-[#0052CC]" />
+          <div className="min-h-[240px] flex flex-col items-center justify-center text-[#52607A] text-sm gap-2 bg-white rounded-2xl border border-[#DCE4EE]">
+            <RefreshCw className="w-6 h-6 animate-spin text-[#0284C7]" />
             <span>Retrieving semantically similar memories...</span>
           </div>
         ) : results.length > 0 ? (
@@ -375,11 +375,11 @@ export default function MemoryExplorerPage() {
             ))}
           </div>
         ) : (
-          <Card className="p-8 text-center border-[#E2E8F0] bg-white max-w-md mx-auto space-y-3 shadow-xs">
-            <Brain className="w-10 h-10 text-[#475569] mx-auto opacity-50" />
+          <Card className="p-8 text-center border-[#DCE4EE] bg-white max-w-md mx-auto space-y-3 shadow-xs">
+            <Brain className="w-10 h-10 text-[#52607A] mx-auto opacity-50" />
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-[#0A192F]">No Matching Memories Found</h3>
-              <p className="text-xs text-[#475569]">
+              <h3 className="text-sm font-bold text-[#0B1B33]">No Matching Memories Found</h3>
+              <p className="text-xs text-[#52607A]">
                 {hasSearched
                   ? "Try broadening your query or clear the filter."
                   : "Complete negotiations or click 'Sync Benchmark Memories' to populate historical records."}

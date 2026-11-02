@@ -17,7 +17,7 @@ export function MerchantAgentPanel({
   showFloorToMerchant = false,
 }: MerchantAgentPanelProps) {
   return (
-    <Card className="border-[#E2E8F0] bg-white shadow-sm">
+    <Card className="border-[#DCE4EE] bg-white shadow-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -25,8 +25,8 @@ export function MerchantAgentPanel({
               <Store className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-base text-[#111827]">Merchant Autonomous Agent</CardTitle>
-              <CardDescription className="text-xs text-[#5B6472]">
+              <CardTitle className="text-base text-[#0B1B33]">Merchant Autonomous Agent</CardTitle>
+              <CardDescription className="text-xs text-[#52607A]">
                 Representing {storeName}
               </CardDescription>
             </div>
@@ -40,19 +40,19 @@ export function MerchantAgentPanel({
 
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="p-3.5 rounded-lg bg-[#F5F7FA] border border-[#E2E8F0] space-y-1">
-            <span className="text-[#5B6472] text-[11px] uppercase tracking-wider font-semibold block flex items-center gap-1">
+          <div className="p-3.5 rounded-lg bg-[#F5F7FA] border border-[#DCE4EE] space-y-1">
+            <span className="text-[#52607A] text-[11px] uppercase tracking-wider font-semibold block flex items-center gap-1">
               <Tag className="w-3.5 h-3.5 text-[#94A3B8]" />
               <span>Catalog List Price</span>
             </span>
-            <span className="text-lg font-bold text-[#111827] block font-mono">
+            <span className="text-lg font-bold text-[#0B1B33] block font-mono">
               {formatCurrency(constraints.originalPrice)}
             </span>
           </div>
 
-          <div className="p-3.5 rounded-lg bg-[#F5F7FA] border border-[#E2E8F0] space-y-1">
-            <span className="text-[#003087] text-[11px] uppercase tracking-wider font-semibold block flex items-center gap-1">
-              <Lock className="w-3.5 h-3.5 text-[#003087]" />
+          <div className="p-3.5 rounded-lg bg-[#F5F7FA] border border-[#DCE4EE] space-y-1">
+            <span className="text-[#0B1B33] text-[11px] uppercase tracking-wider font-semibold block flex items-center gap-1">
+              <Lock className="w-3.5 h-3.5 text-[#0B1B33]" />
               <span>Policy Economics</span>
             </span>
             {showFloorToMerchant ? (
@@ -60,17 +60,17 @@ export function MerchantAgentPanel({
                 Floor: {formatCurrency(constraints.minAcceptablePrice)}
               </span>
             ) : (
-              <span className="text-xs font-semibold text-[#003087] block pt-1">
+              <span className="text-xs font-semibold text-[#0B1B33] block pt-1">
                 Deterministic Server Rules
               </span>
             )}
           </div>
         </div>
 
-        <div className="rounded-lg bg-[#EFF8FF] border border-[#0070E0]/20 p-3 text-xs text-[#5B6472] flex items-start gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-[#0070E0] flex-shrink-0 mt-0.5" />
+        <div className="rounded-lg bg-[#F0F9FF] border border-[#0284C7]/20 p-3 text-xs text-[#52607A] flex items-start gap-2.5">
+          <ShieldCheck className="w-4 h-4 text-[#0284C7] flex-shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-semibold text-[#003087] block">Policy Boundary Defense:</span>
+            <span className="font-semibold text-[#0B1B33] block">Policy Boundary Defense:</span>
             <span>
               The Merchant Agent negotiates strictly within authorized merchant rules. Any proposal below the confidential floor price is deterministically blocked.
             </span>

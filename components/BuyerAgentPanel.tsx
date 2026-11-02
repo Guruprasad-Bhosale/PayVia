@@ -39,16 +39,16 @@ export function BuyerAgentPanel({
   };
 
   return (
-    <Card className="border-[#E2E8F0] bg-white shadow-sm">
+    <Card className="border-[#DCE4EE] bg-white shadow-sm">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#EFF8FF] border border-[#0070E0]/20 flex items-center justify-center text-[#0070E0]">
+            <div className="w-10 h-10 rounded-lg bg-[#F0F9FF] border border-[#0284C7]/20 flex items-center justify-center text-[#0284C7]">
               <Bot className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-base text-[#111827]">Your Buyer Agent</CardTitle>
-              <CardDescription className="text-xs text-[#5B6472]">
+              <CardTitle className="text-base text-[#0B1B33]">Your Buyer Agent</CardTitle>
+              <CardDescription className="text-xs text-[#52607A]">
                 Negotiates within your private constraints
               </CardDescription>
             </div>
@@ -108,10 +108,10 @@ export function BuyerAgentPanel({
           />
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-[#5B6472]">
+            <label className="block text-xs font-semibold text-[#52607A]">
               Settlement Rail
             </label>
-            <div className="w-full rounded-lg border border-[#E2E8F0] bg-[#F5F7FA] px-3.5 py-2 text-sm text-[#003087] font-semibold">
+            <div className="w-full rounded-lg border border-[#DCE4EE] bg-[#F5F7FA] px-3.5 py-2 text-sm text-[#003087] font-semibold">
               PayPal Orders v2
             </div>
           </div>
@@ -119,7 +119,7 @@ export function BuyerAgentPanel({
 
         {/* Priority Selector */}
         <div className="space-y-1.5 pt-1">
-          <label className="block text-xs font-semibold text-[#5B6472]">
+          <label className="block text-xs font-semibold text-[#52607A]">
             Negotiation Priority
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -129,8 +129,8 @@ export function BuyerAgentPanel({
               onClick={() => setPriority("price")}
               className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
                 isPrioritizePrice
-                  ? "bg-[#EFF8FF] border-[#0070E0] text-[#003087]"
-                  : "bg-[#F5F7FA] border-[#E2E8F0] text-[#5B6472] hover:text-[#111827]"
+                  ? "bg-[#F0F9FF] border-[#0284C7] text-[#003087]"
+                  : "bg-[#F5F7FA] border-[#DCE4EE] text-[#52607A] hover:text-[#0B1B33]"
               }`}
             >
               Lowest Price
@@ -141,8 +141,8 @@ export function BuyerAgentPanel({
               onClick={() => setPriority("delivery")}
               className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
                 isPrioritizeDelivery
-                  ? "bg-[#EFF8FF] border-[#0070E0] text-[#003087]"
-                  : "bg-[#F5F7FA] border-[#E2E8F0] text-[#5B6472] hover:text-[#111827]"
+                  ? "bg-[#F0F9FF] border-[#0284C7] text-[#003087]"
+                  : "bg-[#F5F7FA] border-[#DCE4EE] text-[#52607A] hover:text-[#0B1B33]"
               }`}
             >
               Fastest Shipping
@@ -153,8 +153,8 @@ export function BuyerAgentPanel({
               onClick={() => setPriority("balanced")}
               className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
                 !isPrioritizePrice && !isPrioritizeDelivery
-                  ? "bg-[#EFF8FF] border-[#0070E0] text-[#003087]"
-                  : "bg-[#F5F7FA] border-[#E2E8F0] text-[#5B6472] hover:text-[#111827]"
+                  ? "bg-[#F0F9FF] border-[#0284C7] text-[#003087]"
+                  : "bg-[#F5F7FA] border-[#DCE4EE] text-[#52607A] hover:text-[#0B1B33]"
               }`}
             >
               Balanced

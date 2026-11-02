@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap');
+      .headline { font-family: 'Inter', -apple-system, sans-serif; font-weight: 800; fill: #FFFFFF; letter-spacing: -0.03em; }
+      .subhead { font-family: 'Inter', -apple-system, sans-serif; font-weight: 600; fill: #94A3B8; letter-spacing: -0.01em; }
+      .card-title { font-family: 'Inter', -apple-system, sans-serif; font-weight: 600; fill: #FFFFFF; font-size: 16px; }
+      .card-price { font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; fill: #009CDE; font-size: 22px; }
+      .card-meta { font-family: 'Inter', -apple-system, sans-serif; font-weight: 500; fill: #64748B; font-size: 13px; }
+    </style>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#061020" />
+      <stop offset="100%" stop-color="#0A192F" />
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Deep Navy Background -->
+  <rect width="1920" height="1080" fill="url(#bgGrad)" />
+
+  <!-- Center Horizontal Accent Guide Line -->
+  <line x1="260" y1="540" x2="1660" y2="540" stroke="#0052CC" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="8 8" />
+
+  <!-- 3 Abstract Minimalist Shopping Cards (Clutter of static shopping) -->
+  <g transform="translate(0, -30)">
+    <!-- Card 1 -->
+    <g transform="translate(380, 260)" filter="url(#cardShadow)">
+      <rect width="340" height="180" rx="16" fill="#0E223D" stroke="#1E3A5F" stroke-width="1.5" />
+      <rect x="24" y="24" width="60" height="12" rx="6" fill="#1E3A5F" />
+      <rect x="24" y="46" width="180" height="18" rx="4" fill="#334E68" />
+      <text x="24" y="112" class="card-price">$849.00</text>
+      <text x="24" y="142" class="card-meta">Standard Retail • Fixed Price</text>
+      <circle cx="296" cy="40" r="14" fill="#1E3A5F" />
+    </g>
+
+    <!-- Card 2 (Active/Center) -->
+    <g transform="translate(790, 230)" filter="url(#cardShadow)">
+      <rect width="340" height="210" rx="16" fill="#132B4F" stroke="#0052CC" stroke-width="2" />
+      <rect x="24" y="24" width="80" height="14" rx="7" fill="#0052CC" fill-opacity="0.4" />
+      <rect x="24" y="50" width="200" height="20" rx="4" fill="#486581" />
+      <text x="24" y="124" class="card-price" fill="#62B0FF">$799.00</text>
+      <text x="24" y="156" class="card-meta">Coupon Expired • 7-day ship</text>
+      <rect x="24" y="172" width="120" height="8" rx="4" fill="#1E3A5F" />
+      <circle cx="296" cy="42" r="14" fill="#0052CC" fill-opacity="0.5" />
+    </g>
+
+    <!-- Card 3 -->
+    <g transform="translate(1200, 260)" filter="url(#cardShadow)">
+      <rect width="340" height="180" rx="16" fill="#0E223D" stroke="#1E3A5F" stroke-width="1.5" />
+      <rect x="24" y="24" width="70" height="12" rx="6" fill="#1E3A5F" />
+      <rect x="24" y="46" width="170" height="18" rx="4" fill="#334E68" />
+      <text x="24" y="112" class="card-price">$820.00</text>
+      <text x="24" y="142" class="card-meta">Final Sale • Non-negotiable</text>
+      <circle cx="296" cy="40" r="14" fill="#1E3A5F" />
+    </g>
+  </g>
+
+  <!-- Scene Headlines -->
+  <g transform="translate(960, 780)" text-anchor="middle">
+    <text y="0" class="headline" font-size="76">SHOPPING HAS AI.</text>
+    <text y="90" class="headline" font-size="88" fill="#62B0FF">BUT WHO NEGOTIATES?</text>
+  </g>
+</svg>

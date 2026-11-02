@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap');
+      .brand-name { font-family: 'Inter', sans-serif; font-weight: 900; font-size: 88px; fill: #FFFFFF; letter-spacing: -0.04em; }
+      .brand-accent { fill: #0070E0; }
+      .brand-tag { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px; fill: #94A3B8; letter-spacing: 0.16em; text-transform: uppercase; }
+      .tagline-top { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 48px; fill: #FFFFFF; letter-spacing: -0.02em; }
+      .tagline-bot { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 48px; fill: #62B0FF; letter-spacing: -0.02em; }
+      .repo-link { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 500; fill: #64748B; letter-spacing: 0.04em; }
+    </style>
+    <linearGradient id="deepNavyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050C17" />
+      <stop offset="50%" stop-color="#0A192F" />
+      <stop offset="100%" stop-color="#040912" />
+    </linearGradient>
+    <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Deep Navy Background -->
+  <rect width="1920" height="1080" fill="url(#deepNavyBg)" />
+
+  <!-- Thin Blue Center Connecting Guide Line -->
+  <line x1="280" y1="540" x2="1640" y2="540" stroke="#0052CC" stroke-width="1.5" stroke-opacity="0.35" />
+
+  <!-- Center Identity Anchor -->
+  <g transform="translate(960, 410)" text-anchor="middle">
+    <!-- Geometric Triad Motif (Buyer - Merchant - Settlement) -->
+    <g transform="translate(0, -120)">
+      <!-- Subtle glow circle -->
+      <circle cx="0" cy="0" r="48" fill="#0052CC" fill-opacity="0.15" />
+      <!-- PayVia Brand Lightning Square -->
+      <rect x="-40" y="-40" width="80" height="80" rx="22" fill="#003087" stroke="#0070E0" stroke-width="2" />
+      <!-- Lightning bolt glyph (from Navbar) -->
+      <path d="M 4 -20 L -18 2 L -2 2 L -4 20 L 18 -2 L 2 -2 Z" fill="#FFFFFF" />
+    </g>
+
+    <!-- PayVia Wordmark -->
+    <text y="30" class="brand-name">Pay<tspan class="brand-accent">Via</tspan></text>
+    
+    <!-- Commerce Layer Subtitle -->
+    <rect x="-95" y="55" width="190" height="26" rx="13" fill="#132B4F" stroke="#1E3A5F" stroke-width="1" />
+    <text y="72" class="brand-tag">COMMERCE LAYER</text>
+
+    <!-- Tagline Reveal -->
+    <g transform="translate(0, 160)">
+      <text y="0" class="tagline-top">AI NEGOTIATES.</text>
+      <text y="58" class="tagline-bot">PAYPAL SETTLES.</text>
+    </g>
+  </g>
+
+  <!-- Public Repository Reference (Lower Safe Zone) -->
+  <g transform="translate(960, 990)" text-anchor="middle">
+    <text y="0" class="repo-link">github.com/Guruprasad-Bhosale/PayVia</text>
+  </g>
+</svg>

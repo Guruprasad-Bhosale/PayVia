@@ -81,101 +81,101 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
   };
 
   return (
-    <Card className="border-[#E2E8F0] bg-white shadow-sm overflow-hidden rounded-2xl">
+    <Card className="border-[#DCE4EE] bg-white shadow-sm overflow-hidden rounded-2xl">
       {/* PayPal Top Accent Stripe */}
-      <div className="h-1 bg-[#0070BA] w-full" />
+      <div className="h-1 bg-[#0284C7] w-full" />
 
-      <CardHeader className="border-b border-[#E2E8F0] bg-[#F8FAFC] p-5 sm:p-6">
+      <CardHeader className="border-b border-[#DCE4EE] bg-[#F0F9FF]/60 p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#0070BA]/10 border border-[#0070BA]/20 flex items-center justify-center text-[#0070BA] flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#0284C7]/10 border border-[#BAE6FD] flex items-center justify-center text-[#0284C7] flex-shrink-0">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-[#0A192F]">PayPal Sandbox Settlement</CardTitle>
-              <p className="text-xs text-[#475569] mt-0.5">
+              <CardTitle className="text-xl font-bold text-[#0B1B33]">PayPal Sandbox Settlement</CardTitle>
+              <p className="text-xs text-[#52607A] mt-0.5">
                 Authoritative server-validated checkout session
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#475569] bg-white px-3 py-1 rounded-full border border-[#E2E8F0] shadow-2xs self-start sm:self-auto">
-            <Lock className="w-3.5 h-3.5 text-[#0E6245]" />
-            <span className="font-semibold text-[#0A192F]">TLS 256-Bit Encrypted</span>
+          <div className="flex items-center gap-1.5 text-xs text-[#52607A] bg-white px-3 py-1 rounded-full border border-[#DCE4EE] shadow-2xs self-start sm:self-auto">
+            <Lock className="w-3.5 h-3.5 text-[#059669]" />
+            <span className="font-semibold text-[#0B1B33]">TLS 256-Bit Encrypted</span>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-6 p-5 sm:p-6">
         {/* Itemized Payment Summary */}
-        <div className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] divide-y divide-[#E2E8F0]">
+        <div className="rounded-xl bg-white border border-[#DCE4EE] divide-y divide-[#DCE4EE]">
           <div className="p-3.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-[#475569]">Product Item</span>
-            <span className="text-sm font-bold text-[#0A192F] text-right">{agreement.productName}</span>
+            <span className="text-xs font-medium text-[#52607A]">Product Item</span>
+            <span className="text-sm font-bold text-[#0B1B33] text-right">{agreement.productName}</span>
           </div>
 
           <div className="p-3.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-[#475569]">Fulfilling Merchant</span>
-            <span className="text-xs font-semibold text-[#0052CC] flex items-center gap-1">
+            <span className="text-xs font-medium text-[#52607A]">Fulfilling Merchant</span>
+            <span className="text-xs font-semibold text-[#0284C7] flex items-center gap-1">
               <Store className="w-3.5 h-3.5" />
               <span>{merchantName}</span>
             </span>
           </div>
 
           <div className="p-3.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-[#475569]">Original List Price</span>
+            <span className="text-xs font-medium text-[#52607A]">Original List Price</span>
             <span className="text-sm font-medium text-[#94A3B8] line-through font-mono">
               {formatCurrency(originalPrice, agreement.currency)}
             </span>
           </div>
 
-          <div className="p-3.5 flex items-center justify-between bg-[#F0F5FF]">
-            <span className="text-xs text-[#0A192F] font-bold flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#0052CC]" />
+          <div className="p-3.5 flex items-center justify-between bg-[#F0F9FF]">
+            <span className="text-xs text-[#0B1B33] font-bold flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#EC4899]" />
               <span>Negotiated Price to Pay</span>
             </span>
-            <span className="text-xl font-extrabold text-[#0A192F] font-mono">
+            <span className="text-xl font-extrabold text-[#0B1B33] font-mono">
               {formatCurrency(finalPrice, agreement.currency)}
             </span>
           </div>
 
           <div className="p-3.5 flex items-center justify-between bg-[#ECFDF5]">
-            <span className="text-xs text-[#0E6245] font-semibold">Total Savings</span>
-            <span className="text-sm font-bold text-[#0E6245] font-mono">
+            <span className="text-xs text-[#059669] font-semibold">Total Savings</span>
+            <span className="text-sm font-bold text-[#059669] font-mono">
               +{formatCurrency(savings, agreement.currency)}
             </span>
           </div>
 
           <div className="p-3.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-[#475569]">Delivery SLA</span>
-            <span className="text-xs font-bold text-[#0A192F] flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-[#475569]" />
+            <span className="text-xs font-medium text-[#52607A]">Delivery SLA</span>
+            <span className="text-xs font-bold text-[#0B1B33] flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#52607A]" />
               <span>{deliveryDays} business days</span>
             </span>
           </div>
 
           <div className="p-3.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-[#475569]">Settlement Channel</span>
-            <span className="text-xs font-bold text-[#003087] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#0070BA] animate-pulse" />
+            <span className="text-xs font-medium text-[#52607A]">Settlement Channel</span>
+            <span className="text-xs font-bold text-[#0284C7] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#EC4899] animate-pulse" />
               <span>PayPal Orders v2 Sandbox</span>
             </span>
           </div>
         </div>
 
         {/* Guidance Note */}
-        <div className="p-3.5 rounded-xl bg-[#F0F5FF] border border-[#0052CC]/20 text-xs text-[#0A192F] space-y-1">
+        <div className="p-3.5 rounded-xl bg-[#F0F9FF] border border-[#BAE6FD] text-xs text-[#0B1B33] space-y-1">
           <div className="flex items-center gap-1.5 font-bold">
-            <ShieldCheck className="w-4 h-4 text-[#0052CC]" />
+            <ShieldCheck className="w-4 h-4 text-[#0284C7]" />
             <span>How PayPal Settlement Works</span>
           </div>
-          <p className="text-[#475569] leading-relaxed">
+          <p className="text-[#52607A] leading-relaxed">
             Clicking the button below redirects you to PayPal Sandbox. Log in with your test account, authorize the charge, and you will return to PayVia for verified confirmation.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#EF4444]/30 text-[#991B1B] text-xs flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
+          <div className="p-4 rounded-xl bg-[#FEF2F2] border border-[#FECACA] text-[#DC2626] text-xs flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-[#DC2626] flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
               <span className="font-bold block">PayPal Order Error:</span>
               <p className="leading-relaxed">{errorMessage}</p>
@@ -184,8 +184,8 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
         )}
 
         {statusMessage && !errorMessage && (
-          <div className="p-3.5 rounded-xl bg-[#F0F5FF] border border-[#0052CC]/30 text-[#0A192F] text-xs flex items-center gap-2 font-medium">
-            <Loader2 className="w-4 h-4 text-[#0052CC] animate-spin flex-shrink-0" />
+          <div className="p-3.5 rounded-xl bg-[#F0F9FF] border border-[#BAE6FD] text-[#0B1B33] text-xs flex items-center gap-2 font-medium">
+            <Loader2 className="w-4 h-4 text-[#0284C7] animate-spin flex-shrink-0" />
             <span>{statusMessage}</span>
           </div>
         )}
@@ -194,7 +194,7 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
           {approvalUrl ? (
             <a
               href={approvalUrl}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-[#FFC439] hover:bg-[#F2BA36] text-[#003087] font-extrabold rounded-xl shadow-xs transition-all text-base min-h-[48px]"
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-[#FFC439] hover:bg-[#F2BA36] text-[#0B1B33] font-extrabold rounded-xl shadow-xs transition-all text-base min-h-[48px]"
             >
               <span>Click to redirect to PayPal Sandbox</span>
               <ExternalLink className="w-4 h-4" />
@@ -202,26 +202,26 @@ export function PayPalCheckout({ agreement }: PayPalCheckoutProps) {
           ) : (
             <Button
               size="lg"
-              className="w-full bg-[#FFC439] hover:bg-[#F2BA36] text-[#003087] font-extrabold text-base py-4 min-h-[48px] shadow-xs hover:shadow-sm transition-all gap-2"
+              className="w-full bg-[#FFC439] hover:bg-[#F2BA36] text-[#0B1B33] font-extrabold text-base py-4 min-h-[48px] shadow-xs hover:shadow-sm transition-all gap-2 cursor-pointer"
               onClick={handleExecutePayment}
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-[#003087]" />
+                  <Loader2 className="w-4 h-4 animate-spin text-[#0B1B33]" />
                   <span>Preparing Secure PayPal Checkout...</span>
                 </>
               ) : (
                 <>
                   <span>Pay with PayPal</span>
-                  <ArrowRight className="w-4 h-4 ml-1 text-[#003087]" />
+                  <ArrowRight className="w-4 h-4 ml-1 text-[#0B1B33]" />
                 </>
               )}
             </Button>
           )}
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#475569] text-center pt-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#0E6245]" />
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#52607A] text-center pt-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#059669]" />
             <span>Server-authoritative amount validation. Price is locked to {formatCurrency(finalPrice, agreement.currency)}.</span>
           </div>
         </div>

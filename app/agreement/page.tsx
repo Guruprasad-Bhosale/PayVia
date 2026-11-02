@@ -111,8 +111,8 @@ function AgreementContent() {
   if (loading || !agreement) {
     return (
       <div className="text-center py-20 space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#0052CC]" />
-        <p className="text-sm text-[#475569] font-medium">Verifying immutable agreement terms...</p>
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-[#0284C7]" />
+        <p className="text-sm text-[#52607A] font-medium">Verifying immutable agreement terms...</p>
       </div>
     );
   }
@@ -120,27 +120,27 @@ function AgreementContent() {
   return (
     <div className="space-y-8 max-w-4xl mx-auto py-2">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#DCE4EE] pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="w-5 h-5 rounded-full bg-[#0052CC] text-white text-xs font-bold flex items-center justify-center">
+            <span className="w-5 h-5 rounded-full bg-[#0284C7] text-white text-xs font-bold flex items-center justify-center">
               2
             </span>
-            <Badge variant="secondary" className="font-semibold text-[#0A192F] bg-[#F1F5F9]">
+            <Badge variant="secondary" className="font-semibold text-[#0B1B33]">
               Human Review &amp; Approval
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0A192F] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1B33] tracking-tight">
             Review Negotiated Agreement
           </h1>
-          <p className="text-xs sm:text-sm text-[#475569] mt-1">
+          <p className="text-xs sm:text-sm text-[#52607A] mt-1">
             Carefully review the authoritative commercial terms formulated between Buyer and Merchant agents.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link href="/negotiate">
-            <Button variant="secondary" size="sm" className="border-[#CBD5E1] text-[#0A192F] hover:bg-[#F8FAFC]">
+            <Button variant="outline" size="sm" className="border-[#DCE4EE] text-[#0B1B33] hover:bg-[#F0F9FF]">
               <ArrowLeft className="w-4 h-4 mr-1.5" />
               <span>Back to Offers</span>
             </Button>
@@ -160,9 +160,9 @@ function AgreementContent() {
       </div>
 
       {/* Security & Protocol Verification Note */}
-      <div className="max-w-3xl mx-auto rounded-2xl bg-white border border-[#E2E8F0] p-6 shadow-xs space-y-2 text-xs text-[#475569]">
-        <div className="flex items-center gap-2 text-[#0A192F] font-bold text-sm">
-          <ShieldCheck className="w-4 h-4 text-[#0052CC]" />
+      <div className="max-w-3xl mx-auto rounded-2xl bg-white border border-[#DCE4EE] p-6 shadow-xs space-y-2 text-xs text-[#52607A]">
+        <div className="flex items-center gap-2 text-[#0B1B33] font-bold text-sm">
+          <ShieldCheck className="w-4 h-4 text-[#0284C7]" />
           <span>PayVia Zero-Trust Hard Constraint Enforcement</span>
         </div>
         <p className="leading-relaxed">
@@ -175,7 +175,7 @@ function AgreementContent() {
 
 export default function AgreementPage() {
   return (
-    <Suspense fallback={<div className="text-center text-[#475569] py-16">Loading agreement...</div>}>
+    <Suspense fallback={<div className="text-center text-[#52607A] py-16">Loading agreement...</div>}>
       <AgreementContent />
     </Suspense>
   );

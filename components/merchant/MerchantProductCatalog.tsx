@@ -112,10 +112,10 @@ export function MerchantProductCatalog({
   return (
     <div className="space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0A192F]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0B1B33]">
               Merchant Catalog Management
             </span>
             <Badge variant="success" className="text-[10px] font-semibold gap-1">
@@ -123,10 +123,10 @@ export function MerchantProductCatalog({
               <span>Catalog In Sync</span>
             </Badge>
           </div>
-          <h2 className="text-xl font-extrabold text-[#0A192F] tracking-tight">
+          <h2 className="text-xl font-extrabold text-[#0B1B33] tracking-tight">
             Product Listings &amp; Negotiation Eligibility
           </h2>
-          <p className="text-xs text-[#475569]">
+          <p className="text-xs text-[#52607A]">
             Only products registered under active PayVia merchant policies participate in autonomous AI negotiation. External listings remain discovery-only.
           </p>
         </div>
@@ -137,18 +137,18 @@ export function MerchantProductCatalog({
             size="sm"
             onClick={loadCatalogAndPolicy}
             disabled={loading}
-            className="gap-2 text-xs h-9 border-[#E2E8F0] text-[#0A192F] hover:bg-slate-50"
+            className="gap-2 text-xs h-9 border-[#DCE4EE] text-[#0B1B33] hover:bg-slate-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#0052CC]" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#0284C7]" : ""}`} />
             <span>Refresh Catalog</span>
           </Button>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-[#E2E8F0] space-y-3">
-          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#0052CC]" />
-          <p className="text-xs text-[#475569] font-medium">Loading catalog items and policy boundaries...</p>
+        <div className="text-center py-16 bg-white rounded-2xl border border-[#DCE4EE] space-y-3">
+          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#0284C7]" />
+          <p className="text-xs text-[#52607A] font-medium">Loading catalog items and policy boundaries...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -163,20 +163,20 @@ export function MerchantProductCatalog({
             return (
               <div
                 key={item.id}
-                className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#0052CC]/50 hover:shadow-sm transition-all flex flex-col justify-between space-y-4"
+                className="p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs hover:border-[#0284C7]/50 hover:shadow-sm transition-all flex flex-col justify-between space-y-4"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-mono font-semibold text-[#475569] uppercase tracking-wider">
+                    <span className="text-[10px] font-mono font-semibold text-[#52607A] uppercase tracking-wider">
                       {item.sku || item.id}
                     </span>
                     {isNegotiable ? (
-                      <Badge variant="secondary" className="text-[10px] font-bold text-[#0A192F] bg-blue-50 border-blue-200 gap-1">
-                        <Sparkles className="w-2.5 h-2.5 text-[#0052CC]" />
+                      <Badge variant="secondary" className="text-[10px] font-bold text-[#0B1B33] bg-blue-50 border-blue-200 gap-1">
+                        <Sparkles className="w-2.5 h-2.5 text-[#0284C7]" />
                         <span>AI Negotiable</span>
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] font-semibold text-[#475569] border-[#CBD5E1] gap-1">
+                      <Badge variant="outline" className="text-[10px] font-semibold text-[#52607A] border-[#CBD5E1] gap-1">
                         <ExternalLink className="w-2.5 h-2.5" />
                         <span>Discovery Only</span>
                       </Badge>
@@ -184,39 +184,39 @@ export function MerchantProductCatalog({
                   </div>
 
                   <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-[#0A192F] line-clamp-1 leading-snug">
+                    <h3 className="text-sm font-bold text-[#0B1B33] line-clamp-1 leading-snug">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-[#475569] line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[#52607A] line-clamp-2 leading-relaxed">
                       {item.description || "Registered catalog product with authorized settlement rules."}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2 pt-1 flex-wrap">
-                    <span className="text-[11px] font-medium text-[#475569] bg-slate-50 px-2 py-0.5 rounded border border-[#E2E8F0]">
+                    <span className="text-[11px] font-medium text-[#52607A] bg-slate-50 px-2 py-0.5 rounded border border-[#DCE4EE]">
                       {item.category || "General"}
                     </span>
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${
                       item.stockStatus === "OUT_OF_STOCK"
                         ? "bg-red-50 text-red-700 border-red-200"
-                        : "bg-emerald-50 text-[#0E6245] border-emerald-200"
+                        : "bg-emerald-50 text-[#059669] border-emerald-200"
                     }`}>
                       {item.stockStatus === "OUT_OF_STOCK" ? "Out of Stock" : "In Stock"}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#E2E8F0] space-y-2.5">
+                <div className="pt-3 border-t border-[#DCE4EE] space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#475569]">List Price:</span>
-                    <span className="text-sm font-extrabold text-[#0A192F]">
+                    <span className="text-[#52607A]">List Price:</span>
+                    <span className="text-sm font-extrabold text-[#0B1B33]">
                       {formatCurrency(item.listPrice, item.currency || "USD")}
                     </span>
                   </div>
 
                   {isNegotiable && floorPrice !== null ? (
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#475569] flex items-center gap-1">
+                      <span className="text-[#52607A] flex items-center gap-1">
                         <Lock className="w-3 h-3 text-amber-600" />
                         <span>Policy Floor:</span>
                       </span>
@@ -227,8 +227,8 @@ export function MerchantProductCatalog({
                     </div>
                   ) : (
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#475569]">Pricing Mode:</span>
-                      <span className="text-xs text-[#475569] font-medium">Fixed List Price</span>
+                      <span className="text-[#52607A]">Pricing Mode:</span>
+                      <span className="text-xs text-[#52607A] font-medium">Fixed List Price</span>
                     </div>
                   )}
 
@@ -237,7 +237,7 @@ export function MerchantProductCatalog({
                       variant="outline"
                       size="sm"
                       onClick={() => onConfigurePolicy(item.id)}
-                      className="w-full mt-2 h-8 text-xs font-semibold text-[#0A192F] border-[#E2E8F0] hover:bg-blue-50 hover:text-[#0052CC] hover:border-blue-200 gap-1.5"
+                      className="w-full mt-2 h-8 text-xs font-semibold text-[#0B1B33] border-[#DCE4EE] hover:bg-blue-50 hover:text-[#0284C7] hover:border-blue-200 gap-1.5"
                     >
                       <Sliders className="w-3 h-3" />
                       <span>Configure Rules in Policy Editor</span>
