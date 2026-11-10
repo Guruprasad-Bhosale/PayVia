@@ -106,7 +106,7 @@ console.log(`Bound Settlement Amount: $${settlement.agreementAmount} USD`);
 
 ### 1. PayPal Orders v2 Sandbox Integration
 - **Role**: Authoritative payment settlement engine.
-- **Provider Adapter**: `PayPalSettlementProvider` (`lib/providers/settlement/paypal-settlement-provider.ts`).
+- **Provider Adapter**: `PayPalSettlementProvider` (`lib/providers/settlement/paypal.provider.ts`).
 - **Endpoint Binding**: Orders are created server-side with `amount.value === agreement.finalPrice`.
 
 ### 2. Google Gemini 3.8 Flash Integration
@@ -115,16 +115,16 @@ console.log(`Bound Settlement Amount: $${settlement.agreementAmount} USD`);
 
 ### 3. Channel3 Product Discovery
 - **Role**: Provider-agnostic real-world product search.
-- **Provider Adapter**: `Channel3CatalogProvider` (`lib/providers/catalog/channel3-catalog-provider.ts`).
+- **Provider Adapter**: `Channel3CatalogProvider` (`lib/providers/catalog/channel3.provider.ts`).
 - **Fallback**: Gracefully falls back to demo catalog if Channel3 credentials are absent.
 
 ### 4. Elasticsearch Serverless Vector AI Memory
 - **Role**: Persistent semantic memory and historical negotiation recall.
-- **Provider Adapter**: `ElasticMemoryProvider` (`lib/providers/memory/elastic-memory-provider.ts`).
+- **Provider Adapter**: `ElasticMemoryProvider` (`lib/providers/memory/elastic.provider.ts`).
 - **Resilience**: Operates asynchronously and non-blockingly; falls back to in-memory store if offline.
 
-### 5. AG Grid & AG Studio Merchant Command Center
-- **Role**: Real-time structured transaction intelligence, KPI grids, and margin visualization.
+### 5. AG Grid Community Merchant Command Center
+- **Role**: Real-time structured transaction intelligence and sortable settlement ledger (`components/merchant/MerchantGrid.tsx`). *(Note: `ag-studio` packages in `package.json` are unused at runtime.)*
 
 ### 6. Bryntum Fulfillment Scheduler
-- **Role**: Synchronized Gantt timeline, handover deadlines, and linehaul slack tracking.
+- **Role**: Multi-stage fulfillment timeline (`@bryntum/scheduler` trial package), handover deadlines, and SLA deadline tracking (`components/fulfillment/BryntumScheduler.tsx`).

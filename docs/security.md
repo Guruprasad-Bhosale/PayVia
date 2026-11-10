@@ -30,5 +30,12 @@
    - PayPal Client Secret, Gemini API Key, Channel3 Key, and Elasticsearch API Key are server-only.
    - Zero credentials are exposed in browser JavaScript bundles or API responses.
 
-7. **Idempotency Defense**:
-   - All mutation endpoints support `Idempotency-Key` headers to prevent double-charging or duplicate proposal submissions.
+7. **Explicit Human Buyer Approval Gate**:
+   - PayPal order initiation is blocked (`USER_APPROVAL_REQUIRED`) until the buyer explicitly reviews and approves the commercial terms (`POST /api/negotiate/approve` -> `status = "USER_APPROVED"`).
+
+8. **Server-Enforced Expiration & Atomic Stock Locks**:
+   - Agreements expire (`Date.now() >= expiresAt` -> `AGREEMENT_EXPIRED`) so stale quotes cannot be captured.
+   - Selecting an offer reserves inventory atomically (`AVAILABLE -> RESERVED`, 15-minute TTL) and permanently consumes stock (`CONSUMED`) only once per settled order.
+
+9. **Idempotency Defense**:
+   - All mutation endpoints and PayPal webhook handlers enforce `Idempotency-Key` / `IdempotencyRecord` checks to prevent duplicate proposal submissions, duplicate captures, or webhook replay side effects.

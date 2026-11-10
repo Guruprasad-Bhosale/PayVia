@@ -1,351 +1,700 @@
-<div align="center">
-
 # ⚡ PayVia
 
-### **AI negotiates. PayPal settles.**
+<h3 align="center">AI Negotiates. PayPal Settles.</h3>
 
-**Autonomous Agent-to-Agent Commerce Negotiation & Verified PayPal Orders v2 Settlement Platform**<br />
-*Built for the PayPal Hackathon*
+<p align="center">
+  <strong>Reimagining online commerce through autonomous AI-to-AI negotiation.</strong>
+</p>
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.1.7-080D1B?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-286BFF?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-6.19-080D1B?style=flat-square&logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![PayPal Orders v2](https://img.shields.io/badge/PayPal-Orders%20v2%20Sandbox-286BFF?style=flat-square&logo=paypal&logoColor=white)](https://developer.paypal.com/)
-[![Google Gemini](https://img.shields.io/badge/AI-Gemini%203.8%20Flash-45D9FF?style=flat-square&logo=googlegemini&logoColor=080D1B)](https://ai.google.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-080D1B?style=flat-square)](./LICENSE)
+<p align="center">
+  <img src="https://img.shields.io/badge/PayPal-Hackathon-003087?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal Hackathon"/>
+  <img src="https://img.shields.io/badge/AI-Google%20Gemini-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Google Gemini"/>
+  <img src="https://img.shields.io/badge/Payments-PayPal%20Sandbox-0070BA?style=for-the-badge&logo=paypal&logoColor=white" alt="PayPal Sandbox"/>
+  <img src="https://img.shields.io/badge/Deployment-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black" alt="Render"/>
+</p>
 
-[How It Works](#how-it-works) • [Architecture](#system-architecture) • [PayPal Settlement](#paypal-integration) • [Security](#security-and-financial-safeguards) • [Screenshots](#project-screenshots) • [Local Setup](#local-development-setup)
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15.1.7-black?style=flat-square&logo=next.js" alt="Next.js"/>
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" alt="React"/>
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Prisma-6.19.3-2D3748?style=flat-square&logo=prisma" alt="Prisma"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-18.6-4169E1?style=flat-square&logo=postgresql" alt="PostgreSQL"/>
+</p>
 
-</div>
-
----
-
-## The Problem
-
-Digital commerce operates on take-it-or-leave-it checkout pricing. In contrast, real-world purchasing routinely involves flexible negotiation over price, delivery speed, and payment timing.
-
-Giving a single AI assistant unrestricted access to negotiate and trigger payments introduces unacceptable risks:
-
-- **No Margin Boundaries:** An unguarded LLM can propose prices below a seller's minimum margin or exceed a buyer's budget ceiling.
-- **Price Tampering & Autonomous Spend:** Letting client code or an AI agent pass prices straight into payment APIs allows client manipulation or unauthorized charges without explicit buyer consent.
-- **No Verifiable Term Lock:** Without cryptographic sealing and inventory reservation, checkout prices and stock availability can drift between agreement and capture.
-
-## The PayVia Idea
-
-PayVia separates **autonomous commercial negotiation** from **authoritative payment settlement**:
-
-1. **Buyer AI Agent** represents a shopper's product requirements, delivery deadline, and private maximum budget ceiling.
-2. **Merchant AI Agent** represents each participating seller within private, server-enforced minimum floor pricing, delivery capabilities, and concession rules.
-3. **Server Policy Engine** validates every proposal against both private bounds before admitting terms into state.
-4. **SHA-256 Sealed Agreement & Explicit Buyer Consent** lock the agreed price and terms before any payment order is created.
-5. **PayPal Orders v2 Settlement** creates, authorizes, and captures the Sandbox transaction strictly against the server-verified agreement amount.
+<p align="center">
+  <a href="#-overview">Overview</a> •
+  <a href="#-how-it-works">How It Works</a> •
+  <a href="#-architecture">Architecture</a> •
+  <a href="#-paypal-integration">PayPal</a> •
+  <a href="#-screenshots">Screenshots</a> •
+  <a href="#-getting-started">Get Started</a>
+</p>
 
 ---
 
-## How It Works
+## ✦ The Big Idea
 
-1. **Submit Shopping Intent (`/`, `/negotiate`):** The buyer enters what they want to buy, a private maximum budget, a delivery deadline, and a ranking preference (`PRICE`, `DELIVERY`, or `BALANCED`).
-2. **Discover Candidates (`/api/v1/shopping-intents/:id/discover`):** PayVia queries internal catalog items and optional external **Channel3** listings. PayVia-enabled merchant items support AI negotiation (`AI Negotiable`); external Channel3 listings remain clearly labeled `Discoverable` with fixed pricing.
-3. **Run Multi-Turn Agent Negotiation (`/api/v1/shopping-sessions/:id/negotiate`):** Buyer and Merchant AI agents powered by `gemini-3.8-flash` (with deterministic bounded fallbacks) exchange structured proposals over up to four rounds without ever exposing the buyer's budget cap to the seller or the seller's floor price to the buyer.
-4. **Rank, Select & Reserve (`/api/v1/shopping-sessions/:id/offers/:offerId/select`):** Candidate offers are ranked deterministically. Selecting a winning offer atomically reserves inventory and creates a canonical `Agreement` sealed with a `SHA-256` hash (`agreementHash`) and a 72-hour expiration window.
-5. **Human Approval Gate (`/agreement`):** The buyer inspects the itemized savings, delivery SLA, and sealed terms, then clicks **Approve agreement & continue to PayPal** (`POST /api/negotiate/approve`). Payment creation is blocked until explicit approval is recorded.
-6. **PayPal Sandbox Settlement (`/checkout`, `/checkout/success`):** The server calls PayPal Orders v2 using the sealed `Agreement.finalPrice`, redirects the buyer to PayPal Sandbox to authorize, and completes an idempotent `POST` capture on return—consuming the stock reservation and recording immutable audit events.
-7. **Post-Settlement Operations (`/merchant`, `/fulfillment`, `/memory`):** Merchants track margins and settled ledgers via **AG Grid Community**, teams review delivery milestones on **Bryntum Scheduler / Gantt**, and agents recall sanitized historical patterns from **Elasticsearch Serverless** (or local fallback).
+**What if you never had to negotiate a purchase yourself again?**
 
-```mermaid
-flowchart LR
-    U["Buyer Intent & Private Budget"] --> D["Catalog & Channel3 Discovery"]
-    D --> N["Buyer AI Agent <-> Merchant AI Agent"]
-    N --> P["Deterministic Policy Validation"]
-    P --> R["Offer Selection & Stock Reservation"]
-    R --> A["SHA-256 Sealed Agreement"]
-    A --> H{"Explicit Buyer Approval?"}
-    H -- "No / Expired" --> B["Checkout Blocked"]
-    H -- "Approved" --> O["PayPal Orders v2 Order Created"]
-    O --> C["PayPal Sandbox Auth & Server Capture"]
-    C --> F["Audit Trail, Fulfillment & Memory Sync"]
+Online shopping has evolved. Product discovery is faster, payments are easier, and marketplaces offer more choices than ever.
+
+But one thing remains largely unchanged: buyers still have to compare prices, negotiate deals and settle for whatever terms a merchant offers.
+
+We wanted to change that.
+
+**PayVia introduces a new layer to digital commerce: AI agents negotiating directly with each other before a payment happens.**
+
+A Buyer AI represents the customer's interests. A Merchant AI represents the seller's commercial interests. They exchange proposals, counteroffers and delivery commitments to reach mutually acceptable terms.
+
+The buyer reviews the final agreement and explicitly approves it. PayPal then handles the payment settlement.
+
+No AI independently authorizes a charge. No negotiation bypasses merchant-defined pricing boundaries.
+
+Just a smarter way to reach a deal.
+
+---
+
+## 🚀 Overview
+
+PayVia is an AI-powered, agent-to-agent commerce negotiation platform built for the **PayPal Hackathon**.
+
+Instead of treating checkout as the first moment where a buyer and seller agree on commercial terms, PayVia moves negotiation before payment.
+
+### The core concept
+
+<details>
+<summary><strong>How traditional shopping works</strong></summary>
+
+```text
+Browse Products
+      ↓
+Compare Prices
+      ↓
+Choose a Merchant
+      ↓
+Accept Listed Price
+      ↓
+Checkout
+      ↓
+Payment
 ```
 
+The buyer does most of the comparison and decision-making manually.
+
+</details>
+
+<details>
+<summary><strong>How PayVia changes the experience</strong></summary>
+
+```text
+Describe What You Need
+         ↓
+    Buyer AI Agent
+         ↕
+  AI Negotiation Layer
+         ↕
+   Merchant AI Agent
+         ↓
+ Negotiated Agreement
+         ↓
+  Buyer Approval
+         ↓
+  PayPal Settlement
+```
+
+The agents negotiate. The buyer remains in control. PayPal handles settlement.
+
+</details>
+
 ---
 
-## Core Features
+## ✦ How It Works
 
-- **Autonomous Buyer & Merchant Negotiation Agents:** Structured JSON turn orchestration via Google Gemini (`gemini-3.8-flash`) with bounded deterministic fallback when API keys are unconfigured or Gemini returns transient `503` load-shedding errors.
-- **Deterministic Constraint & Ranking Guardrails:** `PolicyService` rejects any proposal below `minimumPrice` or above `maxBudget` regardless of LLM output; offers rank deterministically across `PRICE`, `DELIVERY`, or `BALANCED` scoring (`0.6` price + `0.4` delivery).
-- **Honest Merchant Node Classification:** Distinguishes PayVia-enabled merchants (`AI Negotiable` with stored policies) from external **Channel3** results (`Discoverable` only—PayVia never fabricates negotiations or private floors for external merchants).
-- **Cryptographically Sealed Agreements & Atomic Stock Locks:** `Agreement` terms are hashed canonically via `SHA-256` (`lib/domain/crypto.ts`), checked against server expiration (`expiresAt`), and backed by `AVAILABLE -> RESERVED -> CONSUMED` inventory transitions.
-- **PayPal Sandbox Orders v2 Checkout & Webhooks:** Server-side order creation bound strictly to `Agreement.finalPrice`, hosted Sandbox approval flow, read-only `GET` return routing, idempotent `POST` capture, and cryptographic webhook verification (`POST /v1/notifications/verify-webhook-signature`).
-- **Merchant Control Plane (`/merchant`):** Configure per-SKU minimum floors, delivery SLAs, and bargaining strategies (`BALANCED_ECONOMIC`, etc.), run dry-run simulations, inspect interactive ledgers (**AG Grid Community**), and view SKU/channel KPIs.
-- **Fulfillment Operations & AI Memory (`/fulfillment`, `/memory`):** Track milestone tasks via sequential stepper or **Bryntum Scheduler / Gantt**, and inspect **Elasticsearch Serverless** historical negotiation context strictly fenced as untrusted reference data. *(Note: Warehouse milestones model negotiated SLAs; live carrier GPS tracking webhooks are not integrated in this hackathon build.)*
+PayVia follows a structured four-stage commerce workflow.
+
+### 01 — Purchase Intent
+
+The buyer describes the product they want and specifies their requirements.
+
+- Product or item description
+- Maximum purchase budget
+- Preferred delivery window
+- Additional purchase preferences
+
+The buyer's budget and constraints are handled by the application and are not intended to be exposed to merchant agents.
+
+### 02 — AI-to-AI Negotiation
+
+Two AI agents participate in the negotiation.
+
+| Buyer AI                          | Merchant AI                         |
+| --------------------------------- | ----------------------------------- |
+| Represents buyer requirements     | Represents merchant interests       |
+| Evaluates proposals               | Evaluates buyer offers              |
+| Considers budget constraints      | Considers merchant pricing policies |
+| Generates counteroffers           | Responds with counteroffers         |
+| Seeks acceptable commercial terms | Protects authorized margins         |
+
+The agents exchange proposals until they reach an acceptable agreement or the negotiation cannot proceed.
+
+### 03 — Agreement & Approval
+
+Once consensus is reached, PayVia generates a structured commercial agreement.
+
+The agreement includes:
+
+- Product and merchant identity
+- Final negotiated price
+- Original listing price
+- Savings
+- Quantity and delivery commitment
+- Settlement method
+- Agreement integrity information
+
+A SHA-256 hash is used to identify the canonical agreement terms and help verify their integrity.
+
+**The buyer must explicitly approve the agreement before payment proceeds.**
+
+### 04 — PayPal Settlement
+
+After approval:
+
+1. PayVia validates the approved agreement.
+2. The backend initiates the PayPal Orders v2 workflow.
+3. The buyer is redirected to PayPal Sandbox.
+4. The buyer authorizes the payment.
+5. PayVia processes and verifies the payment result.
+6. The application records the transaction and displays confirmation.
 
 ---
 
-## System Architecture
+## 🏗️ Architecture
+
+PayVia separates AI negotiation, commercial validation, agreement approval and payment settlement.
+
+### System architecture
 
 ```mermaid
 flowchart TB
-    subgraph Client["Next.js App Router UI (Client Boundary)"]
-        UI1["/ & /negotiate\nBuyer Intent & Offers"]
-        UI2["/agreement & /checkout\nHuman Approval & PayPal Handoff"]
-        UI3["/merchant & /fulfillment & /memory\nControl Plane & Ops"]
+    U["Buyer / Customer"]
+
+    subgraph FRONTEND["PayVia Application"]
+        UI["Next.js + React Interface"]
+        INTENT["Shopping Intent"]
+        REVIEW["Agreement Review"]
+        APPROVAL["Explicit Buyer Approval"]
     end
 
-    subgraph Server["Server-Controlled API & Domain Services"]
-        API["REST API (/api/v1/*, /api/negotiate/*, /api/paypal/*)"]
-        SHOP["ShoppingService & NegotiationService"]
-        POL["PolicyService & SHA-256 Crypto"]
-        SETTLE["AgreementService & SettlementService"]
-        AGENTS["Buyer & Merchant AI Agents\n(Gemini 3.8 Flash + Bounded Fallback)"]
+    subgraph BACKEND["PayVia Backend"]
+        API["Application API"]
+        ORCH["Negotiation Orchestration"]
+        VALIDATE["Server-side Policy Validation"]
+        AGREEMENT["Agreement Generation"]
+        HASH["SHA-256 Integrity Hash"]
+        TX["Transaction Management"]
     end
 
-    subgraph Data["Persistence & External Services"]
-        DB[("PostgreSQL via Prisma 6.19\n(Dev In-Memory Fallback)")]
-        PAYPAL["PayPal Orders v2\nSandbox REST API"]
-        CH3["Channel3 Product API\n(Demo Catalog Fallback)"]
-        ES["Elasticsearch Serverless\n(In-Memory Semantic Fallback)"]
+    subgraph AI["AI Layer"]
+        BUYER["Buyer AI Agent"]
+        MERCHANT["Merchant AI Agent"]
+        GEMINI["Google Gemini"]
     end
 
-    Client -->|"Ids only — client prices ignored"| API
-    API --> SHOP --> AGENTS
-    SHOP --> POL
-    API --> SETTLE --> POL
-    SETTLE --> PAYPAL
-    SHOP --> CH3
-    AGENTS -.->|"Read-only untrusted context"| ES
-    SHOP --> DB
-    SETTLE --> DB
+    subgraph EXTERNAL["External Integrations"]
+        CHANNEL["Channel3 Product Data API"]
+        PAYPAL["PayPal Orders v2 Sandbox"]
+        RENDER["Render Infrastructure"]
+    end
+
+    subgraph DATA["Persistence"]
+        DB[("PostgreSQL")]
+        PRISMA["Prisma ORM"]
+    end
+
+    U --> UI
+    UI --> INTENT
+    INTENT --> API
+    API --> ORCH
+    ORCH <--> BUYER
+    ORCH <--> MERCHANT
+    BUYER <--> GEMINI
+    MERCHANT <--> GEMINI
+    CHANNEL --> API
+    ORCH --> VALIDATE
+    VALIDATE --> AGREEMENT
+    AGREEMENT --> HASH
+    HASH --> REVIEW
+    REVIEW --> APPROVAL
+    APPROVAL --> PAYPAL
+    PAYPAL --> TX
+    TX --> PRISMA
+    PRISMA <--> DB
+    RENDER -. hosts .-> API
 ```
 
-### Key Architectural Boundaries
+### Negotiation sequence
 
-| Boundary | Enforcement Location | Design Rule |
-|---|---|---|
-| **Server-Authoritative Pricing** | [`app/api/paypal/create-order/route.ts`](app/api/paypal/create-order/route.ts) | Client submits only `agreementId` / `negotiationId`; server derives settlement `amount` from validated `Agreement.finalPrice`. |
-| **Safe HTTP Method Semantics** | [`app/api/paypal/capture-order/route.ts`](app/api/paypal/capture-order/route.ts) | `GET` handles PayPal's browser `return_url` read-only and forwards to `/checkout/success`; authoritative capture occurs via idempotent `POST`. |
-| **Private Bounds Isolation** | [`lib/services/policy.service.ts`](lib/services/policy.service.ts) | Merchant `minimumPrice` and buyer `maxBudget` stay server-side; `sanitizeMerchantPolicy()` strips floors before serialization. |
-| **Production Fail-Closed DB** | [`lib/db/prisma.ts`](lib/db/prisma.ts) | Production runtime throws fatally if `DATABASE_URL` is absent; local development (`NODE_ENV=development`) falls back cleanly to in-memory stores. |
+```mermaid
+sequenceDiagram
+    actor Buyer
+    participant App as PayVia
+    participant BA as Buyer AI
+    participant MA as Merchant AI
+    participant Policy as Policy Validator
+    participant DB as PostgreSQL
+    participant PP as PayPal Sandbox
 
----
-
-## Technology Stack
-
-| Layer | Technology | Usage in PayVia |
-|---|---|---|
-| **Framework** | Next.js `15.1.7` (App Router), React `19`, TypeScript `5.7` | Full-stack SSR pages, client workspaces, and REST API routes |
-| **AI Orchestration** | Google Gemini (`gemini-3.8-flash`) via `@ai-sdk/google` & `ai` | Buyer/Merchant negotiation turns, merchant insights, fulfillment Q&A |
-| **Payments** | PayPal REST API (Orders v2 Sandbox), `@paypal/agent-toolkit` | OAuth2 auth, order creation, hosted approval, idempotent capture, webhook verification |
-| **Database & ORM** | PostgreSQL + Prisma `6.19.3` | 15 relational models across platforms, policies, negotiations, agreements, settlements, audit logs, and idempotency records |
-| **Product Discovery** | Channel3 Product Data API + Curated Demo Catalog | Live marketplace product normalization with deterministic offline catalog fallback |
-| **Vector / AI Memory** | Elasticsearch Serverless (`@elastic/elasticsearch`) | Historical negotiation & fulfillment recall with non-blocking in-memory fallback |
-| **Enterprise Grids & Gantt** | `ag-grid-community` / `ag-grid-react` v36, `ag-studio-react`, `@bryntum/scheduler-trial` | Merchant settlement ledger table and post-settlement Gantt timeline |
-| **Styling & Motion** | Tailwind CSS `3.4`, `lucide-react`, `motion`, `gsap`, `@hugeicons/react` | Responsive UI system with `prefers-reduced-motion` support |
-| **Validation & Hosting** | `zod`, Render (`render.yaml`) | Strict request/policy schema validation and Render web service deployment |
-
----
-
-## PayPal Integration
-
-PayVia integrates directly with PayPal's Sandbox REST API (`https://api-m.sandbox.paypal.com`):
-
-1. **OAuth2 Token Management ([`lib/paypal/auth.ts`](lib/paypal/auth.ts)):** Exchanges `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` server-side via `/v1/oauth2/token` and caches bearer tokens in memory until near expiry.
-2. **Server-Side Order Creation ([`lib/paypal/orders.ts`](lib/paypal/orders.ts)):** `createPayPalOrder()` creates an `intent: "CAPTURE"` order targeting `/v2/checkout/orders`, binds `custom_id` to `agreement.id`, sets `amount.value` strictly from verified `agreement.finalPrice`, and routes `payee.email_address` via `PAYPAL_MERCHANT_EMAIL`.
-3. **Explicit Buyer Authorization Gate:** Orders cannot be created until the buyer explicitly approves the agreement (`USER_APPROVED`). The buyer is redirected to PayPal Sandbox (`approvalUrl`) to sign in and authorize funds—no live money moves.
-4. **Idempotent Capture & Reservation Consumption ([`app/api/paypal/capture-order/route.ts`](app/api/paypal/capture-order/route.ts)):** `POST /api/paypal/capture-order` checks `getPayPalOrder(orderId)` first to avoid duplicate captures, captures approved orders at `/v2/checkout/orders/:id/capture`, marks the agreement `SETTLED`, and consumes the stock reservation.
-5. **Webhook Verification ([`app/api/v1/webhooks/paypal/route.ts`](app/api/v1/webhooks/paypal/route.ts)):** Fails closed if PayPal transmission headers are missing, validates signatures against `/v1/notifications/verify-webhook-signature`, and deduplicates event IDs via `IdempotencyRecord`.
+    Buyer->>App: Submit purchase intent
+    App->>DB: Persist shopping intent
+    App->>BA: Evaluate buyer requirements
+    BA->>MA: Submit proposal
+    MA->>Policy: Validate merchant constraints
+    Policy-->>MA: Policy result
+    MA-->>BA: Counteroffer
+    BA->>MA: Respond with proposal
+    MA-->>App: Negotiated terms
+    App->>Policy: Validate final terms
+    Policy-->>App: Validated agreement
+    App->>DB: Persist agreement and hash
+    App-->>Buyer: Present agreement
+    Buyer->>App: Explicitly approve
+    App->>PP: Create PayPal order
+    PP-->>Buyer: Sandbox authorization
+    Buyer->>PP: Authorize payment
+    PP-->>App: Payment result
+    App->>DB: Record transaction
+    App-->>Buyer: Confirmation
+```
 
 ---
 
-## Security and Financial Safeguards
+## 🤖 The AI Layer
 
-- **Cryptographic Agreement Integrity (`SHA-256`):** [`computeAgreementHash()`](lib/domain/crypto.ts) deterministically hashes canonicalized JSON of immutable terms (`id`, `transactionId`, `negotiationId`, `platformId`, `merchantId`, `buyerId`, `currency`, line items, `originalPrice`, `finalPrice`, `deliveryDays`, `paymentTiming`) and validates via `crypto.timingSafeEqual`.
-  - *Scope note:* The SHA-256 digest detects post-agreement tampering with financial and delivery terms. It does **not** independently prove buyer approval or payment completion—those states are enforced separately by server-side `Agreement.status === "USER_APPROVED"`, server expiration checks (`Date.now() < expiresAt`), and verified PayPal capture responses.
-- **No Autonomous Financial Authorization:** AI agents propose terms only; `AgreementService.verifyAgreementForSettlement()` blocks settlement with `USER_APPROVAL_REQUIRED` until affirmative buyer action is recorded.
-- **Private Margin & Budget Confidentiality:** `PolicyService` keeps seller `minimumPrice` and buyer `maxBudget` isolated server-side; cross-tenant mutations are rejected with `TENANT_MISMATCH`.
-- **Untrusted AI Memory Fencing:** Context retrieved from Elasticsearch is wrapped inside explicit read-only data delimiters so injected strings in historical records cannot alter floor prices, budgets, or settlement actions.
-- **Secret Isolation:** All secrets (`PAYPAL_CLIENT_SECRET`, `GOOGLE_GENERATIVE_AI_API_KEY`, `CHANNEL3_API_KEY`, `ELASTICSEARCH_API_KEY`, `DATABASE_URL`) remain server-only with zero `NEXT_PUBLIC_` exposure, enforced by `npm run check:secrets`.
+### Two agents. Two perspectives. One agreement.
+
+PayVia uses Google Gemini to support the negotiation process.
+
+Rather than using AI as a simple chatbot, PayVia gives the agents distinct commercial responsibilities.
+
+#### Buyer Agent
+
+The Buyer Agent works on behalf of the customer.
+
+Its objectives include:
+
+- Understanding the purchase intent.
+- Considering the buyer's requirements.
+- Evaluating merchant proposals.
+- Generating offers and counteroffers.
+- Seeking commercially acceptable terms.
+
+#### Merchant Agent
+
+The Merchant Agent represents the seller.
+
+Its objectives include:
+
+- Evaluating buyer proposals.
+- Considering merchant pricing policies.
+- Protecting authorized pricing boundaries.
+- Responding with counteroffers.
+- Reaching an acceptable commercial agreement.
+
+### Negotiation model
+
+```mermaid
+flowchart LR
+    A["Buyer Requirements"] --> B["Buyer Agent"]
+    B --> C["Proposal"]
+    C --> D["Merchant Agent"]
+    D --> E{"Within Merchant Policy?"}
+    E -->|Yes| F["Counteroffer / Acceptance"]
+    E -->|No| G["Reject or Revise"]
+    G --> B
+    F --> H{"Buyer Terms Acceptable?"}
+    H -->|No| B
+    H -->|Yes| I["Agreement Consensus"]
+```
+
+AI assists with reasoning and proposal generation. Deterministic server-side validation remains responsible for enforcing financial and commercial constraints.
 
 ---
 
-## Project Screenshots
+## 💳 PayPal Integration
 
-> All screenshots below are captured directly from the running PayVia web application using non-sensitive test data (see [`evidence/payvia-demo/README.md`](./evidence/payvia-demo/README.md) for the complete 14-step tour and [contact sheet](./evidence/payvia-demo/contact-sheet.png)).
+### AI negotiates. PayPal settles.
 
-| Landing & Autonomous Engine Preview | Buyer Shopping Intent Workspace |
-| :---: | :---: |
-| [![PayVia Landing](./evidence/payvia-demo/01-payvia-landing.png)](./evidence/payvia-demo/01-payvia-landing.png) | [![Shopping Intent Workspace](./evidence/payvia-demo/03-buyer-shopping-intent.png)](./evidence/payvia-demo/03-buyer-shopping-intent.png) |
-| *Asymmetrical hero introducing PayVia with live protocol stage preview* | *Natural language purchase intent with private budget & SLA bounds* |
+PayPal is not just an additional checkout button in PayVia. It is the payment settlement layer that completes the negotiated commerce workflow.
 
-| Multi-Merchant Candidate Discovery | Parallel AI Negotiation Consensus |
-| :---: | :---: |
-| [![Merchant Candidates](./evidence/payvia-demo/05-merchant-candidates.png)](./evidence/payvia-demo/05-merchant-candidates.png) | [![AI Negotiation](./evidence/payvia-demo/06-ai-negotiation.png)](./evidence/payvia-demo/06-ai-negotiation.png) |
-| *Candidate discovery matching constraints against store offers* | *Buyer & Merchant AI turn-by-turn bargaining within floor rules* |
+PayVia integrates the **PayPal Developer Platform using PayPal Orders v2 in the Sandbox environment**.
 
-| Merchant Policy & Floor Control Plane | Sealed Agreement & Buyer Approval Gate |
-| :---: | :---: |
-| [![Merchant Control Plane](./evidence/payvia-demo/08-merchant-policy.png)](./evidence/payvia-demo/08-merchant-policy.png) | [![Buyer Approval Gate](./evidence/payvia-demo/11-buyer-approval.png)](./evidence/payvia-demo/11-buyer-approval.png) |
-| *Private floor protection, SKU policies & AG Grid settlement ledger* | *SHA-256 sealed \$750.00 terms requiring explicit buyer approval* |
+### Payment lifecycle
 
-| PayPal Sandbox Checkout & Verified Capture Receipt | Post-Settlement Fulfillment Timeline |
-| :---: | :---: |
-| [![Payment Confirmed Receipt](./evidence/payvia-demo/13-payment-success.png)](./evidence/payvia-demo/13-payment-success.png) | [![Fulfillment Record](./evidence/payvia-demo/14-transaction-record.png)](./evidence/payvia-demo/14-transaction-record.png) |
-| *Verified PayPal Sandbox capture receipt with Order & Capture IDs* | *Post-settlement milestone tracker & Bryntum Gantt schedule* |
+```mermaid
+stateDiagram-v2
+    [*] --> Negotiating
+    Negotiating --> AgreementReady
+    AgreementReady --> AwaitingBuyerApproval
+    AwaitingBuyerApproval --> Approved
+    AwaitingBuyerApproval --> Rejected
+    Rejected --> [*]
+    Approved --> PayPalOrderCreated
+    PayPalOrderCreated --> AwaitingPayPalAuthorization
+    AwaitingPayPalAuthorization --> PaymentProcessing
+    PaymentProcessing --> Settled
+    PaymentProcessing --> Failed
+    Settled --> TransactionRecorded
+    TransactionRecorded --> [*]
+    Failed --> [*]
+```
+
+### What the integration does
+
+| Component                 | Responsibility                                  |
+| ------------------------- | ----------------------------------------------- |
+| PayPal Developer Platform | Developer and Sandbox environment               |
+| PayPal Orders v2          | Order creation and payment workflow             |
+| PayVia backend            | Server-side payment orchestration               |
+| Buyer approval            | Explicit authorization to proceed               |
+| Transaction records       | Persistence of payment-related application data |
+
+### Financial separation
+
+PayVia maintains a deliberate separation between negotiation and payment.
+
+- AI agents cannot independently authorize payment.
+- Merchant pricing boundaries are validated server-side.
+- The final payment amount is bound to the approved commercial terms.
+- The buyer must authorize the payment through PayPal.
+- Payment confirmation must come from the actual payment workflow.
+
+**Sandbox notice:** All payment demonstrations use PayPal Sandbox. No real-money transaction is represented by the demo.
 
 ---
 
-## Local Development Setup
+## 🛡️ Security & Financial Safeguards
+
+Financial boundaries are enforced independently of AI-generated reasoning.
+
+| Safeguard              | Purpose                                             |
+| ---------------------- | --------------------------------------------------- |
+| Buyer budget ceiling   | Keeps proposals within the buyer's stated maximum   |
+| Merchant pricing floor | Protects merchant-authorized minimum prices         |
+| Server-side validation | Prevents AI output from bypassing commercial rules  |
+| Explicit approval      | Requires buyer consent before proceeding to payment |
+| SHA-256 hashing        | Identifies and verifies canonical agreement content |
+| Persistent records     | Stores application and transaction information      |
+| PayPal Sandbox         | Supports safe payment-flow testing                  |
+
+### Agreement integrity
+
+PayVia uses SHA-256 to calculate an integrity hash for the canonical agreement terms.
+
+This allows the application to identify the agreement content and detect changes to those terms.
+
+A hash alone does not prove that the buyer approved an agreement or that a payment occurred. Approval and payment are handled and verified through their respective workflows.
+
+---
+
+## 🧰 Technology Stack
+
+PayVia brings together modern web development, AI infrastructure, database persistence and payment APIs.
+
+| Technology                | Usage                                          |
+| ------------------------- | ---------------------------------------------- |
+| Next.js 15.1.7            | Web application framework                      |
+| React 19                  | User interface                                 |
+| TypeScript                | Type-safe application development              |
+| Node.js 20.18.0           | Runtime                                        |
+| PostgreSQL 18.6           | Relational database                            |
+| Prisma 6.19.3             | ORM and database access                        |
+| Google Gemini             | AI-powered negotiation                         |
+| PayPal Orders v2          | Payment integration                            |
+| Channel3 Product Data API | Product data integration                       |
+| Render                    | Hosting and database infrastructure            |
+| Docker Compose            | Local infrastructure configuration, where used |
+
+### Sponsor and platform ecosystem
+
+| Platform                  | How it contributes                 |
+| ------------------------- | ---------------------------------- |
+| PayPal Developer Platform | Payment settlement through Sandbox |
+| Google Gemini             | Buyer and merchant AI negotiation  |
+| Channel3                  | Product Data API integration       |
+| Render                    | Application hosting and PostgreSQL |
+
+Other sponsor tools should only be listed here if their actual integration is present in the source code.
+
+---
+
+## 📸 Screenshots
+
+Explore the PayVia interface and its end-to-end commerce workflow.
+
+> Add the genuine application screenshots to `docs/images/` using the filenames below. Replace or remove any image reference that does not exist in your repository.
+
+### Landing page
+
+<p align="center">
+  <img src="docs/images/01-landing.png" width="100%" alt="PayVia landing page"/>
+</p>
+
+### Shopping intent
+
+<p align="center">
+  <img src="docs/images/02-shopping-intent.png" width="100%" alt="Buyer shopping intent"/>
+</p>
+
+### AI negotiation
+
+<p align="center">
+  <img src="docs/images/03-ai-negotiation.png" width="100%" alt="Buyer and merchant AI negotiation"/>
+</p>
+
+### Agreement review
+
+<p align="center">
+  <img src="docs/images/04-agreement.png" width="100%" alt="Negotiated commercial agreement"/>
+</p>
+
+### PayPal settlement
+
+<p align="center">
+  <img src="docs/images/05-paypal-checkout.png" width="100%" alt="PayPal Sandbox checkout"/>
+</p>
+
+### Transaction confirmation
+
+<p align="center">
+  <img src="docs/images/06-payment-confirmation.png" width="100%" alt="PayPal Sandbox payment confirmation"/>
+</p>
+
+### Fulfillment tracking
+
+<p align="center">
+  <img src="docs/images/07-fulfillment.png" width="100%" alt="PayVia fulfillment dashboard"/>
+</p>
+
+---
+
+## 📊 The PayVia Workflow at a Glance
+
+The following diagram illustrates the project's four core stages.
+
+```mermaid
+flowchart TD
+    A["01 — PURCHASE INTENT"] --> B["02 — AI NEGOTIATION"]
+    B --> C["03 — BUYER APPROVAL"]
+    C --> D["04 — PAYPAL SETTLEMENT"]
+
+    style A fill:#EAF4FF,stroke:#1687D9,color:#102A43
+    style B fill:#EAF4FF,stroke:#1687D9,color:#102A43
+    style C fill:#EAFBF2,stroke:#16A36A,color:#102A43
+    style D fill:#EAFBF2,stroke:#16A36A,color:#102A43
+```
+
+The following chart is conceptual, not a measured performance benchmark.
+
+```mermaid
+xychart-beta
+    title "The Four Stages of PayVia"
+    x-axis ["Intent", "Negotiation", "Approval", "Settlement"]
+    y-axis "Workflow stage" 0 --> 4
+    bar [1, 2, 3, 4]
+```
+
+---
+
+## ⚙️ Getting Started
+
+Want to explore PayVia locally? Follow these steps.
 
 ### Prerequisites
 
-- **Node.js** `>= 20.0.0` (see `.node-version` / `package.json`)
-- **npm** `>= 9.x`
-- **PostgreSQL 14+** *(optional for local development: PayVia uses in-memory repositories when `DATABASE_URL` is omitted in `NODE_ENV=development`, and requires PostgreSQL in production)*
+Before starting, make sure you have:
 
-### Quick Start
+- Node.js 20.18.0 or a compatible supported version.
+- npm.
+- PostgreSQL.
+- Google Gemini API credentials.
+- PayPal Developer Sandbox credentials.
+- Git.
+
+### 1. Clone the repository
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Guruprasad-Bhosale/PayVia.git
+git clone <YOUR_PUBLIC_GITHUB_REPOSITORY_URL>
 cd PayVia
+```
 
-# 2. Install dependencies (automatically runs `prisma generate` via postinstall)
-npm install
+### 2. Install dependencies
 
-# 3. Configure environment variables
-cp .env.example .env.local
-# Populate your PayPal Sandbox & Gemini API credentials inside .env.local
+```bash
+npm ci
+```
 
-# 4. Run security scan & typecheck
-npm run check:secrets
-npm run typecheck
+### 3. Configure environment variables
 
-# 5. Start the development server
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Add your own credentials using the variable names documented in `.env.example`.
+
+Typical integrations require:
+
+| Variable                       | Purpose                                  |
+| ------------------------------ | ---------------------------------------- |
+| `DATABASE_URL`                 | PostgreSQL connection                    |
+| `PAYPAL_CLIENT_ID`             | PayPal Sandbox client ID                 |
+| `PAYPAL_CLIENT_SECRET`         | PayPal Sandbox secret                    |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API access                        |
+| `APP_URL`                      | Application URL, if required by the code |
+
+Never commit your `.env` file or expose private credentials.
+
+### 4. Generate Prisma client
+
+```bash
+npx prisma generate
+```
+
+### 5. Apply database migrations
+
+```bash
+npx prisma migrate deploy
+```
+
+Make sure your local PostgreSQL database is available and the connection string is configured correctly.
+
+### 6. Start the development server
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Useful diagnostic routes during development:
+Open the local URL printed by the development server.
 
-- `GET /api/health` — Subsystem configuration & runtime environment status
-- `GET /api/ai/test` — Google Gemini agent connectivity test
-- `GET /api/paypal/test` — PayPal Sandbox OAuth2 verification
-- `GET /api/memory/status` — Elasticsearch / in-memory vector index status
+> Check the project's `package.json` and `.env.example` for the definitive scripts and environment variables before running these commands. Additional setup or seed steps may be required.
 
 ---
 
-## Environment Variables
+## 🧪 Testing
 
-Copy [`.env.example`](./.env.example) to `.env.local` (or `secrets.txt`, both gitignored). Never expose private credentials with `NEXT_PUBLIC_`.
+PayVia should be tested across its full workflow rather than only checking whether the landing page loads.
 
-| Variable | Scope | Required | Description / Safe Fallback |
-|---|---|---|---|
-| `PAYPAL_CLIENT_ID` | Server | For PayPal checkout | PayPal Developer Dashboard **Sandbox** Client ID |
-| `PAYPAL_CLIENT_SECRET` | Server | For PayPal checkout | PayPal Developer Dashboard **Sandbox** Secret |
-| `PAYPAL_MERCHANT_EMAIL` | Server | Recommended for PayPal | Sandbox Business account email receiving payee settlement |
-| `PAYPAL_ENVIRONMENT` | Server | Yes (`sandbox`) | Targets `https://api-m.sandbox.paypal.com` (`sandbox` default) |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Server | For live Gemini agents | Google AI Studio key for `gemini-3.8-flash` (falls back deterministically if absent) |
-| `APP_URL` / `NEXT_PUBLIC_APP_URL` | Server / App URL | Yes | Base URL for PayPal redirect callbacks (auto-falls back to `RENDER_EXTERNAL_URL` or `http://localhost:3000`) |
-| `DATABASE_URL` | Server | **Yes in prod** / Optional in dev | PostgreSQL connection string for Prisma (`postgresql://...`). Production fails closed if omitted. |
-| `CHANNEL3_API_KEY` | Server | Optional | Channel3 product search API key (falls back to curated demo catalog) |
-| `ELASTICSEARCH_URL` | Server | Optional | Elasticsearch Serverless endpoint URL (non-blocking in-memory fallback) |
-| `ELASTICSEARCH_API_KEY` | Server | Optional | Elasticsearch Serverless API key (Server-only) |
-| `PAYPAL_WEBHOOK_ID` | Server | Optional | PayPal webhook ID for signature verification (defaults to `WH-PAYVIA-SANDBOX-DEFAULT`) |
+| Test area           | What to validate                                     |
+| ------------------- | ---------------------------------------------------- |
+| Shopping intent     | Valid purchase requests are created                  |
+| AI negotiation      | Buyer and merchant proposals are processed           |
+| Pricing constraints | Budget ceilings and merchant floors are enforced     |
+| Agreement           | Negotiated terms are persisted and integrity-checked |
+| Buyer approval      | Payment cannot proceed without approval              |
+| PayPal              | Sandbox order and payment lifecycle                  |
+| Persistence         | Transactions and application records are stored      |
+| Fulfillment         | Order and delivery information is displayed          |
+
+Use the actual test scripts configured in `package.json`.
 
 ---
 
-## Database and Migrations
+## ☁️ Deployment
 
-PayVia uses **Prisma ORM `6.19.3`** (`prisma/schema.prisma`) with **PostgreSQL** across `15` models (`Platform`, `Merchant`, `Buyer`, `Agent`, `CatalogItem`, `Transaction`, `MerchantPolicy`, `BuyerPolicy`, `NegotiationSession`, `Proposal`, `Agreement`, `Settlement`, `AuditEvent`, `IdempotencyRecord`, `WebhookEvent`).
+PayVia uses **Render** for application hosting and PostgreSQL infrastructure.
 
-Migrations live in `prisma/migrations/` (`20260215000000_init`, `20260216000000_audit_event_types`), and idempotent baseline seeding lives in `prisma/seed.ts`.
+The repository includes deployment configuration through `render.yaml`.
 
-```bash
-# Validate Prisma schema syntax (requires DATABASE_URL in .env or exported in shell)
-npx prisma validate
+Typical deployment flow:
 
-# Regenerate Prisma Client bindings
-npx prisma generate
-
-# Apply pending migrations safely to your configured PostgreSQL database
-npx prisma migrate deploy
-
-# Check migration status
-npx prisma migrate status
-
-# Seed baseline platform, merchant (merchant_apex), and storewide policy idempotently
-npx prisma db seed
+```text
+Git Repository
+      ↓
+Render Build
+      ↓
+Dependency Installation
+      ↓
+Production Build
+      ↓
+Database Migration
+      ↓
+Application Startup
+      ↓
+PayVia Web Application
 ```
 
----
+### Deployment requirements
 
-## Testing and Validation
+Configure the required environment variables securely in the Render dashboard.
 
-All verification suites can be executed locally without modifying database state:
+- PostgreSQL connection string
+- PayPal Sandbox credentials
+- Gemini API key
+- Application URL, if required
 
-| Command | Script | What It Verifies |
-|---|---|---|
-| `npm run check:secrets` | `node scripts/check-secrets.mjs` | Verifies `.gitignore`, placeholder templates, `render.yaml`, and absence of `NEXT_PUBLIC_` secret leaks |
-| `npm run lint` | `next lint` | ESLint analysis across App Router pages, components, and libraries |
-| `npm run typecheck` | `tsc --noEmit` | Strict TypeScript compilation across the repository |
-| `npm test` | `npx tsx scripts/test-runner.ts` | **155 end-to-end invariant tests** covering negotiation bounds, anti-tamper hashing, expiration, approval gates, inventory concurrency, webhook verification, Channel3 normalization, multi-tenant isolation, fulfillment deadlines, and AI memory fencing |
-| `npm run test:integrity` | `npx tsx scripts/test-merchant-policy-integrity.ts` | **6 referential integrity regression tests** for merchant/platform policy creation & idempotency |
-| `npx tsx scripts/run-tests.mjs` | `scripts/run-tests.mjs` | Unit invariant checks in `tests/negotiation/` and `tests/paypal/` |
-| `npm run build` | `next build` | Production Next.js compilation & static/dynamic route optimization |
-| `npm run test:elastic` | `node scripts/test-elastic.mjs` | Live Elasticsearch Serverless probe using an isolated `payvia_test_probe` index (exits `0` gracefully if unconfigured; fails if configured host is unreachable) |
+Never store production credentials in source control.
 
 ---
 
-## Deployment
+## 🗺️ Roadmap
 
-PayVia includes a Render blueprint in [`render.yaml`](./render.yaml):
+PayVia is an early implementation of agent-driven commerce. The broader vision goes beyond a single buyer and merchant interaction.
 
-- **Service Type:** Node.js `web` service (`plan: free`, `region: oregon`, `NODE_VERSION: 20.18.0`, `NODE_ENV: production`)
-- **Database:** Provision a **Render PostgreSQL** instance and copy its Internal Database URL into `DATABASE_URL`
-- **Build Command:** `npm ci && npm run build` (`postinstall` runs `prisma generate`)
-- **Start Command:** `npx prisma migrate deploy && npx prisma db seed && npm start`
-- **Health Check:** `/api/health`
-- **Required Production Env Vars (`sync: false`):** `DATABASE_URL`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MERCHANT_EMAIL`, `GOOGLE_GENERATIVE_AI_API_KEY`, plus optional `APP_URL`, `CHANNEL3_API_KEY`, `PAYPAL_WEBHOOK_ID`, `ELASTICSEARCH_URL`, `ELASTICSEARCH_API_KEY` (`PAYPAL_ENVIRONMENT` defaults to `sandbox`).
-
----
-
-## Limitations and Future Roadmap
-
-### Current Boundaries
-- **Sandbox Settlement Only:** Configured for PayPal Sandbox (`USD`); no live money or production settlement is enabled.
-- **Interactive PayPal Authorization:** Completing Sandbox capture end-to-end requires a buyer logging into PayPal's hosted Sandbox checkout screen.
-- **External Service Fallbacks:** When `GOOGLE_GENERATIVE_AI_API_KEY` hits temporary `503` load spikes or `ELASTICSEARCH_URL` / `CHANNEL3_API_KEY` are offline/unconfigured, PayVia falls back deterministically so negotiations never breach bounds and local demos never crash.
-- **Fulfillment Telematics Scope:** `/fulfillment` models operational schedule stages against negotiated delivery SLAs and does not connect to live third-party carrier GPS APIs.
-- **Local Development Store Scope:** Without `DATABASE_URL` in `NODE_ENV=development`, state persists only for the running Node process (`in-memory.ts`).
-
-### Future Roadmap
-- Multi-currency settlement and localized FX handling in PayPal Orders v2
-- Multi-item basket & cross-merchant bundle negotiation
-- Real-time shipping carrier webhook updates (UPS / FedEx / DHL milestone sync)
-- Live PayPal production onboarding & expanded external ecommerce SDK plugins (Shopify / WooCommerce)
+| Area                       | Future direction                               |
+| -------------------------- | ---------------------------------------------- |
+| Multi-merchant negotiation | Compare negotiated terms across more merchants |
+| Agent personalization      | More adaptable buyer preferences               |
+| Merchant ecosystem         | Additional merchant and catalogue integrations |
+| Negotiation intelligence   | More advanced negotiation strategies           |
+| Fulfillment                | Richer order and delivery integrations         |
+| Agent interoperability     | Broader support for agent-to-agent commerce    |
 
 ---
 
-## Hackathon Attribution
+## 💡 What Makes PayVia Different?
 
-**Built for the PayPal Hackathon.**
+Most shopping applications focus on product discovery and checkout.
 
-Architecture leverages:
-- **PayPal** — Orders v2 Sandbox checkout, server-side capture, and webhook verification
-- **Google Gemini** — Autonomous Buyer, Merchant, and Fulfillment agent reasoning (`gemini-3.8-flash`)
-- **Channel3** — External product discovery & normalized merchant offers
-- **Elasticsearch Serverless** — Semantic historical recall memory for negotiation and fulfillment insights
-- **AG Grid & AG Studio** — Enterprise merchant ledger & analytics views
-- **Bryntum Scheduler / Gantt** — Post-settlement milestone and SLA timeline visualization
+PayVia explores what happens between those two moments.
+
+It introduces negotiation as a first-class part of the commerce process, using AI agents to represent the interests of both sides.
+
+The buyer does not surrender control of the transaction. The merchant does not surrender control of pricing policies. And payment is not initiated merely because an AI has reached a proposed agreement.
+
+**The result is a structured approach to agent-driven commerce, with human approval and established payment infrastructure at its core.**
 
 ---
 
-## License and Contribution
+## 🏆 Built for the PayPal Hackathon
 
-Licensed under the **MIT License** — see [`LICENSE`](./LICENSE) for details.
+PayVia was developed as part of the PayPal Hackathon, exploring how generative AI and payment infrastructure can work together to create new commerce experiences.
 
-Additional technical documentation is available in [`docs/`](./docs/):
-- [`docs/architecture.md`](./docs/architecture.md) — System architecture & invariants
-- [`docs/api.md`](./docs/api.md) — REST API `/api/v1/*` reference
-- [`docs/security.md`](./docs/security.md) — Financial & AI safety guarantees
-- [`docs/DEMO_SCRIPT.md`](./docs/DEMO_SCRIPT.md) — Step-by-step live walkthrough script
-- [`docs/REPOSITORY_CLEANUP.md`](./docs/REPOSITORY_CLEANUP.md) — Repository audit & cleanup log
+The project brings together:
 
-Contributions, bug fixes, and pull requests are welcome via standard GitHub fork-and-PR workflows (`npm run lint && npm run typecheck && npm test` before submitting).
+- Agentic AI.
+- Buyer and merchant negotiation.
+- Product discovery.
+- Commercial agreement generation.
+- Agreement integrity verification.
+- Explicit buyer authorization.
+- PayPal Sandbox payment settlement.
+
+We believe the next evolution of online commerce will not just be about helping people find products.
+
+It will be about helping them reach better agreements.
+
+---
+
+## 📄 License
+
+This project is distributed under the license specified in the [`LICENSE`](LICENSE) file.
+
+---
+
+<p align="center">
+  <h2>PayVia</h2>
+  <strong>AI negotiates. PayPal settles.</strong>
+  <br/><br/>
+  <sub>Exploring the future of agent-to-agent commerce.</sub>
+</p>
