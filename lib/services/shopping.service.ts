@@ -178,11 +178,7 @@ export class ShoppingService {
       (p) =>
         p.name.toLowerCase().includes(queryLower) ||
         p.description.toLowerCase().includes(queryLower) ||
-        queryLower.includes("laptop") ||
-        queryLower.includes("programming") ||
-        queryLower.includes("headphone") ||
-        queryLower.includes("watch") ||
-        matchingSampleFilter(p.category, queryLower)
+        matchingSampleFilter(p.category, queryLower, p.name)
     );
 
     for (const prod of matchingSamples) {
@@ -210,9 +206,9 @@ export class ShoppingService {
           });
         }
 
-        // 2. Preserve existing merchant policy if already configured
+        // 2. Preserve existing product-specific merchant policy if already configured
         const existingPolicy = await policyRepo.findMerchantPolicy(merchant.id, prod.id);
-        if (!existingPolicy) {
+        if (!existingPolicy || existingPolicy.catalogItemId !== prod.id) {
           await policyService.setMerchantPolicy({
             platformId: session.platformId,
             merchantId: merchant.id,
@@ -598,13 +594,13 @@ export class ShoppingService {
   }
 }
 
-function matchingSampleFilter(category: string | undefined, query: string): boolean {
-  if (!category) return false;
-  const cat = category.toLowerCase();
-  if (query.includes("laptop") && cat.includes("computer")) return true;
-  if (query.includes("headphone") && cat.includes("audio")) return true;
-  if (query.includes("watch") && cat.includes("wearable")) return true;
-  return cat.includes(query);
+function matchingSampleFilter(category: string | undefined, query: string, name?: string): boolean {
+  const cat = (category || "").toLowerCase();
+  const itemName = (name || "").toLowerCase();
+  if ((query.includes("laptop") || query.includes("programming") || query.includes("workstation")) && (cat.includes("laptop") || cat.includes("computer") || cat.includes("computing"))) return true;
+  if ((query.includes("headphone") || query.includes("audio") || query.includes("earphone")) && (cat.includes("headphone") || cat.includes("audio") || itemName.includes("headphone"))) return true;
+  if ((query.includes("watch") || query.includes("fitness")) && (cat.includes("wearable") || itemName.includes("watch"))) return true;
+  return cat ? cat.includes(query) : false;
 }
 
 export const shoppingService = new ShoppingService();

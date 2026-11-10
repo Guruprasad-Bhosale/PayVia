@@ -47,10 +47,15 @@ function SuccessContent() {
   const [captureError, setCaptureError] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<NegotiationAgreement | null>(null);
   const [rated, setRated] = useState<number | null>(null);
+  const capturedTokenRef = React.useRef<string | null>(null);
 
-  // 1. If we have a token and no captureId yet, execute authoritative client POST
+  // 1. If we have a token and no captureId yet, execute authoritative client POST once
   useEffect(() => {
     async function executeCapture(targetToken: string) {
+      if (capturedTokenRef.current === targetToken) {
+        return;
+      }
+      capturedTokenRef.current = targetToken;
       setState("CAPTURING");
       setCaptureError(null);
 
@@ -221,9 +226,14 @@ function SuccessContent() {
         </div>
 
         <div className="space-y-1.5">
-          <Badge variant="success" className="font-semibold px-3 py-0.5 text-xs">
-            ✓ Verified PayPal Settlement
-          </Badge>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <Badge variant="success" className="font-bold px-3 py-0.5 text-xs tracking-wide">
+              ✓ PAYMENT SUCCESSFUL
+            </Badge>
+            <Badge variant="secondary" className="font-semibold px-2.5 py-0.5 text-xs text-[#0B1B33]">
+              PayPal Orders v2 Settled
+            </Badge>
+          </div>
           <CardTitle className="text-2xl sm:text-3xl font-extrabold text-[#0B1B33] tracking-tight">
             Transaction Confirmed
           </CardTitle>
@@ -288,7 +298,16 @@ function SuccessContent() {
         </div>
 
         {/* Transaction Reference IDs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+          <div className="p-3.5 rounded-xl bg-[#F0F9FF]/40 border border-[#DCE4EE] space-y-1">
+            <span className="text-[11px] font-semibold text-[#52607A] uppercase tracking-wider block">
+              Agreement Reference
+            </span>
+            <code className="text-xs font-mono font-bold text-[#0B1B33] block truncate">
+              {agreement?.id || agreementId || "—"}
+            </code>
+          </div>
+
           <div className="p-3.5 rounded-xl bg-[#F0F9FF]/40 border border-[#DCE4EE] space-y-1">
             <span className="text-[11px] font-semibold text-[#52607A] uppercase tracking-wider block">
               PayPal Order ID
@@ -378,6 +397,12 @@ function SuccessContent() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
+        </div>
+
+        <div className="pt-3 border-t border-[#DCE4EE] flex items-center justify-center gap-2 text-xs">
+          <span className="font-extrabold tracking-tight text-[#0B1B33]">PAYVIA</span>
+          <span className="text-[#94A3B8]">•</span>
+          <span className="font-semibold text-[#0284C7]">AI negotiates. PayPal settles.</span>
         </div>
       </Card>
     </div>

@@ -962,7 +962,7 @@ export class PrismaPolicyRepository implements PolicyRepository {
       });
     }
 
-    if (!p) {
+    if (!p && !catalogItemId) {
       p = await prisma.merchantPolicy.findFirst({
         where: { merchantId },
       });
@@ -1322,6 +1322,7 @@ export class PrismaAgreementRepository implements AgreementRepository {
       agreementHash: a.agreementHash,
       createdAt: a.createdAt.toISOString(),
       acceptedAt: a.acceptedAt ? a.acceptedAt.toISOString() : undefined,
+      userApproved: Boolean(a.userApprovedAt || a.status === "USER_APPROVED" || a.status === "SETTLED"),
       userApprovedAt: a.userApprovedAt ? a.userApprovedAt.toISOString() : undefined,
       settledAt: a.settledAt ? a.settledAt.toISOString() : undefined,
       expiresAt: a.expiresAt ? a.expiresAt.toISOString() : undefined,
@@ -1349,6 +1350,7 @@ export class PrismaAgreementRepository implements AgreementRepository {
       agreementHash: a.agreementHash,
       createdAt: a.createdAt.toISOString(),
       acceptedAt: a.acceptedAt ? a.acceptedAt.toISOString() : undefined,
+      userApproved: Boolean(a.userApprovedAt || a.status === "USER_APPROVED" || a.status === "SETTLED"),
       userApprovedAt: a.userApprovedAt ? a.userApprovedAt.toISOString() : undefined,
       settledAt: a.settledAt ? a.settledAt.toISOString() : undefined,
       expiresAt: a.expiresAt ? a.expiresAt.toISOString() : undefined,
@@ -1376,6 +1378,7 @@ export class PrismaAgreementRepository implements AgreementRepository {
       agreementHash: a.agreementHash,
       createdAt: a.createdAt.toISOString(),
       acceptedAt: a.acceptedAt ? a.acceptedAt.toISOString() : undefined,
+      userApproved: Boolean(a.userApprovedAt || a.status === "USER_APPROVED" || a.status === "SETTLED"),
       userApprovedAt: a.userApprovedAt ? a.userApprovedAt.toISOString() : undefined,
       settledAt: a.settledAt ? a.settledAt.toISOString() : undefined,
       expiresAt: a.expiresAt ? a.expiresAt.toISOString() : undefined,
@@ -1424,6 +1427,7 @@ export class PrismaAgreementRepository implements AgreementRepository {
       agreementHash: a.agreementHash,
       createdAt: a.createdAt.toISOString(),
       acceptedAt: a.acceptedAt ? a.acceptedAt.toISOString() : undefined,
+      userApproved: Boolean(a.userApprovedAt || a.status === "USER_APPROVED" || a.status === "SETTLED"),
       userApprovedAt: a.userApprovedAt ? a.userApprovedAt.toISOString() : undefined,
       settledAt: a.settledAt ? a.settledAt.toISOString() : undefined,
       expiresAt: a.expiresAt ? a.expiresAt.toISOString() : undefined,
@@ -1458,6 +1462,7 @@ export class PrismaAgreementRepository implements AgreementRepository {
       agreementHash: a.agreementHash,
       createdAt: a.createdAt.toISOString(),
       acceptedAt: a.acceptedAt ? a.acceptedAt.toISOString() : undefined,
+      userApproved: Boolean(a.userApprovedAt || a.status === "USER_APPROVED" || a.status === "SETTLED"),
       userApprovedAt: a.userApprovedAt ? a.userApprovedAt.toISOString() : undefined,
       settledAt: a.settledAt ? a.settledAt.toISOString() : undefined,
       expiresAt: a.expiresAt ? a.expiresAt.toISOString() : undefined,

@@ -120,9 +120,13 @@ export async function POST(req: NextRequest) {
       if (resolvedAgreementId) {
         try {
           const { catalogRepo, agreementRepo } = await import("@/lib/repositories");
-          await catalogRepo.consumeReservation(resolvedAgreementId).catch(() => {});
+          const resolvedAg =
+            (await agreementRepo.findById(resolvedAgreementId)) ||
+            (await agreementRepo.findByNegotiationId(resolvedAgreementId));
+          const canonicalAgreementId = resolvedAg?.id || resolvedAgreementId;
+          await catalogRepo.consumeReservation(canonicalAgreementId).catch(() => {});
           await agreementRepo
-            .update(resolvedAgreementId, {
+            .update(canonicalAgreementId, {
               status: "SETTLED",
               settledAt: new Date().toISOString(),
             })

@@ -26,12 +26,13 @@ export function MerchantProductCatalog({
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [merchantFloorPrice, setMerchantFloorPrice] = useState<number | null>(null);
+  const [itemFloorMap, setItemFloorMap] = useState<Record<string, number>>({});
 
   const loadCatalogAndPolicy = React.useCallback(async () => {
     try {
       setLoading(true);
 
-      // Load policy for floor reference
+      // Load store baseline policy for floor reference
       try {
         const polRes = await fetch(`/api/v1/merchants/${merchantId}/policy`);
         const polData = await polRes.json();
@@ -39,30 +40,29 @@ export function MerchantProductCatalog({
           setMerchantFloorPrice(polData.policy.minimumPrice);
         }
       } catch {
-        // Fallback default floor
         setMerchantFloorPrice(750);
       }
 
-      // Load items
+      // Load items from server
+      let loadedItems: CatalogItem[] = [];
       const res = await fetch(`/api/v1/catalog/items?merchantId=${encodeURIComponent(merchantId)}`);
       const data = await res.json();
       if (res.ok && data?.items && data.items.length > 0) {
-        setItems(data.items);
+        loadedItems = data.items;
       } else {
-        // Fallback standard catalog items for merchant_default
-        setItems([
+        loadedItems = [
           {
-            id: "prod_thinkpad_p16",
+            id: "prod_laptop_pro",
             platformId: "plat_default",
             merchantId: "merchant_default",
-            sku: "TP-P16-GEN2",
-            title: "Lenovo ThinkPad P16 Gen 2 Workstation",
+            sku: "AERO-P16-GEN2",
+            title: "AeroBook Pro 16 AI Workstation",
             description: "High-performance enterprise mobile workstation. Autonomous AI negotiation enabled within authorized floor.",
-            category: "Laptops & Workstations",
+            category: "Laptops & Computing",
             listPrice: 800,
             currency: "USD",
             stockStatus: "IN_STOCK",
-            source: "internal",
+            source: "demo",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
@@ -71,33 +71,55 @@ export function MerchantProductCatalog({
             platformId: "plat_default",
             merchantId: "merchant_default",
             sku: "AUR-NC-900",
-            title: "Aurora Sound Pro ANC Wireless Headphones",
-            description: "Active noise-cancelling studio headphones with 40-hour battery and low-latency audio.",
-            category: "Audio",
+            title: "AuraPro ANC Wireless Headphones",
+            description: "Premium over-ear wireless headphones with hybrid active noise cancellation and 40-hour battery.",
+            category: "Audio & Headphones",
             listPrice: 299.99,
             currency: "USD",
             stockStatus: "IN_STOCK",
-            source: "internal",
+            source: "demo",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
           {
-            id: "prod_channel3_sony_wh1000xm5",
+            id: "prod_smart_watch_ultra",
             platformId: "plat_default",
-            merchantId: "merchant_external",
-            sku: "CH3-EXT-WH5",
-            title: "Sony WH-1000XM5 Wireless Headphones (Channel3 Partner Listing)",
-            description: "Discovered via Channel3 multi-merchant commerce network. External catalog listing with fixed pricing.",
-            category: "Audio",
-            listPrice: 399.99,
+            merchantId: "merchant_default",
+            sku: "VEL-TITAN-U",
+            title: "Veloce Titan Smartwatch",
+            description: "Rugged titanium GPS smartwatch with 14-day battery and biometric sensors.",
+            category: "Wearables & Fitness",
+            listPrice: 449,
             currency: "USD",
             stockStatus: "IN_STOCK",
-            source: "channel3",
+            source: "demo",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           },
-        ]);
+        ];
       }
+      setItems(loadedItems);
+
+      // Load item-specific policy floors from server
+      const floors: Record<string, number> = {};
+      await Promise.all(
+        loadedItems
+          .filter((item) => item.source !== "channel3")
+          .map(async (item) => {
+            try {
+              const pRes = await fetch(
+                `/api/v1/merchants/${merchantId}/policy?catalogItemId=${encodeURIComponent(item.id)}`
+              );
+              const pData = await pRes.json();
+              if (pRes.ok && pData?.policy?.minimumPrice !== undefined) {
+                floors[item.id] = pData.policy.minimumPrice;
+              }
+            } catch {
+              // Ignore per-item lookup failure
+            }
+          })
+      );
+      setItemFloorMap(floors);
     } catch (e) {
       console.error("Failed to load catalog:", e);
     } finally {
@@ -155,14 +177,13 @@ export function MerchantProductCatalog({
           {items.map((item) => {
             const isNegotiable = item.source !== "channel3";
             const floorPrice = isNegotiable
-              ? item.listPrice > 500
-                ? merchantFloorPrice || 750
-                : 220
+              ? itemFloorMap[item.id] ?? merchantFloorPrice ?? null
               : null;
 
             return (
               <div
                 key={item.id}
+                data-product-id={item.id}
                 className="p-5 rounded-2xl bg-white border border-[#DCE4EE] shadow-xs hover:border-[#0284C7]/50 hover:shadow-sm transition-all flex flex-col justify-between space-y-4"
               >
                 <div className="space-y-3">

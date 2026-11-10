@@ -131,9 +131,26 @@ function MerchantContent() {
   const [dataset, setDataset] = useState<MerchantAnalyticsDataset | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedCatalogItemId, setSelectedCatalogItemId] = useState<string | undefined>(
+    searchParams.get("itemId") || undefined
+  );
+  const [lastBuyerSessionId, setLastBuyerSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("payvia_last_session_id");
+      if (saved) setLastBuyerSessionId(saved);
+    } catch {
+      // Ignore storage access errors
+    }
+  }, []);
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
+    const itemParam = searchParams.get("itemId");
+    if (itemParam) {
+      setSelectedCatalogItemId(itemParam);
+    }
     if (tabParam) {
       setActiveSection(resolveTab(tabParam));
       if (tabParam === "simulator") setPolicySubView("simulator");
@@ -229,7 +246,7 @@ function MerchantContent() {
             <span>Refresh</span>
           </Button>
 
-          <Link href="/negotiate">
+          <Link href={lastBuyerSessionId ? `/negotiate?sessionId=${encodeURIComponent(lastBuyerSessionId)}` : "/negotiate"}>
             <Button size="sm" className="gap-2 text-xs bg-[#0B1B33] hover:bg-[#0284C7] text-white font-bold shadow-xs">
               <span>Test as Buyer</span>
               <ExternalLink className="w-3 h-3" />
@@ -503,8 +520,14 @@ function MerchantContent() {
         <div className="space-y-4">
           <MerchantProductCatalog
             merchantId="merchant_default"
-            onConfigurePolicy={() => {
-              handleTabChange("policies");
+            onConfigurePolicy={(productId) => {
+              setSelectedCatalogItemId(productId);
+              setActiveSection("policies");
+              setPolicySubView("editor");
+              router.replace(
+                `/merchant?tab=policies${productId ? `&itemId=${encodeURIComponent(productId)}` : ""}`,
+                { scroll: false }
+              );
             }}
           />
         </div>
@@ -541,6 +564,7 @@ function MerchantContent() {
           {policySubView === "editor" ? (
             <MerchantPolicyEditor
               merchantId="merchant_default"
+              catalogItemId={selectedCatalogItemId}
               onSaveSuccess={loadAnalytics}
             />
           ) : (

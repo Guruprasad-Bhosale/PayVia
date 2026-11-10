@@ -94,10 +94,21 @@ export function AgreementCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="text-xs font-mono bg-white text-[#52607A] px-3 py-1 rounded-md border border-[#DCE4EE] flex items-center gap-1.5 shadow-2xs">
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            {agreement.id && (
+              <span className="text-[11px] font-mono bg-white text-[#52607A] px-2.5 py-1 rounded-md border border-[#DCE4EE] shadow-2xs">
+                Ref: {agreement.id}
+              </span>
+            )}
+            <span
+              className="text-xs font-mono bg-white text-[#52607A] px-3 py-1 rounded-md border border-[#DCE4EE] flex items-center gap-1.5 shadow-2xs"
+              title={agreement.agreementHash || "SHA-256 Cryptographic Agreement Seal"}
+            >
               <Lock className="w-3.5 h-3.5 text-[#0284C7]" />
-              <span>SHA-256 Sealed</span>
+              <span>
+                SHA-256 Sealed
+                {agreement.agreementHash ? ` · ${agreement.agreementHash.slice(0, 12)}…` : ""}
+              </span>
             </span>
           </div>
         </div>

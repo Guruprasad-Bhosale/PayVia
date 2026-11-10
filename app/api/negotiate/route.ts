@@ -77,13 +77,29 @@ export async function GET(req: NextRequest) {
   if (!session && !agreement) {
     // Check domain repository for agreements created via shopping service
     try {
-      const { agreementRepo } = await import("@/lib/repositories");
-      const domainAg = await agreementRepo.findById(id);
+      const { agreementRepo, merchantRepo } = await import("@/lib/repositories");
+      const domainAg =
+        (await agreementRepo.findById(id)) ||
+        (await agreementRepo.findByNegotiationId(id)) ||
+        (await agreementRepo.findByTransactionId(id));
       if (domainAg) {
+        const productId = domainAg.items[0]?.catalogItemId || "item_1";
+        const catalogProduct = getProductById(productId);
+        const merchant = await merchantRepo.findById(domainAg.merchantId);
+        const merchantDisplayName =
+          catalogProduct?.merchantName ||
+          (domainAg.merchantId === "merch_lenovo" ? "Lenovo Official Store" : merchant?.name) ||
+          "Verified Merchant Partner";
+
+        const isAgreedStatus =
+          domainAg.status === "SETTLED" ||
+          domainAg.status === "ACCEPTED" ||
+          domainAg.status === "USER_APPROVED";
+
         agreement = {
           id: domainAg.id,
           negotiationId: domainAg.negotiationId,
-          productId: domainAg.items[0]?.catalogItemId || "item_1",
+          productId,
           productName: domainAg.items[0]?.title || "Negotiated Item",
           originalPrice: domainAg.originalPrice,
           finalPrice: domainAg.finalPrice,
@@ -93,12 +109,17 @@ export async function GET(req: NextRequest) {
           buyerMaxDeliveryDays: domainAg.deliveryDays,
           merchantMinPrice: domainAg.finalPrice,
           currency: domainAg.currency,
-          status: domainAg.status === "SETTLED" || domainAg.status === "ACCEPTED" ? "AGREED" : "FAILED",
+          status: isAgreedStatus ? "AGREED" : "FAILED",
           roundsCount: 1,
           createdAt: domainAg.createdAt,
-          userApproved: domainAg.userApproved ?? false,
+          userApproved: Boolean(
+            domainAg.userApproved ||
+              domainAg.userApprovedAt ||
+              domainAg.status === "USER_APPROVED" ||
+              domainAg.status === "SETTLED"
+          ),
           userApprovedAt: domainAg.userApprovedAt,
-          merchantName: domainAg.merchantId === "merch_lenovo" ? "Lenovo Official Store" : "Verified Merchant Partner",
+          merchantName: merchantDisplayName,
           expiresAt: domainAg.expiresAt,
           agreementHash: domainAg.agreementHash,
           items: domainAg.items.map((i) => ({
@@ -107,7 +128,7 @@ export async function GET(req: NextRequest) {
             listPrice: i.listPrice,
             agreedPrice: i.agreedPrice,
           })),
-          termsSummary: `Negotiated price of $${domainAg.finalPrice} USD with ${domainAg.deliveryDays}-day delivery.`,
+          termsSummary: `Negotiated price of $${domainAg.finalPrice.toFixed(2)} ${domainAg.currency || "USD"} (saving $${domainAg.savings.toFixed(2)}) with ${domainAg.deliveryDays}-day delivery.`,
           finalAgreedPrice: domainAg.finalPrice,
           savingsAmount: domainAg.savings,
           totalSettlementAmount: domainAg.finalPrice,

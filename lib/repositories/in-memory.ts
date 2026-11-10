@@ -112,6 +112,79 @@ if (!globalStore.__payviaMemoryDb) {
     updatedAt: new Date().toISOString(),
   };
   globalStore.__payviaMemoryDb.buyers.set(defaultBuyer.id, defaultBuyer);
+
+  // Baseline merchant policies for default store catalog items
+  const nowIso = new Date().toISOString();
+  globalStore.__payviaMemoryDb.merchantPolicies.set("pol_merchant_default_store", {
+    id: "pol_merchant_default_store",
+    platformId: "plat_default",
+    merchantId: "merchant_default",
+    enabled: true,
+    currency: "USD",
+    listPrice: 800.0,
+    minimumPrice: 750.0,
+    minimumDeliveryDays: 2,
+    maximumDeliveryDays: 5,
+    immediateDiscountPercent: 3,
+    allowedPaymentTiming: ["IMMEDIATE", "NET_30"],
+    strategy: "BALANCED_ECONOMIC",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  });
+
+  globalStore.__payviaMemoryDb.merchantPolicies.set("pol_merchant_default_prod_aurora_headphones", {
+    id: "pol_merchant_default_prod_aurora_headphones",
+    platformId: "plat_default",
+    merchantId: "merchant_default",
+    catalogItemId: "prod_aurora_headphones",
+    enabled: true,
+    currency: "USD",
+    listPrice: 299.99,
+    minimumPrice: 220.0,
+    minimumDeliveryDays: 2,
+    maximumDeliveryDays: 5,
+    immediateDiscountPercent: 3,
+    allowedPaymentTiming: ["IMMEDIATE"],
+    strategy: "BALANCED_ECONOMIC",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  });
+
+  globalStore.__payviaMemoryDb.merchantPolicies.set("pol_merchant_default_prod_laptop_pro", {
+    id: "pol_merchant_default_prod_laptop_pro",
+    platformId: "plat_default",
+    merchantId: "merchant_default",
+    catalogItemId: "prod_laptop_pro",
+    enabled: true,
+    currency: "USD",
+    listPrice: 800.0,
+    minimumPrice: 730.0,
+    minimumDeliveryDays: 2,
+    maximumDeliveryDays: 5,
+    immediateDiscountPercent: 3,
+    allowedPaymentTiming: ["IMMEDIATE", "NET_30"],
+    strategy: "BALANCED_ECONOMIC",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  });
+
+  globalStore.__payviaMemoryDb.merchantPolicies.set("pol_merchant_default_prod_smart_watch_ultra", {
+    id: "pol_merchant_default_prod_smart_watch_ultra",
+    platformId: "plat_default",
+    merchantId: "merchant_default",
+    catalogItemId: "prod_smart_watch_ultra",
+    enabled: true,
+    currency: "USD",
+    listPrice: 449.0,
+    minimumPrice: 350.0,
+    minimumDeliveryDays: 2,
+    maximumDeliveryDays: 4,
+    immediateDiscountPercent: 3,
+    allowedPaymentTiming: ["IMMEDIATE"],
+    strategy: "BALANCED_ECONOMIC",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  });
 }
 
 const db = globalStore.__payviaMemoryDb;
@@ -452,6 +525,8 @@ export class InMemoryPolicyRepository implements PolicyRepository {
     if (catalogItemId) {
       const specific = policies.find((p) => p.catalogItemId === catalogItemId);
       if (specific) return specific;
+      const storewide = policies.find((p) => !p.catalogItemId);
+      return storewide || null;
     }
     const storewide = policies.find((p) => !p.catalogItemId);
     if (storewide) return storewide;

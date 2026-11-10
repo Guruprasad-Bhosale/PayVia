@@ -40,10 +40,19 @@ export async function POST(req: NextRequest) {
     let customId = "payvia_test_order";
 
     if (targetNegotiationId) {
-      // 1. First check domain repository
+      // 1. First check domain repository (by agreementId, negotiationId, or transactionId)
       const { agreementRepo } = await import("@/lib/repositories");
       const { agreementService } = await import("@/lib/services/agreement.service");
-      const domainAg = await agreementRepo.findById(targetNegotiationId);
+      let domainAg = await agreementRepo.findById(targetNegotiationId);
+      if (!domainAg && bodyData.agreementId) {
+        domainAg = await agreementRepo.findById(bodyData.agreementId);
+      }
+      if (!domainAg) {
+        domainAg = await agreementRepo.findByNegotiationId(targetNegotiationId);
+      }
+      if (!domainAg) {
+        domainAg = await agreementRepo.findByTransactionId(targetNegotiationId);
+      }
 
       if (domainAg) {
         const domainVerification = agreementService.verifyAgreementForSettlement(domainAg);

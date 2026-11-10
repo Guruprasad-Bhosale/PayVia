@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 function NegotiateContent() {
   const searchParams = useSearchParams();
   const paramProductId = searchParams.get("productId") || searchParams.get("id");
+  const paramSessionId = searchParams.get("sessionId") || undefined;
   const product = paramProductId ? getProductById(paramProductId) : null;
 
   const initialQuery = product ? product.name : undefined;
@@ -55,6 +56,7 @@ function NegotiateContent() {
       <ShoppingIntentExperience
         initialQuery={initialQuery}
         initialBudget={initialBudget}
+        initialSessionId={paramSessionId}
       />
     </div>
   );

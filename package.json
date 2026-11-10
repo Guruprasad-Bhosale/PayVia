@@ -15,8 +15,6 @@
     "test:integrity": "npx tsx scripts/test-merchant-policy-integrity.ts",
     "test:elastic": "node scripts/test-elastic.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "build:video": "node scripts/video/build-film.mjs",
-    "audit:video": "node scripts/video/validate-svgs.mjs && node scripts/video/build-film.mjs",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:status": "prisma migrate status",

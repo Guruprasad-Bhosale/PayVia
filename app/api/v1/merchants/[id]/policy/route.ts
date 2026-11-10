@@ -34,7 +34,8 @@ export async function GET(
 
     authorizePlatformResource(authContext, merchant.platformId, "merchant");
 
-    const policy = await policyService.getMerchantPolicy(id);
+    const catalogItemId = req.nextUrl.searchParams.get("catalogItemId") || undefined;
+    const policy = await policyService.getMerchantPolicy(id, catalogItemId);
     if (!policy) {
       return NextResponse.json(
         {

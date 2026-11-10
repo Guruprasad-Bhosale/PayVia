@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { catalogRepo, merchantRepo } from "@/lib/repositories";
 import { CatalogItemCreateSchema } from "@/lib/domain/validation";
 import { CatalogItem } from "@/lib/domain/types";
-import { getCatalogProvider } from "@/lib/providers/catalog";
+import { demoCatalogProvider, getCatalogProvider } from "@/lib/providers/catalog";
 import { idempotencyService } from "@/lib/services/idempotency.service";
 import {
   authenticatePlatform,
@@ -96,7 +96,40 @@ export async function GET(req: NextRequest) {
     const authContext = await authenticatePlatform(req);
     const searchParams = req.nextUrl.searchParams;
     const query = searchParams.get("q") || "*";
+    const merchantId = searchParams.get("merchantId");
     const limit = parseInt(searchParams.get("limit") || "20", 10);
+
+    if (merchantId) {
+      const repoItems = await catalogRepo.findByMerchantId(merchantId);
+      const demoResult =
+        merchantId === "merchant_default" || merchantId === "merchant_apex"
+          ? await demoCatalogProvider.search(query, {
+              limit,
+              platformId: authContext.platformId,
+            })
+          : { items: [], source: "internal" };
+
+      const mergedMap = new Map<string, CatalogItem>();
+      for (const item of demoResult.items) {
+        if (item.platformId === authContext.platformId) {
+          mergedMap.set(item.id, { ...item, merchantId });
+        }
+      }
+      for (const item of repoItems) {
+        if (item.platformId === authContext.platformId) {
+          mergedMap.set(item.id, item);
+        }
+      }
+
+      const combined = Array.from(mergedMap.values()).slice(0, limit);
+      return NextResponse.json({
+        success: true,
+        source: repoItems.length > 0 ? "merchant_catalog" : demoResult.source,
+        items: combined,
+        totalCount: combined.length,
+        requestId: authContext.requestId,
+      });
+    }
 
     const catalog = getCatalogProvider();
     const searchResult = await catalog.search(query, {

@@ -36,12 +36,14 @@ export interface PolicyFormData {
 
 interface MerchantPolicyEditorProps {
   merchantId?: string;
+  catalogItemId?: string;
   initialPolicy?: Partial<PolicyFormData>;
   onSaveSuccess?: () => void;
 }
 
 export function MerchantPolicyEditor({
   merchantId = "merchant_default",
+  catalogItemId,
   initialPolicy,
   onSaveSuccess,
 }: MerchantPolicyEditorProps) {
@@ -71,7 +73,8 @@ export function MerchantPolicyEditor({
   React.useEffect(() => {
     async function loadPolicy() {
       try {
-        const res = await fetch(`/api/v1/merchants/${merchantId}/policy`);
+        const qs = catalogItemId ? `?catalogItemId=${encodeURIComponent(catalogItemId)}` : "";
+        const res = await fetch(`/api/v1/merchants/${merchantId}/policy${qs}`);
         const data = await res.json();
         if (res.ok && data.success && data.policy) {
           const p = data.policy;
@@ -93,7 +96,7 @@ export function MerchantPolicyEditor({
       }
     }
     loadPolicy();
-  }, [merchantId]);
+  }, [merchantId, catalogItemId]);
 
   const validate = (): string | null => {
     if (formData.minimumPrice > formData.listPrice) {
@@ -129,6 +132,7 @@ export function MerchantPolicyEditor({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(catalogItemId ? { catalogItemId } : {}),
           enabled: formData.enabled,
           currency: formData.currency,
           listPrice: Number(formData.listPrice),
@@ -175,6 +179,11 @@ export function MerchantPolicyEditor({
             <Badge variant={formData.enabled ? "success" : "secondary"} className="text-[10px] font-semibold">
               {formData.enabled ? "AI Negotiation Active" : "AI Negotiation Paused"}
             </Badge>
+            {catalogItemId && (
+              <Badge variant="info" className="text-[10px] font-mono">
+                SKU Policy: {catalogItemId}
+              </Badge>
+            )}
             {lastSavedAt && (
               <span className="text-[11px] font-mono text-[#059669] flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />

@@ -25,12 +25,14 @@ export interface ShoppingIntentExperienceProps {
   initialQuery?: string;
   initialBudget?: number;
   initialDeliveryDays?: number;
+  initialSessionId?: string;
 }
 
 export function ShoppingIntentExperience({
   initialQuery = "ThinkPad Workstation Laptop",
   initialBudget = 760,
   initialDeliveryDays = 5,
+  initialSessionId,
 }: ShoppingIntentExperienceProps = {}) {
   const router = useRouter();
   const { success: toastSuccess, error: toastError, info: toastInfo } = useToast();
@@ -56,6 +58,48 @@ export function ShoppingIntentExperience({
   const [selectedOfferId, setSelectedOfferId] = useState<string | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [agreementId, setAgreementId] = useState<string | null>(null);
+  const restoredSessionRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (!initialSessionId) return;
+    if (session?.id === initialSessionId || restoredSessionRef.current === initialSessionId) return;
+    restoredSessionRef.current = initialSessionId;
+
+    async function restoreSession(sessionIdToLoad: string) {
+      try {
+        const sRes = await fetch(`/api/v1/shopping-sessions/${encodeURIComponent(sessionIdToLoad)}`);
+        const sData = await sRes.json();
+        if (!sRes.ok || !sData?.session) return;
+
+        const loadedSession: ShoppingSession = sData.session;
+        setSession(loadedSession);
+        setOffers(loadedSession.candidateOffers || []);
+        setSelectedOfferId(loadedSession.selectedOfferId);
+
+        if (loadedSession.shoppingIntentId) {
+          try {
+            const iRes = await fetch(`/api/v1/shopping-intents/${encodeURIComponent(loadedSession.shoppingIntentId)}`);
+            const iData = await iRes.json();
+            if (iRes.ok && iData?.intent) {
+              setQuery(iData.intent.query);
+              if (iData.intent.constraints?.maxTotal) setMaxBudget(iData.intent.constraints.maxTotal);
+              if (iData.intent.constraints?.maxDeliveryDays) setMaxDeliveryDays(iData.intent.constraints.maxDeliveryDays);
+            }
+          } catch {
+            // Keep existing input values if intent fetch fails
+          }
+        }
+
+        if ((loadedSession.candidateOffers || []).length > 0) {
+          setStep("OFFERS");
+        }
+      } catch {
+        // Fallback to clean composer
+      }
+    }
+
+    restoreSession(initialSessionId);
+  }, [initialSessionId, session?.id]);
 
   const handleStartShopping = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -123,6 +167,15 @@ export function ShoppingIntentExperience({
 
       setOffers(candidateOffers);
       setStep("OFFERS");
+
+      try {
+        sessionStorage.setItem("payvia_last_session_id", currentSession.id);
+        if (typeof window !== "undefined" && window.location.pathname === "/negotiate") {
+          window.history.replaceState(null, "", `/negotiate?sessionId=${encodeURIComponent(currentSession.id)}`);
+        }
+      } catch {
+        // Ignore history/storage errors
+      }
 
       if (candidateOffers.length > 0) {
         toastSuccess("Offers Ready", `Found ${candidateOffers.length} negotiated offers matching your criteria`);

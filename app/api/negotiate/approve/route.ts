@@ -28,6 +28,12 @@ export async function POST(req: NextRequest) {
 
     // 2. Check domain repository & agreement service
     let domainAgreement = await agreementRepo.findById(id);
+    if (!domainAgreement && body.negotiationId) {
+      domainAgreement = await agreementRepo.findByNegotiationId(body.negotiationId);
+    }
+    if (!domainAgreement) {
+      domainAgreement = await agreementRepo.findByNegotiationId(id);
+    }
     if (!domainAgreement && storeAgreement?.id) {
       domainAgreement = await agreementRepo.findById(storeAgreement.id);
     }
